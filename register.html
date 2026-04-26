@@ -336,7 +336,7 @@
     const name = document.getElementById('reg-name').value.trim();
     fetch('https://onesignal.com/api/v1/notifications', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Basic os_v2_app_migz42o4jjauhmahkdtuvyy6efgm6ks7oyqukpniigngyun4racnmfcmz33jolppvaplvdrc742oerj6axpyiinjdggjjgou27ckoya' },
       body: JSON.stringify({
         app_id: '620d9e69-dc4a-4143-b007-50e74ae31e21',
         included_segments: ['All'],
