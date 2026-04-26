@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>לירן יוגה — שיעורים</title>
+  <meta property="og:title" content="לירן יוגה — הרשמה לשיעורים">
+  <meta property="og:description" content="בואו לתרגל איתי השבוע">
+  <meta property="og:image" content="https://liran-yoga.netlify.app/liran.jpg">
+  <meta property="og:url" content="https://liran-yoga.netlify.app/schedule.html">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { height: 100%; }
+    body { font-family: 'Heebo', sans-serif; color: #2d2a24; min-height: 100%; position: relative; }
+
+    .bg { position: absolute; top: 0; left: 0; right: 0; z-index: 0; height: 100%; min-height: 100vh; }
+    .bg img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+    .bg::after { content: ''; position: absolute; inset: 0; background: rgba(10,20,10,0.52); }
+
+    .page { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 3rem 1.2rem 4rem; }
+
+    .logo { text-align: center; color: white; margin-bottom: 2rem; }
+    .logo h1 { font-size: 2.2rem; font-weight: 700; letter-spacing: 2px; text-shadow: 0 2px 14px rgba(0,0,0,0.6); }
+    .logo p { font-size: 0.95rem; font-weight: 300; opacity: 0.88; margin-top: 0.3rem; text-shadow: 0 1px 8px rgba(0,0,0,0.5); }
+
+    .card { background: rgba(255,250,244,0.96); backdrop-filter: blur(8px); border-radius: 20px; padding: 2rem 1.8rem; width: 100%; max-width: 540px; box-shadow: 0 8px 40px rgba(0,0,0,0.25); }
+
+    .card-title { font-size: 1rem; font-weight: 700; color: #6b4f2a; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #ede8e0; }
+
+    input { width: 100%; padding: 0.8rem 1rem; border: 2px solid #ede8e0; border-radius: 10px; font-size: 1rem; font-family: 'Heebo', sans-serif; background: white; transition: border-color 0.2s; margin-bottom: 0.75rem; }
+    input:focus { outline: none; border-color: #c47e2b; }
+
+    .btn { width: 100%; padding: 0.9rem; border: none; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; font-family: 'Heebo', sans-serif; transition: background 0.2s; }
+    .btn-main { background: #6b4f2a; color: white; }
+    .btn-main:hover { background: #4e3720; }
+    .btn-register { background: #3a7d54; color: white; width: auto; padding: 0.5rem 1.2rem; font-size: 0.9rem; border-radius: 8px; border: none; cursor: pointer; font-family: 'Heebo', sans-serif; font-weight: 700; }
+    .btn-register:disabled { background: #a0c4b0; cursor: not-allowed; }
+    .btn-registered { background: #e8f5ee; color: #3a7d54; border: 2px solid #3a7d54; width: auto; padding: 0.5rem 1.2rem; font-size: 0.9rem; border-radius: 8px; cursor: default; font-family: 'Heebo', sans-serif; font-weight: 700; }
+    .btn-cancel { background: white; color: #c53030; border: 2px solid #e57373; width: auto; padding: 0.5rem 1.2rem; font-size: 0.85rem; border-radius: 8px; cursor: pointer; font-family: 'Heebo', sans-serif; font-weight: 700; }
+    .btn-cancel:hover { background: #fff5f5; }
+
+    .subscription-badge { background: #fdf0e0; border: 1px solid #e8c97a; border-radius: 10px; padding: 0.75rem 1rem; margin-bottom: 1.2rem; font-size: 0.9rem; }
+    .subscription-badge strong { color: #6b4f2a; }
+    .subscription-badge .remaining { font-size: 1.3rem; font-weight: 700; color: #c47e2b; }
+
+    .class-card { background: white; border-radius: 12px; border: 1px solid #ede8e0; padding: 1rem 1.2rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+    .class-info {}
+    .class-title { font-weight: 700; font-size: 1rem; color: #2d2a24; }
+    .class-meta { font-size: 0.82rem; color: #8a7a6a; margin-top: 0.2rem; }
+    .class-spots { font-size: 0.78rem; color: #c47e2b; margin-top: 0.15rem; }
+
+    .no-classes { text-align: center; padding: 2rem 0; color: #8a7a6a; font-size: 0.95rem; line-height: 1.8; }
+
+    .msg { padding: 0.7rem 1rem; border-radius: 8px; margin-bottom: 0.75rem; font-weight: 600; font-size: 0.88rem; }
+    .msg-error { background: #fed7d7; color: #c53030; }
+    .msg-success { background: #c6f6d5; color: #276749; }
+
+    .success-box { text-align: center; padding: 1.5rem 0; }
+    .success-box .icon { font-size: 3rem; margin-bottom: 0.5rem; }
+    .success-box h2 { font-size: 1.3rem; font-weight: 700; color: #6b4f2a; }
+    .success-box p { color: #8a7a6a; margin-top: 0.5rem; line-height: 1.7; font-size: 0.9rem; }
+
+    #step-phone, #step-classes { }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+
+<div class="bg"><img src="liran.jpg" alt=""></div>
+
+<div class="page">
+  <div class="logo">
+    <h1>לירן יוגה</h1>
+    <p id="week-label">שיעורים השבוע</p>
+  </div>
+
+  <div class="card">
+    <div id="msg-area"></div>
+
+    <!-- שלב 1: הזנת טלפון -->
+    <div id="step-phone">
+      <div class="card-title">מה מספר הטלפון שלך?</div>
+      <input type="tel" id="phone-input" placeholder="05X-XXXXXXX" inputmode="numeric">
+      <button class="btn btn-main" onclick="findClient()">כניסה לשיעורים</button>
+    </div>
+
+    <!-- שלב 2: שיעורים -->
+    <div id="step-classes" class="hidden">
+      <div id="sub-badge" class="subscription-badge"></div>
+      <div style="background:#f0f4ff;border:1px solid #c7d4f0;border-radius:10px;padding:0.65rem 1rem;margin-bottom:1rem;font-size:0.8rem;color:#4a5568;line-height:1.6">
+        הרשמה פתוחה כל עוד יש מקום · ביטול הרשמה אפשרי עד 24 שעות לפני השיעור
+      </div>
+      <div class="card-title">שיעורים זמינים</div>
+      <div id="classes-list"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const { createClient } = supabase;
+  const db = createClient(
+    'https://eznhndwhredmyokwrddd.supabase.co',
+    'sb_publishable_gljYa-F3UBsaPkFrbmwXpA_8aBCO36T'
+  );
+
+  let currentClient = null;
+  let activeSub = null;
+
+  const days = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+  function fmtDay(d) {
+    const date = new Date(d);
+    return `יום ${days[date.getDay()]}, ${date.toLocaleDateString('he-IL')}`;
+  }
+
+  // Set week label
+  const now = new Date();
+  const weekEnd = new Date(now);
+  weekEnd.setDate(now.getDate() + 7);
+  document.getElementById('week-label').textContent =
+    `שיעורים ${now.toLocaleDateString('he-IL')} — ${weekEnd.toLocaleDateString('he-IL')}`;
+
+  function showMsg(text, type = 'error') {
+    document.getElementById('msg-area').innerHTML = `<div class="msg msg-${type}">${text}</div>`;
+    setTimeout(() => document.getElementById('msg-area').innerHTML = '', 4000);
+  }
+
+  async function findClient() {
+    const phone = document.getElementById('phone-input').value.trim();
+    if (!phone) return showMsg('נא להכניס מספר טלפון');
+
+    const { data: client } = await db.from('clients').select('*').eq('phone', phone).maybeSingle();
+    if (!client) return showMsg('מספר הטלפון לא נמצא במערכת. פנו ללירן.');
+
+    const today = new Date().toISOString().split('T')[0];
+    const { data: subs } = await db.from('subscriptions')
+      .select('*, subscription_types(name)')
+      .eq('client_id', client.id)
+      .eq('is_active', true)
+      .gt('classes_remaining', 0)
+      .gte('expiry_date', today)
+      .order('expiry_date')
+      .limit(1);
+
+    if (!subs?.length) return showMsg('אין לך מנוי פעיל. פנו ללירן לחידוש.');
+
+    currentClient = client;
+    activeSub = subs[0];
+
+    document.getElementById('sub-badge').innerHTML = `
+      <div>שלום <strong>${client.full_name}</strong> 👋</div>
+      <div style="margin-top:0.4rem">מנוי: <strong>${activeSub.subscription_types?.name}</strong></div>
+      <div style="margin-top:0.2rem">נותרו: <span class="remaining">${activeSub.classes_remaining}</span> תרגולים</div>
+    `;
+
+    document.getElementById('step-phone').classList.add('hidden');
+    document.getElementById('step-classes').classList.remove('hidden');
+    loadClasses();
+  }
+
+  async function loadClasses() {
+    const today = new Date().toISOString().split('T')[0];
+    const nextWeek = new Date();
+    nextWeek.setDate(nextWeek.getDate() + 14);
+    const nextWeekStr = nextWeek.toISOString().split('T')[0];
+
+    const { data: classes } = await db.from('classes')
+      .select('*')
+      .eq('completed', false)
+      .gte('class_date', today)
+      .lte('class_date', nextWeekStr)
+      .order('class_date')
+      .order('class_time');
+
+    if (!classes?.length) {
+      document.getElementById('classes-list').innerHTML =
+        '<div class="no-classes">אין שיעורים זמינים כרגע.<br>עקבו אחרי הקבוצה לעדכונים.</div>';
+      return;
+    }
+
+    // Check existing registrations
+    const classIds = classes.map(c => c.id);
+    const { data: myRegs } = await db.from('class_registrations')
+      .select('class_id')
+      .eq('client_id', currentClient.id)
+      .in('class_id', classIds);
+    const registered = new Set(myRegs?.map(r => r.class_id) || []);
+
+    // Count registrations per class
+    const { data: allRegs } = await db.from('class_registrations')
+      .select('class_id')
+      .in('class_id', classIds);
+    const counts = {};
+    allRegs?.forEach(r => { counts[r.class_id] = (counts[r.class_id] || 0) + 1; });
+
+    const now = new Date();
+    document.getElementById('classes-list').innerHTML = classes.map(c => {
+      const spots = c.max_capacity - (counts[c.id] || 0);
+      const isRegistered = registered.has(c.id);
+      const isFull = spots <= 0 && !isRegistered;
+      const classDateTime = new Date(`${c.class_date}T${c.class_time}`);
+      const hoursUntil = (classDateTime - now) / 3600000;
+      const canCancel = isRegistered && hoursUntil > 24;
+      const spotsText = isFull ? 'השיעור מלא' : isRegistered ? `רשומ/ה · ${spots} מקומות פנויים` : `${spots} מקומות פנויים`;
+      return `
+        <div class="class-card">
+          <div class="class-info">
+            <div class="class-title">${c.title}</div>
+            <div class="class-meta">${fmtDay(c.class_date)} · ${c.class_time?.slice(0,5)}</div>
+            <div class="class-spots">${spotsText}</div>
+          </div>
+          ${isRegistered
+            ? canCancel
+              ? `<button class="btn-cancel" onclick="cancelClass(${c.id}, this)">ביטול</button>`
+              : `<button class="btn-registered" title="ביטול אפשרי עד 24 שעות לפני בלבד">רשומ/ה ✓</button>`
+            : isFull
+              ? `<button class="btn-register" disabled>מלא</button>`
+              : `<button class="btn-register" onclick="registerClass(${c.id}, this)">הירשמו</button>`
+          }
+        </div>`;
+    }).join('');
+  }
+
+  async function registerClass(classId, btn) {
+    btn.disabled = true;
+    btn.textContent = '...';
+
+    const { error } = await db.from('class_registrations').insert({
+      client_id: currentClient.id,
+      class_id: classId,
+      subscription_id: activeSub.id
+    });
+
+    if (error) {
+      btn.disabled = false;
+      btn.textContent = 'הירשמו';
+      if (error.code === '23505') return showMsg('כבר רשומ/ה לשיעור זה');
+      return showMsg('שגיאה, נסו שוב');
+    }
+
+    showMsg('✓ נרשמת בהצלחה!', 'success');
+    loadClasses();
+  }
+
+  async function cancelClass(classId, btn) {
+    btn.disabled = true;
+    btn.textContent = '...';
+    const { error } = await db.from('class_registrations')
+      .delete()
+      .eq('client_id', currentClient.id)
+      .eq('class_id', classId);
+    if (error) {
+      btn.disabled = false;
+      btn.textContent = 'ביטול ✕';
+      return showMsg('שגיאה, נסו שוב');
+    }
+    showMsg('✓ ההרשמה בוטלה', 'success');
+    loadClasses();
+  }
+
+  document.getElementById('phone-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') findClient();
+  });
+</script>
+</body>
+</html>

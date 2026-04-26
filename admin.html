@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>לירן יוגה — ניהול</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="לירן יוגה">
+  <meta name="theme-color" content="#6b4f2a">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+      await OneSignal.init({ appId: "620d9e69-dc4a-4143-b007-50e74ae31e21" });
+    });
+  </script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #fdf6ee; color: #2d2a24; display: flex; height: 100vh; overflow: hidden; }
+
+    .sidebar {
+      width: 300px;
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .sidebar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
+      display: block;
+    }
+    .sidebar-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.5) 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 2rem 1.5rem;
+      color: white;
+    }
+    .sidebar-overlay h1 { font-size: 1.8rem; font-weight: 700; letter-spacing: 1px; text-shadow: 0 2px 8px rgba(0,0,0,0.6); }
+    .sidebar-overlay p { font-size: 0.85rem; opacity: 0.85; margin-top: 0.3rem; text-shadow: 0 1px 4px rgba(0,0,0,0.6); }
+
+    .app-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+    nav { background: white; border-bottom: 2px solid #ede8e0; display: flex; flex-shrink: 0; }
+    nav button { padding: 0.85rem 1.3rem; border: none; background: none; cursor: pointer; font-size: 0.88rem; color: #8a7a6a; border-bottom: 3px solid transparent; display: flex; align-items: center; gap: 0.4rem; }
+    nav button.active { color: #6b4f2a; border-bottom-color: #c47e2b; font-weight: 600; }
+    nav button:hover { background: #fdf6ee; }
+    nav button svg { width: 16px; height: 16px; stroke-width: 1.8; }
+
+    main { padding: 1.5rem; overflow-y: auto; flex: 1; }
+
+    .section { display: none; }
+    .section.active { display: block; }
+
+    .card { background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,0.08); border: 1px solid #ede8e0; }
+    h2 { font-size: 1.15rem; margin-bottom: 1rem; color: #6b4f2a; }
+
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 1rem; }
+    label { display: block; font-size: 0.85rem; color: #718096; margin-bottom: 0.25rem; }
+    input, select, textarea { width: 100%; padding: 0.6rem 0.8rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; }
+    input:focus, select:focus { outline: none; border-color: #c47e2b; }
+
+    .btn { padding: 0.6rem 1.2rem; border: none; border-radius: 8px; cursor: pointer; font-size: 0.95rem; font-weight: 600; }
+    .btn-primary { background: #6b4f2a; color: white; }
+    .btn-primary:hover { background: #4e3720; }
+    .btn-danger { background: #e53e3e; color: white; }
+    .btn-sm { padding: 0.3rem 0.7rem; font-size: 0.8rem; }
+
+    table { width: 100%; border-collapse: collapse; }
+    th { background: #fdf6ee; padding: 0.75rem; text-align: right; font-size: 0.85rem; color: #8a7a6a; border-bottom: 2px solid #ede8e0; }
+    td { padding: 0.75rem; border-bottom: 1px solid #f5ede0; font-size: 0.9rem; }
+    tr:hover td { background: #fdf6ee; }
+
+    .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+    .badge-green { background: #c6f6d5; color: #276749; }
+    .badge-orange { background: #feebc8; color: #c05621; }
+    .badge-red { background: #fed7d7; color: #c53030; }
+
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .stat { background: white; border-radius: 12px; padding: 1rem; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .stat-number { font-size: 2rem; font-weight: 900; color: #c47e2b; }
+    .stat-label { font-size: 0.8rem; color: #718096; margin-top: 0.25rem; }
+
+    .msg { padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-weight: 600; }
+    .msg-success { background: #c6f6d5; color: #276749; }
+    .msg-error { background: #fed7d7; color: #c53030; }
+
+    .empty { text-align: center; color: #718096; padding: 2rem; }
+
+    /* ── PIN SCREEN ──────────────────────────────────────────── */
+    #pin-screen {
+      position: fixed; inset: 0; z-index: 9999;
+      background: #fdf6ee;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 1.5rem;
+    }
+    #pin-screen.hidden { display: none; }
+    .pin-logo { text-align: center; }
+    .pin-logo h1 { font-size: 2rem; font-weight: 700; color: #6b4f2a; }
+    .pin-logo p { color: #8a7a6a; font-size: 0.9rem; margin-top: 0.3rem; }
+    .pin-dots { display: flex; gap: 0.75rem; justify-content: center; }
+    .pin-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #c47e2b; background: transparent; transition: background 0.15s; }
+    .pin-dot.filled { background: #c47e2b; }
+    .pin-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; width: 240px; }
+    .pin-key {
+      padding: 1rem; border: none; border-radius: 12px;
+      background: white; font-size: 1.4rem; font-weight: 700; color: #2d2a24;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12); cursor: pointer;
+      transition: background 0.15s;
+    }
+    .pin-key:active { background: #ede8e0; }
+    .pin-key.wide { grid-column: span 2; }
+    .pin-error { color: #c53030; font-size: 0.85rem; min-height: 1.2em; text-align: center; }
+
+    /* ── LINK ROW ────────────────────────────────────────────── */
+    .link-row {
+      display: flex; align-items: center; gap: 0.6rem;
+      background: #fdf6ee; border: 1px solid #ede8e0; border-radius: 10px;
+      padding: 0.65rem 1rem; margin-bottom: 1rem; font-size: 0.85rem; color: #6b4f2a;
+    }
+    .link-row svg { width: 15px; height: 15px; flex-shrink: 0; stroke: #c47e2b; }
+    .link-row span { flex: 1; font-weight: 600; }
+    .btn-copy-link {
+      padding: 0.35rem 0.9rem; border: none; border-radius: 7px;
+      background: #c47e2b; color: white; font-size: 0.82rem; font-weight: 700;
+      cursor: pointer; transition: background 0.2s; display: flex; align-items: center; gap: 0.35rem;
+    }
+    .btn-copy-link svg { width: 13px; height: 13px; stroke: white; }
+    .btn-copy-link:hover { background: #a3641f; }
+
+    /* ── MOBILE ──────────────────────────────────────────────── */
+    @media (max-width: 720px) {
+      body { flex-direction: column; height: auto; overflow: auto; }
+      .sidebar { display: none; }
+      .app-content { overflow: visible; }
+      main { overflow: visible; }
+      nav { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      nav button { white-space: nowrap; padding: 0.75rem 1rem; font-size: 0.82rem; }
+      .form-grid { grid-template-columns: 1fr; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .card { padding: 1rem; }
+      h2 { font-size: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- PIN SCREEN -->
+<div id="pin-screen">
+  <div class="pin-logo">
+    <h1>לירן יוגה</h1>
+    <p>הכניסי קוד כניסה</p>
+  </div>
+  <div class="pin-dots">
+    <div class="pin-dot" id="d0"></div>
+    <div class="pin-dot" id="d1"></div>
+    <div class="pin-dot" id="d2"></div>
+    <div class="pin-dot" id="d3"></div>
+  </div>
+  <div class="pin-keypad">
+    <button class="pin-key" onclick="pinPress('1')">1</button>
+    <button class="pin-key" onclick="pinPress('2')">2</button>
+    <button class="pin-key" onclick="pinPress('3')">3</button>
+    <button class="pin-key" onclick="pinPress('4')">4</button>
+    <button class="pin-key" onclick="pinPress('5')">5</button>
+    <button class="pin-key" onclick="pinPress('6')">6</button>
+    <button class="pin-key" onclick="pinPress('7')">7</button>
+    <button class="pin-key" onclick="pinPress('8')">8</button>
+    <button class="pin-key" onclick="pinPress('9')">9</button>
+    <button class="pin-key" onclick="pinClear()">✕</button>
+    <button class="pin-key" onclick="pinPress('0')">0</button>
+    <button class="pin-key" onclick="pinBack()">⌫</button>
+  </div>
+  <div class="pin-error" id="pin-error"></div>
+</div>
+
+<div class="sidebar">
+  <img src="liran.jpg" alt="לירן יוגה">
+  <div class="sidebar-overlay">
+    <h1>לירן יוגה</h1>
+    <p id="today-date"></p>
+    </div>
+</div>
+
+<div class="app-content">
+<nav>
+  <button class="active" onclick="showSection('clients', this)"><i data-lucide="users"></i> לקוחות</button>
+  <button onclick="showSection('subscriptions', this)"><i data-lucide="credit-card"></i> מנויים</button>
+  <button onclick="showSection('classes', this)"><i data-lucide="calendar"></i> שיעורים</button>
+  <button onclick="showSection('registrations', this)"><i data-lucide="clipboard-list"></i> הרשמות</button>
+  <button id="notif-btn" onclick="enableNotifications()" style="margin-right:auto;border-bottom-color:transparent"><i data-lucide="bell"></i></button>
+</nav>
+
+<main>
+  <div id="msg-global"></div>
+
+  <!-- CLIENTS -->
+  <div id="section-clients" class="section active">
+    <div class="stats" id="clients-stats">
+      <div class="stat"><div class="stat-number" id="stat-clients">—</div><div class="stat-label">לקוחות</div></div>
+    </div>
+
+    <div class="card">
+      <h2>הוספת לקוח חדש</h2>
+      <div class="form-grid">
+        <div><label>שם מלא *</label><input type="text" id="client-name" placeholder="שם ומשפחה"></div>
+        <div><label>טלפון *</label><input type="tel" id="client-phone" placeholder="05X-XXXXXXX"></div>
+        <div><label>אימייל</label><input type="email" id="client-email" placeholder="mail@example.com"></div>
+        <div><label>הערות</label><input type="text" id="client-notes" placeholder="הערות..."></div>
+      </div>
+      <button class="btn btn-primary" style="margin-top:1rem" onclick="addClient()">הוסף לקוח</button>
+    </div>
+
+    <div class="card">
+      <h2>רשימת לקוחות</h2>
+      <table>
+        <thead><tr><th>שם</th><th>טלפון</th><th>אימייל</th><th>הערות</th><th>תאריך הצטרפות</th><th></th></tr></thead>
+        <tbody id="clients-table"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SUBSCRIPTIONS -->
+  <div id="section-subscriptions" class="section">
+    <div class="card">
+      <h2>שיוך מנוי ללקוח</h2>
+      <div class="form-grid">
+        <div><label>לקוח *</label><select id="sub-client"></select></div>
+        <div><label>סוג מנוי *</label><select id="sub-type" onchange="updateSubInfo()"></select></div>
+        <div><label>תאריך התחלה</label><input type="date" id="sub-start"></div>
+      </div>
+      <p id="sub-info" style="margin-top:0.75rem;color:#718096;font-size:0.9rem;"></p>
+      <button class="btn btn-primary" style="margin-top:1rem" onclick="addSubscription()">שייך מנוי</button>
+    </div>
+
+    <div class="card">
+      <h2>מנויים פעילים</h2>
+      <table>
+        <thead><tr><th>לקוח</th><th>סוג מנוי</th><th>תרגולים שנותרו</th><th>תאריך פקיעה</th><th>סטטוס</th><th>עריכה</th></tr></thead>
+        <tbody id="subscriptions-table"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- CLASSES -->
+  <div id="section-classes" class="section">
+    <div class="link-row">
+      <i data-lucide="link"></i>
+      <span>קישור לשיעורים השבוע</span>
+      <button class="btn-copy-link" id="copy-schedule-btn" onclick="copyLink('copy-schedule-btn','https://liran-yoga.netlify.app/schedule.html')"><i data-lucide="copy"></i> העתק</button>
+    </div>
+    <div class="card">
+      <h2>יצירת שיעור חדש</h2>
+      <div class="form-grid">
+        <div><label>כותרת *</label><input type="text" id="class-title" placeholder="לדוגמה: יוגה בוקר"></div>
+        <div><label>תאריך *</label><input type="date" id="class-date"></div>
+        <div><label>שעה *</label><input type="time" id="class-time"></div>
+        <div><label>מקסימום משתתפים</label><input type="number" id="class-capacity" value="10" min="1"></div>
+        <div><label>הערות</label><input type="text" id="class-notes" placeholder="הערות..."></div>
+      </div>
+      <button class="btn btn-primary" style="margin-top:1rem" onclick="addClass()">צור שיעור</button>
+    </div>
+
+    <div class="card">
+      <h2>שיעורים</h2>
+      <table>
+        <thead><tr><th>כותרת</th><th>תאריך</th><th>שעה</th><th>קיבולת</th><th>הערות</th><th></th></tr></thead>
+        <tbody id="classes-table"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- REGISTRATIONS -->
+  <div id="section-registrations" class="section">
+    <div class="link-row">
+      <i data-lucide="link"></i>
+      <span>קישור להרשמה למנוי</span>
+      <button class="btn-copy-link" id="copy-register-btn" onclick="copyLink('copy-register-btn','https://liran-yoga.netlify.app')"><i data-lucide="copy"></i> העתק</button>
+    </div>
+    <div class="card">
+      <h2>רישום לקוח לשיעור</h2>
+      <div class="form-grid">
+        <div><label>שיעור *</label><select id="reg-class"></select></div>
+        <div><label>לקוח *</label><select id="reg-client" onchange="loadClientSubs()"></select></div>
+        <div><label>מנוי לשימוש *</label><select id="reg-subscription"></select></div>
+      </div>
+      <button class="btn btn-primary" style="margin-top:1rem" onclick="addRegistration()">רשום לשיעור</button>
+    </div>
+
+    <div class="card">
+      <h2>כל ההרשמות</h2>
+      <table>
+        <thead><tr><th>שיעור</th><th>תאריך</th><th>שעה</th><th>לקוח</th><th>טלפון</th><th>מנוי</th><th></th></tr></thead>
+        <tbody id="registrations-table"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+</div>
+
+<script>
+  const { createClient } = supabase;
+  const db = createClient(
+    'https://eznhndwhredmyokwrddd.supabase.co',
+    'sb_publishable_gljYa-F3UBsaPkFrbmwXpA_8aBCO36T'
+  );
+
+  document.getElementById('today-date').textContent = new Date().toLocaleDateString('he-IL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  document.getElementById('sub-start').value = todayStr();
+  document.getElementById('class-date').value = todayStr();
+
+  function todayStr() { return new Date().toISOString().split('T')[0]; }
+  function fmtDate(d) { return d ? new Date(d).toLocaleDateString('he-IL') : ''; }
+
+  async function enableNotifications() {
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+      await OneSignal.Notifications.requestPermission();
+      const granted = OneSignal.Notifications.permission;
+      const btn = document.getElementById('notif-btn');
+      if (granted) { btn.textContent = '✓ התראות פעילות'; btn.style.background = 'rgba(58,125,84,0.6)'; }
+    });
+  }
+
+  function showSection(name, btn) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+    document.getElementById('section-' + name).classList.add('active');
+    btn.classList.add('active');
+    if (name === 'clients') loadClients();
+    if (name === 'subscriptions') { loadClientsSelect('sub-client'); loadSubTypes(); loadSubscriptions(); }
+    if (name === 'classes') loadClasses();
+    if (name === 'registrations') { loadClassesSelect(); loadClientsSelect('reg-client', loadClientSubs); loadRegistrations(); }
+  }
+
+  function showMsg(text, type = 'success') {
+    const el = document.getElementById('msg-global');
+    el.innerHTML = `<div class="msg msg-${type}">${text}</div>`;
+    setTimeout(() => el.innerHTML = '', 3500);
+  }
+
+  function statusBadge(expiry, remaining, isActive) {
+    if (!isActive) return '<span class="badge badge-orange">ממתין לאישור</span>';
+    const diff = Math.ceil((new Date(expiry) - new Date()) / 86400000);
+    if (remaining <= 0) return '<span class="badge badge-red">נוצל</span>';
+    if (diff <= 0) return '<span class="badge badge-red">פג תוקף</span>';
+    if (diff <= 7) return '<span class="badge badge-orange">פג בקרוב</span>';
+    return '<span class="badge badge-green">פעיל</span>';
+  }
+
+  // ── CLIENTS ──────────────────────────────────────────────
+  async function loadClients() {
+    const { data } = await db.from('clients').select('*').order('full_name');
+    document.getElementById('stat-clients').textContent = data?.length ?? 0;
+    document.getElementById('clients-table').innerHTML = data?.length
+      ? data.map(c => `<tr>
+          <td><strong>${c.full_name}</strong></td>
+          <td><a href="tel:${c.phone}">${c.phone}</a></td>
+          <td>${c.email || '—'}</td>
+          <td>${c.notes || '—'}</td>
+          <td>${fmtDate(c.created_at)}</td>
+          <td><button class="btn btn-danger btn-sm" onclick="deleteClient(${c.id})">מחק</button></td>
+        </tr>`).join('')
+      : '<tr><td colspan="6" class="empty">אין לקוחות עדיין</td></tr>';
+  }
+
+  async function addClient() {
+    const name = document.getElementById('client-name').value.trim();
+    const phone = document.getElementById('client-phone').value.trim();
+    const email = document.getElementById('client-email').value.trim();
+    const notes = document.getElementById('client-notes').value.trim();
+    if (!name || !phone) return showMsg('שם וטלפון הם שדות חובה', 'error');
+    const { error } = await db.from('clients').insert({ full_name: name, phone, email: email || null, notes: notes || null });
+    if (error) return showMsg('שגיאה: ' + error.message, 'error');
+    showMsg('✓ לקוח נוסף בהצלחה');
+    ['client-name','client-phone','client-email','client-notes'].forEach(id => document.getElementById(id).value = '');
+    loadClients();
+  }
+
+  async function deleteClient(id) {
+    if (!confirm('למחוק לקוח זה? הפעולה לא ניתנת לביטול.')) return;
+    await db.from('clients').delete().eq('id', id);
+    loadClients();
+  }
+
+  // ── SUBSCRIPTIONS ─────────────────────────────────────────
+  async function loadSubTypes() {
+    const { data } = await db.from('subscription_types').select('*').eq('is_active', true);
+    document.getElementById('sub-type').innerHTML = data?.map(t =>
+      `<option value="${t.id}" data-classes="${t.classes_count}" data-days="${t.validity_days}">${t.name} — ₪${t.price}</option>`
+    ).join('');
+    updateSubInfo();
+  }
+
+  function updateSubInfo() {
+    const opt = document.getElementById('sub-type').selectedOptions[0];
+    if (!opt) return;
+    document.getElementById('sub-info').textContent = `${opt.dataset.classes} תרגולים | תוקף: ${opt.dataset.days} ימים`;
+  }
+
+  async function loadClientsSelect(selectId, callback) {
+    const { data } = await db.from('clients').select('*').order('full_name');
+    document.getElementById(selectId).innerHTML = data?.map(c =>
+      `<option value="${c.id}">${c.full_name} — ${c.phone}</option>`
+    ).join('') || '<option>אין לקוחות</option>';
+    if (callback) callback();
+  }
+
+  async function addSubscription() {
+    const clientId = document.getElementById('sub-client').value;
+    const typeId = document.getElementById('sub-type').value;
+    const startDate = document.getElementById('sub-start').value;
+    if (!clientId || !typeId || !startDate) return showMsg('נא למלא את כל השדות', 'error');
+    const { data: t } = await db.from('subscription_types').select('*').eq('id', typeId).single();
+    const expiry = new Date(startDate);
+    expiry.setDate(expiry.getDate() + t.validity_days);
+    const { error } = await db.from('subscriptions').insert({
+      client_id: clientId, subscription_type_id: typeId,
+      classes_remaining: t.classes_count, start_date: startDate,
+      expiry_date: expiry.toISOString().split('T')[0]
+    });
+    if (error) return showMsg('שגיאה: ' + error.message, 'error');
+    showMsg('✓ מנוי שויך בהצלחה');
+    loadSubscriptions();
+  }
+
+  async function loadSubscriptions() {
+    const { data } = await db.from('subscriptions')
+      .select('*, clients(full_name, phone), subscription_types(name)')
+      .order('expiry_date');
+    document.getElementById('subscriptions-table').innerHTML = data?.length
+      ? data.map(s => `<tr>
+          <td><strong>${s.clients?.full_name}</strong><br><small style="color:#718096">${s.clients?.phone}</small></td>
+          <td>${s.subscription_types?.name}</td>
+          <td style="text-align:center;font-size:1.2rem;font-weight:bold">${s.classes_remaining}</td>
+          <td>${fmtDate(s.expiry_date)}</td>
+          <td>${statusBadge(s.expiry_date, s.classes_remaining, s.is_active)}</td>
+          <td>
+            ${!s.is_active ? `<button class="btn btn-sm" style="background:#2d6a4f;color:white;margin-left:0.25rem" onclick="activateSubscription(${s.id})">הפעל</button>` : ''}
+            <button class="btn btn-sm" style="background:#e2e8f0;margin-left:0.25rem" onclick="adjustClasses(${s.id},${s.classes_remaining},1)" title="הוסף תרגול">+1</button>
+            <button class="btn btn-sm" style="background:#e2e8f0;margin-left:0.25rem" onclick="adjustClasses(${s.id},${s.classes_remaining},-1)" title="הפחת תרגול">-1</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteSubscription(${s.id})">הסר</button>
+          </td>
+        </tr>`).join('')
+      : '<tr><td colspan="6" class="empty">אין מנויים</td></tr>';
+  }
+
+  async function activateSubscription(id) {
+    await db.from('subscriptions').update({ is_active: true }).eq('id', id);
+    showMsg('✓ מנוי הופעל בהצלחה');
+    loadSubscriptions();
+  }
+
+  async function deleteSubscription(id) {
+    if (!confirm('להסיר מנוי זה? הפעולה לא ניתנת לביטול.')) return;
+    await db.from('subscriptions').delete().eq('id', id);
+    loadSubscriptions();
+  }
+
+  async function adjustClasses(id, current, delta) {
+    const val = current + delta;
+    if (val < 0) return showMsg('לא ניתן לרדת מתחת לאפס', 'error');
+    await db.from('subscriptions').update({ classes_remaining: val }).eq('id', id);
+    loadSubscriptions();
+  }
+
+  // ── CLASSES ───────────────────────────────────────────────
+  async function loadClasses() {
+    const { data } = await db.from('classes').select('*').order('class_date').order('class_time');
+    document.getElementById('classes-table').innerHTML = data?.length
+      ? data.map(c => `<tr style="${c.completed ? 'opacity:0.55' : ''}">
+          <td><strong>${c.title}</strong></td>
+          <td>${fmtDate(c.class_date)}</td>
+          <td>${c.class_time?.slice(0,5)}</td>
+          <td>${c.max_capacity}</td>
+          <td>${c.notes || '—'}</td>
+          <td style="display:flex;gap:0.4rem;align-items:center">
+            ${c.completed
+              ? '<span class="badge badge-green">הסתיים ✓</span>'
+              : `<button class="btn btn-sm" style="background:#2d6a4f;color:white" onclick="endClass(${c.id})">סיים שיעור</button>`
+            }
+            <button class="btn btn-danger btn-sm" onclick="deleteClass(${c.id})">מחק</button>
+          </td>
+        </tr>`).join('')
+      : '<tr><td colspan="6" class="empty">אין שיעורים</td></tr>';
+  }
+
+  async function endClass(classId) {
+    if (!confirm('לסמן שיעור זה כהסתיים ולנכות תרגול מכל הרשומים?')) return;
+    const { data: regs } = await db.from('class_registrations')
+      .select('subscription_id')
+      .eq('class_id', classId);
+    if (!regs?.length) {
+      await db.from('classes').update({ completed: true }).eq('id', classId);
+      showMsg('✓ שיעור סומן כהסתיים (אין רשומים)');
+      return loadClasses();
+    }
+    for (const reg of regs) {
+      const { data: sub } = await db.from('subscriptions').select('classes_remaining').eq('id', reg.subscription_id).single();
+      if (sub && sub.classes_remaining > 0) {
+        await db.from('subscriptions').update({ classes_remaining: sub.classes_remaining - 1 }).eq('id', reg.subscription_id);
+      }
+    }
+    await db.from('classes').update({ completed: true }).eq('id', classId);
+    showMsg(`✓ שיעור הסתיים — נוכה תרגול מ-${regs.length} משתתפים`);
+    loadClasses();
+  }
+
+  async function addClass() {
+    const title = document.getElementById('class-title').value.trim();
+    const date = document.getElementById('class-date').value;
+    const time = document.getElementById('class-time').value;
+    const capacity = document.getElementById('class-capacity').value;
+    const notes = document.getElementById('class-notes').value.trim();
+    if (!title || !date || !time) return showMsg('נא למלא כותרת, תאריך ושעה', 'error');
+    const { error } = await db.from('classes').insert({ title, class_date: date, class_time: time, max_capacity: +capacity, notes: notes || null });
+    if (error) return showMsg('שגיאה: ' + error.message, 'error');
+    showMsg('✓ שיעור נוצר בהצלחה');
+    document.getElementById('class-title').value = '';
+    document.getElementById('class-notes').value = '';
+    loadClasses();
+  }
+
+  async function deleteClass(id) {
+    if (!confirm('למחוק שיעור זה?')) return;
+    await db.from('classes').delete().eq('id', id);
+    loadClasses();
+  }
+
+  // ── REGISTRATIONS ─────────────────────────────────────────
+  async function loadClassesSelect() {
+    const { data } = await db.from('classes').select('*').order('class_date').order('class_time');
+    document.getElementById('reg-class').innerHTML = data?.map(c =>
+      `<option value="${c.id}">${c.title} — ${fmtDate(c.class_date)} ${c.class_time?.slice(0,5)}</option>`
+    ).join('') || '<option>אין שיעורים</option>';
+  }
+
+  async function loadClientSubs() {
+    const clientId = document.getElementById('reg-client').value;
+    if (!clientId) return;
+    const { data } = await db.from('subscriptions')
+      .select('*, subscription_types(name)')
+      .eq('client_id', clientId)
+      .gt('classes_remaining', 0)
+      .gte('expiry_date', todayStr());
+    document.getElementById('reg-subscription').innerHTML = data?.length
+      ? data.map(s => `<option value="${s.id}">${s.subscription_types?.name} (${s.classes_remaining} נותרו)</option>`).join('')
+      : '<option value="">אין מנוי פעיל</option>';
+  }
+
+  async function addRegistration() {
+    const classId = document.getElementById('reg-class').value;
+    const clientId = document.getElementById('reg-client').value;
+    const subId = document.getElementById('reg-subscription').value;
+    if (!classId || !clientId || !subId) return showMsg('נא למלא את כל השדות', 'error');
+    const { error } = await db.from('class_registrations').insert({ client_id: +clientId, class_id: +classId, subscription_id: +subId });
+    if (error) {
+      if (error.code === '23505') return showMsg('הלקוח כבר רשום לשיעור זה', 'error');
+      return showMsg('שגיאה: ' + error.message, 'error');
+    }
+    showMsg('✓ לקוח נרשם לשיעור בהצלחה — הניכוי יתבצע בסיום השיעור');
+    loadRegistrations();
+  }
+
+  async function removeRegistration(id) {
+    if (!confirm('להסיר הרשמה זו?')) return;
+    await db.from('class_registrations').delete().eq('id', id);
+    loadRegistrations();
+  }
+
+  async function loadRegistrations() {
+    const { data } = await db.from('class_registrations')
+      .select('*, clients(full_name, phone), classes(title, class_date, class_time), subscriptions(subscription_types(name))')
+      .order('created_at', { ascending: false });
+    document.getElementById('registrations-table').innerHTML = data?.length
+      ? data.map(r => `<tr>
+          <td><strong>${r.classes?.title}</strong></td>
+          <td>${fmtDate(r.classes?.class_date)}</td>
+          <td>${r.classes?.class_time?.slice(0,5)}</td>
+          <td>${r.clients?.full_name}</td>
+          <td><a href="tel:${r.clients?.phone}">${r.clients?.phone}</a></td>
+          <td>${r.subscriptions?.subscription_types?.name}</td>
+          <td><button class="btn btn-danger btn-sm" onclick="removeRegistration(${r.id})">הסר</button></td>
+        </tr>`).join('')
+      : '<tr><td colspan="7" class="empty">אין הרשמות</td></tr>';
+  }
+
+  // ── PIN ────────────────────────────────────────────────────
+  const PIN = '0123';
+  let pinInput = '';
+
+  function pinCheck() {
+    if (localStorage.getItem('liran_admin_auth') === '1') {
+      document.getElementById('pin-screen').classList.add('hidden');
+    }
+  }
+
+  function pinPress(digit) {
+    if (pinInput.length >= 4) return;
+    pinInput += digit;
+    updateDots();
+    if (pinInput.length === 4) {
+      if (pinInput === PIN) {
+        localStorage.setItem('liran_admin_auth', '1');
+        document.getElementById('pin-screen').classList.add('hidden');
+      } else {
+        document.getElementById('pin-error').textContent = 'קוד שגוי, נסי שוב';
+        pinInput = '';
+        updateDots();
+        setTimeout(() => document.getElementById('pin-error').textContent = '', 1500);
+      }
+    }
+  }
+
+  function pinBack() {
+    pinInput = pinInput.slice(0, -1);
+    updateDots();
+  }
+
+  function pinClear() {
+    pinInput = '';
+    updateDots();
+  }
+
+  function updateDots() {
+    for (let i = 0; i < 4; i++) {
+      document.getElementById('d' + i).classList.toggle('filled', i < pinInput.length);
+    }
+  }
+
+  // ── COPY LINKS ─────────────────────────────────────────────
+  function copyLink(btnId, url) {
+    navigator.clipboard.writeText(url).then(() => {
+      const btn = document.getElementById(btnId);
+      const orig = btn.textContent;
+      btn.textContent = '✓';
+      btn.style.background = '#2d6a4f';
+      setTimeout(() => { btn.textContent = orig; btn.style.background = ''; }, 2500);
+    });
+  }
+
+  // Initial load
+  pinCheck();
+  loadClients();
+  lucide.createIcons();
+</script>
+</body>
+</html>

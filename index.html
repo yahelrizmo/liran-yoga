@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>לירן יוגה — הרשמה</title>
+  <meta property="og:title" content="לירן יוגה — הצטרפו אלינו">
+  <meta property="og:description" content="בואו לתרגל — בחרו את המנוי המתאים לכם">
+  <meta property="og:image" content="https://liran-yoga.netlify.app/liran.jpg">
+  <meta property="og:url" content="https://liran-yoga.netlify.app">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { height: 100%; }
+    body {
+      font-family: 'Heebo', sans-serif;
+      color: #2d2a24;
+      min-height: 100%;
+      position: relative;
+    }
+
+    /* תמונה ברקע גוללת עם הדף */
+    .bg {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      z-index: 0;
+      height: 100%;
+      min-height: 100vh;
+    }
+    .bg img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
+      display: block;
+    }
+    .bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(10, 20, 10, 0.52);
+    }
+
+    /* תוכן מרכזי */
+    .page {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 3rem 1.2rem 4rem;
+    }
+
+    .logo {
+      text-align: center;
+      color: white;
+      margin-bottom: 2.5rem;
+    }
+    .logo h1 { font-size: 2.6rem; font-weight: 700; letter-spacing: 2px; text-shadow: 0 2px 14px rgba(0,0,0,0.6); }
+    .logo p { font-size: 1rem; font-weight: 300; opacity: 0.88; margin-top: 0.4rem; text-shadow: 0 1px 8px rgba(0,0,0,0.5); }
+
+    /* כרטיס הטופס */
+    .card {
+      background: rgba(255, 250, 244, 0.96);
+      backdrop-filter: blur(8px);
+      border-radius: 20px;
+      padding: 2rem 1.8rem;
+      width: 100%;
+      max-width: 560px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.25);
+    }
+
+    .step-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #6b4f2a;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #ede8e0;
+    }
+
+    .plans { display: grid; gap: 0.6rem; margin-bottom: 1.5rem; }
+    .plan {
+      border: 2px solid #ede8e0;
+      border-radius: 12px;
+      padding: 0.85rem 1.1rem;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: white;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .plan:hover { border-color: #c47e2b; }
+    .plan.selected { border-color: #c47e2b; background: #fdf0e0; }
+    .plan-name { font-weight: 600; font-size: 0.95rem; }
+    .plan-meta { font-size: 0.78rem; color: #8a7a6a; margin-top: 0.15rem; }
+    .plan-price { font-size: 1.35rem; font-weight: 700; color: #c47e2b; white-space: nowrap; margin-right: 0.75rem; }
+
+    .form-group { margin-bottom: 0.9rem; }
+    label { display: block; font-size: 0.82rem; color: #8a7a6a; margin-bottom: 0.25rem; font-weight: 600; }
+    input {
+      width: 100%;
+      padding: 0.7rem 1rem;
+      border: 2px solid #ede8e0;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-family: 'Heebo', sans-serif;
+      background: white;
+      transition: border-color 0.2s;
+    }
+    input:focus { outline: none; border-color: #c47e2b; }
+
+    .btn {
+      width: 100%;
+      padding: 0.95rem;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Heebo', sans-serif;
+      transition: background 0.2s;
+      margin-top: 1.2rem;
+    }
+    .btn-main { background: #6b4f2a; color: white; }
+    .btn-main:hover { background: #4e3720; }
+    .btn-main:disabled { background: #c0aa8e; cursor: not-allowed; }
+    .btn-green { background: #3a7d54; color: white; }
+    .btn-green:hover { background: #2a5e3f; }
+
+    /* תשלום */
+    .payment-section { display: none; }
+    .payment-section.show { display: block; }
+
+    .bit-box {
+      background: white;
+      border-radius: 14px;
+      border: 2px solid #ede8e0;
+      padding: 1.5rem;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    .bit-box h3 { color: #6b4f2a; font-size: 1.1rem; margin-bottom: 0.3rem; }
+    .bit-amount { font-size: 3rem; font-weight: 700; color: #c47e2b; margin: 0.5rem 0; }
+    .bit-phone {
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: #2d2a24;
+      background: #fdf6ee;
+      border-radius: 10px;
+      padding: 0.6rem 1.2rem;
+      display: inline-block;
+      margin: 0.5rem 0 0.25rem;
+    }
+    .bit-label { font-size: 0.82rem; color: #8a7a6a; }
+    .bit-note {
+      font-size: 0.83rem;
+      color: #8a7a6a;
+      line-height: 1.7;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #ede8e0;
+    }
+
+    /* הצלחה */
+    .success-section { display: none; text-align: center; padding: 1rem 0; }
+    .success-section.show { display: block; }
+    .success-icon { font-size: 3.5rem; margin-bottom: 0.75rem; }
+    .success-section h2 { font-size: 1.5rem; font-weight: 700; color: #6b4f2a; margin-bottom: 0.5rem; }
+    .success-section p { color: #8a7a6a; line-height: 1.8; font-size: 0.95rem; }
+
+    .msg { padding: 0.7rem 1rem; border-radius: 8px; margin-bottom: 0.75rem; font-weight: 600; font-size: 0.88rem; }
+    .msg-error { background: #fed7d7; color: #c53030; }
+  </style>
+</head>
+<body>
+
+<div class="bg">
+  <img src="liran.jpg" alt="">
+</div>
+
+<div class="page">
+  <div class="logo">
+    <h1>לירן יוגה</h1>
+    <p>הצטרפו לתרגול — בחרו את המנוי המתאים לכם</p>
+  </div>
+
+  <div class="card">
+    <div id="msg-area"></div>
+
+    <!-- שלב 1+2: בחירת מנוי + פרטים -->
+    <div id="step-register">
+      <div class="step-title">בחרו סוג מנוי</div>
+      <div class="plans" id="plans-list"></div>
+
+      <div class="step-title">פרטים אישיים</div>
+      <div class="form-group">
+        <label>שם מלא *</label>
+        <input type="text" id="reg-name" placeholder="שם ומשפחה">
+      </div>
+      <div class="form-group">
+        <label>מספר טלפון *</label>
+        <input type="tel" id="reg-phone" placeholder="05X-XXXXXXX">
+      </div>
+      <div class="form-group">
+        <label>אימייל (אופציונלי)</label>
+        <input type="email" id="reg-email" placeholder="mail@example.com">
+      </div>
+      <button class="btn btn-main" id="submit-btn" onclick="submitRegistration()">המשך לתשלום</button>
+    </div>
+
+    <!-- שלב 3: תשלום בBit -->
+    <div class="payment-section" id="payment-section">
+      <div class="bit-box">
+        <h3>תשלום דרך Bit</h3>
+        <div class="bit-amount">₪<span id="pay-amount"></span></div>
+        <div class="bit-label">העבירו למספר</div>
+        <div class="bit-phone">053-246-2667</div>
+        <div style="display:flex;gap:0.75rem;margin-top:1rem;flex-wrap:wrap;justify-content:center">
+          <button class="btn btn-main" id="copy-btn" onclick="copyPhone()" style="flex:1;min-width:130px">העתק מספר</button>
+          <a href="https://bitpay.co.il" target="_blank" class="btn btn-main" style="flex:1;min-width:130px;text-decoration:none;text-align:center;background:#0f4c9e">פתח Bit</a>
+        </div>
+        <div class="bit-note">
+          לאחר התשלום — לחצו על הכפתור למטה.
+        </div>
+      </div>
+      <button class="btn btn-green" onclick="confirmSent()">שלחתי את התשלום ✓</button>
+    </div>
+
+    <!-- הצלחה -->
+    <div class="success-section" id="success-section">
+      <div class="success-icon">🌿</div>
+      <h2>תודה, <span id="success-name"></span>!</h2>
+      <p>ההרשמה התקבלה.<br>נתראה על המזרן.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const { createClient } = supabase;
+  const db = createClient(
+    'https://eznhndwhredmyokwrddd.supabase.co',
+    'sb_publishable_gljYa-F3UBsaPkFrbmwXpA_8aBCO36T'
+  );
+
+  let selectedPlan = null;
+  let pendingClientId = null;
+
+  async function loadPlans() {
+    const { data } = await db.from('subscription_types').select('*').eq('is_active', true);
+    document.getElementById('plans-list').innerHTML = data?.map(p => `
+      <div class="plan" onclick="selectPlan(this, ${p.id}, ${p.price}, '${p.name.replace(/'/g,"\\'")}', ${p.classes_count}, ${p.validity_days})">
+        <div>
+          <div class="plan-name">${p.name}</div>
+          <div class="plan-meta">${p.classes_count} תרגול${p.classes_count > 1 ? 'ים' : ''} · תוקף ${p.validity_days} ימים</div>
+        </div>
+        <div class="plan-price">₪${p.price}</div>
+      </div>
+    `).join('');
+  }
+
+  function selectPlan(el, id, price, name, classes, days) {
+    document.querySelectorAll('.plan').forEach(p => p.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedPlan = { id, price, name, classes, days };
+  }
+
+  function showMsg(text) {
+    document.getElementById('msg-area').innerHTML = `<div class="msg msg-error">${text}</div>`;
+    setTimeout(() => document.getElementById('msg-area').innerHTML = '', 4000);
+  }
+
+  async function submitRegistration() {
+    if (!selectedPlan) return showMsg('נא לבחור סוג מנוי');
+    const name = document.getElementById('reg-name').value.trim();
+    const phone = document.getElementById('reg-phone').value.trim();
+    const email = document.getElementById('reg-email').value.trim();
+    if (!name || !phone) return showMsg('נא למלא שם וטלפון');
+
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.textContent = 'שומרת...';
+
+    let clientId;
+    const { data: existing } = await db.from('clients').select('id').eq('phone', phone).maybeSingle();
+    if (existing) {
+      clientId = existing.id;
+    } else {
+      const { data: newClient, error } = await db.from('clients').insert({ full_name: name, phone, email: email || null }).select().single();
+      if (error) { btn.disabled = false; btn.textContent = 'המשך לתשלום'; return showMsg('שגיאה, נסו שוב'); }
+      clientId = newClient.id;
+    }
+
+    pendingClientId = clientId;
+
+    document.getElementById('step-register').style.display = 'none';
+    document.getElementById('pay-amount').textContent = selectedPlan.price;
+    setBitLink();
+    document.getElementById('payment-section').classList.add('show');
+  }
+
+  function setBitLink() {}
+
+  function copyPhone() {
+    navigator.clipboard.writeText('0532462667').then(() => {
+      const btn = document.getElementById('copy-btn');
+      btn.textContent = '✓ המספר הועתק!';
+      btn.style.background = '#3a7d54';
+      setTimeout(() => {
+        btn.textContent = '📋 העתיקו מספר לתשלום';
+        btn.style.background = '';
+      }, 3000);
+    });
+  }
+
+  async function confirmSent() {
+    const start = new Date();
+    const expiry = new Date(start);
+    expiry.setDate(expiry.getDate() + selectedPlan.days);
+    await db.from('subscriptions').insert({
+      client_id: pendingClientId,
+      subscription_type_id: selectedPlan.id,
+      classes_remaining: selectedPlan.classes,
+      start_date: start.toISOString().split('T')[0],
+      expiry_date: expiry.toISOString().split('T')[0],
+      is_active: false
+    });
+    document.getElementById('payment-section').classList.remove('show');
+    document.getElementById('success-name').textContent = document.getElementById('reg-name').value.trim();
+    document.getElementById('success-section').classList.add('show');
+  }
+
+  loadPlans();
+</script>
+</body>
+</html>
