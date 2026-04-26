@@ -236,7 +236,7 @@
 
     <!-- הצלחה -->
     <div class="success-section" id="success-section">
-      <div class="success-icon">🌿</div>
+      <div class="success-icon"><svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#6b4f2a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12"/><path d="M12 12C12 7 7 4 3 6c4 1 7 4 9 6"/><path d="M12 12c0-5 5-8 9-6-4 1-7 4-9 6"/></svg></div>
       <h2>תודה, <span id="success-name"></span>!</h2>
       <p>ההרשמה התקבלה.<br>נתראה על המזרן.</p>
     </div>
@@ -334,15 +334,10 @@
     });
 
     const name = document.getElementById('reg-name').value.trim();
-    fetch('https://onesignal.com/api/v1/notifications', {
+    fetch('/api/notify', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Key os_v2_app_migz42o4jjauhmahkdtuvyy6efgm6ks7oyqukpniigngyun4racnmfcmz33jolppvaplvdrc742oerj6axpyiinjdggjjgou27ckoya' },
-      body: JSON.stringify({
-        app_id: '620d9e69-dc4a-4143-b007-50e74ae31e21',
-        included_segments: ['All'],
-        headings: { he: 'הרשמה חדשה' },
-        contents: { he: `${name} נרשמ/ה למנוי ${selectedPlan.name} — ממתין לאישור תשלום` }
-      })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, plan: selectedPlan.name })
     });
 
     document.getElementById('payment-section').classList.remove('show');
