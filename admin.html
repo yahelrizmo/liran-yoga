@@ -157,7 +157,7 @@
     .home-greeting { font-size: 2rem; font-weight: 700; color: #6b4f2a; margin-bottom: 0.3rem; }
     .home-date { font-size: 0.88rem; color: #8a7a6a; margin-bottom: 1.5rem; }
     #section-home .stats { margin-bottom: 2rem; }
-    .home-nav { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.85rem; width: 100%; max-width: 420px; margin-bottom: 2rem; }
+    .home-nav { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.85rem; width: 100%; max-width: 340px; margin-bottom: 2rem; }
     .home-card {
       background: white; border-radius: 14px; padding: 1.1rem 0.75rem;
       text-align: center; cursor: pointer; border: 2px solid #ede8e0;
@@ -187,6 +187,8 @@
     .btn-alert-copy { background: #e2e8f0; color: #2d2a24; }
     .btn-alert-wa { background: #25d366; color: white; }
     .alerts-empty { text-align: center; color: #8a7a6a; padding: 3rem 1rem; font-size: 0.95rem; line-height: 1.8; }
+    .alert-filter { padding: 0.35rem 0.9rem; border: 2px solid #ede8e0; border-radius: 20px; background: white; font-size: 0.82rem; font-weight: 600; color: #8a7a6a; cursor: pointer; }
+    .alert-filter.active { border-color: #c47e2b; background: #fdf0e0; color: #6b4f2a; }
 
     /* ── MOBILE ──────────────────────────────────────────────── */
     @media (max-width: 720px) {
@@ -262,14 +264,13 @@
 </div>
 
 <div class="app-content">
-<nav>
-  <button class="active" onclick="showSection('home', this)"><i data-lucide="home"></i> בית</button>
+<nav id="main-nav" style="display:none">
+  <button onclick="goHome()" style="border-bottom-color:transparent"><i data-lucide="home"></i></button>
   <button onclick="showSection('alerts', this)" id="alerts-tab"><i data-lucide="bell"></i> התראות</button>
   <button onclick="showSection('clients', this)"><i data-lucide="users"></i> לקוחות</button>
   <button onclick="showSection('subscriptions', this)"><i data-lucide="credit-card"></i> מנויים</button>
   <button onclick="showSection('classes', this)"><i data-lucide="calendar"></i> שיעורים</button>
   <button onclick="showSection('registrations', this)"><i data-lucide="clipboard-list"></i> הרשמות</button>
-  <button id="notif-btn" onclick="enableNotifications()" style="margin-right:auto;border-bottom-color:transparent"><i data-lucide="bell-ring"></i></button>
 </nav>
 
 <main>
@@ -289,8 +290,7 @@
       <div class="home-card" onclick="navTo('clients')"><div class="hc-icon"><i data-lucide="users"></i></div><div class="hc-label">לקוחות</div></div>
       <div class="home-card" onclick="navTo('subscriptions')"><div class="hc-icon"><i data-lucide="credit-card"></i></div><div class="hc-label">מנויים</div></div>
       <div class="home-card" onclick="navTo('classes')"><div class="hc-icon"><i data-lucide="calendar"></i></div><div class="hc-label">שיעורים</div></div>
-      <div class="home-card" onclick="navTo('registrations')"><div class="hc-icon"><i data-lucide="clipboard-list"></i></div><div class="hc-label">הרשמות</div></div>
-      <div class="home-card" onclick="enableNotifications()"><div class="hc-icon"><i data-lucide="bell-ring"></i></div><div class="hc-label">התראות Push</div></div>
+      <div class="home-card" onclick="navTo('registrations')" style="grid-column:span 2;max-width:160px;margin:0 auto;width:100%"><div class="hc-icon"><i data-lucide="clipboard-list"></i></div><div class="hc-label">הרשמות</div></div>
     </div>
     <div class="home-links">
       <button class="btn-copy-link" id="home-copy-reg" onclick="copyLink('home-copy-reg','https://liran-yoga.vercel.app/register.html')" style="justify-content:center;width:100%"><i data-lucide="copy"></i> העתק קישור הרשמה למנוי</button>
@@ -302,6 +302,12 @@
   <div id="section-alerts" class="section">
     <div class="card">
       <h2>התראות ועדכונים</h2>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1rem">
+        <button class="alert-filter active" onclick="filterAlerts('all', this)">הכל</button>
+        <button class="alert-filter" onclick="filterAlerts('urgent', this)">הרשמות חדשות</button>
+        <button class="alert-filter" onclick="filterAlerts('expiring', this)">פקיעת מנוי</button>
+        <button class="alert-filter" onclick="filterAlerts('last', this)">שיעור אחרון</button>
+      </div>
       <div id="alerts-list" class="alerts-list"><div class="alerts-empty">טוען...</div></div>
     </div>
   </div>
@@ -440,7 +446,7 @@
     document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
     document.getElementById('section-' + name).classList.add('active');
     btn.classList.add('active');
-    document.querySelector('nav').style.display = name === 'home' ? 'none' : 'flex';
+    document.getElementById('main-nav').style.display = name === 'home' ? 'none' : 'flex';
     if (name === 'home') loadHome();
     if (name === 'alerts') loadAlerts();
     if (name === 'clients') loadClients();
@@ -468,6 +474,7 @@
   }
 
   async function loadAlerts() {
+    allAlerts = [];
     const today = new Date().toISOString().split('T')[0];
     const in7 = new Date(); in7.setDate(in7.getDate() + 7);
     const in7str = in7.toISOString().split('T')[0];
@@ -480,36 +487,57 @@
 
     const alerts = [];
 
-    pendingSubs.data?.forEach(s => alerts.push({
-      type: 'urgent', icon: 'user-plus', title: 'הרשמה חדשה — ממתינה לאישור תשלום',
+    pendingSubs.data?.forEach(s => allAlerts.push({
+      type: 'urgent', icon: 'user-plus', category: 'urgent',
+      title: 'הרשמה חדשה — ממתינה לאישור תשלום',
       body: `${s.clients?.full_name} נרשמ/ה למנוי "${s.subscription_types?.name}"`,
       phone: s.clients?.phone
     }));
 
-    expiring.data?.forEach(s => alerts.push({
-      type: 'warn', icon: 'clock', title: 'מנוי קרוב לפקיעה',
+    expiring.data?.forEach(s => allAlerts.push({
+      type: 'warn', icon: 'clock', category: 'expiring',
+      title: 'מנוי קרוב לפקיעה',
       body: `${s.clients?.full_name} — "${s.subscription_types?.name}" · פג ב-${fmtDate(s.expiry_date)} · נותרו ${s.classes_remaining} תרגולים`,
       phone: s.clients?.phone
     }));
 
-    lastClass.data?.forEach(s => alerts.push({
-      type: 'warn', icon: 'alert-triangle', title: 'נותר שיעור אחד בלבד',
+    lastClass.data?.forEach(s => allAlerts.push({
+      type: 'warn', icon: 'alert-triangle', category: 'last',
+      title: 'נותר שיעור אחד בלבד',
       body: `${s.clients?.full_name} — "${s.subscription_types?.name}" · תוקף עד ${fmtDate(s.expiry_date)}`,
       phone: s.clients?.phone
     }));
 
-    if (!alerts.length) {
-      document.getElementById('alerts-list').innerHTML = `<div class="alerts-empty"><i data-lucide="check-circle" style="width:32px;height:32px;stroke:#3a7d54;display:block;margin:0 auto 0.75rem"></i>הכל תקין — אין התראות כרגע</div>`;
-      lucide.createIcons();
-      return;
-    }
+    renderAlerts(allAlerts);
+  }
 
+  function goHome() {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+    document.getElementById('section-home').classList.add('active');
+    document.getElementById('main-nav').style.display = 'none';
+    loadHome();
+  }
+
+  let allAlerts = [];
+  function filterAlerts(type, btn) {
+    document.querySelectorAll('.alert-filter').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const filtered = type === 'all' ? allAlerts
+      : type === 'urgent' ? allAlerts.filter(a => a.category === 'urgent')
+      : type === 'expiring' ? allAlerts.filter(a => a.category === 'expiring')
+      : allAlerts.filter(a => a.category === 'last');
+    renderAlerts(filtered);
+  }
+
+  function renderAlerts(alerts) {
+    if (!alerts.length) {
+      document.getElementById('alerts-list').innerHTML = `<div class="alerts-empty"><i data-lucide="check-circle" style="width:32px;height:32px;stroke:#3a7d54;display:block;margin:0 auto 0.75rem"></i>אין התראות בקטגוריה זו</div>`;
+      lucide.createIcons(); return;
+    }
     document.getElementById('alerts-list').innerHTML = alerts.map(a => `
       <div class="alert-bubble ${a.type}">
-        <div class="alert-header">
-          <span class="alert-icon"><i data-lucide="${a.icon}" style="width:18px;height:18px;vertical-align:middle"></i></span>
-          <span class="alert-title">${a.title}</span>
-        </div>
+        <div class="alert-header"><span class="alert-icon"><i data-lucide="${a.icon}" style="width:18px;height:18px;vertical-align:middle"></i></span><span class="alert-title">${a.title}</span></div>
         <div class="alert-body">${a.body}</div>
         <div class="alert-actions">
           <button class="btn-alert btn-alert-copy" onclick="copyAlertPhone('${a.phone}', this)"><i data-lucide="copy" style="width:13px;height:13px;vertical-align:middle"></i> ${a.phone}</button>
@@ -865,7 +893,7 @@
 
   // Initial load
   pinCheck();
-  document.querySelector('nav').style.display = 'none';
+  document.getElementById('main-nav').style.display = 'none';
   loadHome();
   lucide.createIcons();
 </script>
