@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>ייבוא חד פעמי</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 3rem auto; padding: 1rem; background: #fdf6ee; color: #2d2a24; }
+    h1 { color: #6b4f2a; }
+    .log { background: white; border: 1px solid #ede8e0; border-radius: 8px; padding: 1rem; height: 400px; overflow-y: auto; font-size: 0.85rem; line-height: 1.8; }
+    .ok { color: #276749; } .skip { color: #c05621; } .err { color: #c53030; }
+    button { background: #6b4f2a; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-size: 1rem; cursor: pointer; margin-top: 1rem; }
+    button:disabled { background: #c0aa8e; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+<h1>ייבוא לקוחות חד-פעמי</h1>
+<p>לחצי על הכפתור — הלקוחות יכנסו ל-Supabase. לקוחות קיימים (לפי טלפון) ידולגו.</p>
+<button id="btn" onclick="runImport()">התחל ייבוא (35 לקוחות)</button>
+<div class="log" id="log"></div>
+
+<script>
+const { createClient } = supabase;
+const db = createClient(
+  'https://eznhndwhredmyokwrddd.supabase.co',
+  'sb_publishable_gljYa-F3UBsaPkFrbmwXpA_8aBCO36T'
+);
+
+const clients = [
+  { full_name: 'דנה יעיש',           phone: '050-2185880' },
+  { full_name: 'הילה לפיד',           phone: '055-6637320' },
+  { full_name: "אנג'ליקה פומנקו",     phone: '053-5304557' },
+  { full_name: 'שרית טובי',           phone: '052-3847843' },
+  { full_name: 'עטרה הרשברג',         phone: '054-2946816' },
+  { full_name: 'שרה הרשברג',          phone: '054-6197107' },
+  { full_name: 'גאיה משה',            phone: '050-6344190' },
+  { full_name: 'לאה טאייר',           phone: '052-9658265' },
+  { full_name: 'פמה הררי',            phone: '053-6203478' },
+  { full_name: 'ניר מעיין',           phone: '050-9626828' },
+  { full_name: 'רוני תור',            phone: '053-4290201' },
+  { full_name: 'נעמה עוזר',           phone: '050-2025150' },
+  { full_name: 'בטי גיטלמן',          phone: '052-8749003' },
+  { full_name: 'עלמה ביטון',          phone: '050-8923239' },
+  { full_name: 'אבישג אקוע',          phone: '050-9062556' },
+  { full_name: 'עמית קאופמן',         phone: '054-4295022' },
+  { full_name: 'אמבר אלוני',          phone: '050-9231236' },
+  { full_name: 'אלישבע וולף',         phone: '054-9535707' },
+  { full_name: 'אביבית זוקה',         phone: '054-8109077' },
+  { full_name: 'דינה נאות',           phone: '054-5664631' },
+  { full_name: 'יהל סיגל',            phone: '054-4533723' },
+  { full_name: 'ליה עובד',            phone: '053-6978205' },
+  { full_name: 'שובל מוזס',           phone: '052-5902300' },
+  { full_name: 'חן אברהם',            phone: '050-9867789' },
+  { full_name: 'לינוי אטיאס',         phone: '054-9041730' },
+  { full_name: 'איתמר עובד',          phone: '053-7335844' },
+  { full_name: 'נויה אברגיל',         phone: '053-7155944' },
+  { full_name: 'שלי הכט',             phone: '054-3951959' },
+  { full_name: 'אמרי בן חמו',         phone: '058-6994400' },
+  { full_name: 'ספיר לוי',            phone: '050-2057561' },
+  { full_name: 'רוני יטבת',           phone: '054-7840228' },
+  { full_name: 'נועם ניומן',          phone: '058-4003999' },
+  { full_name: 'שירה ימיני',          phone: '050-3264201' },
+  { full_name: 'גלי בלוך',            phone: '054-6395425' },
+  { full_name: 'אביב כהן קובלסקי',    phone: '058-7940754' },
+];
+
+function log(msg, cls) {
+  const div = document.getElementById('log');
+  div.innerHTML += `<div class="${cls}">${msg}</div>`;
+  div.scrollTop = div.scrollHeight;
+}
+
+async function runImport() {
+  const btn = document.getElementById('btn');
+  btn.disabled = true;
+  btn.textContent = 'מייבא...';
+
+  const { data: existing } = await db.from('clients').select('phone');
+  const existingPhones = new Set((existing || []).map(c => c.phone.replace(/[-\s]/g, '')));
+
+  let inserted = 0, skipped = 0;
+  for (const c of clients) {
+    const normalized = c.phone.replace(/[-\s]/g, '');
+    if (existingPhones.has(normalized)) {
+      log(`⟳ דולג (קיים): ${c.full_name} ${c.phone}`, 'skip');
+      skipped++;
+      continue;
+    }
+    const { error } = await db.from('clients').insert(c);
+    if (error) {
+      log(`✗ שגיאה: ${c.full_name} — ${error.message}`, 'err');
+    } else {
+      log(`✓ נוסף: ${c.full_name} ${c.phone}`, 'ok');
+      inserted++;
+    }
+  }
+
+  log(`━━━ סיום: ${inserted} נוספו, ${skipped} דולגו ━━━`, 'ok');
+  btn.textContent = 'הסתיים';
+}
+</script>
+</body>
+</html>

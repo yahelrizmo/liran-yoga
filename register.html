@@ -6,8 +6,8 @@
   <title>לירן יוגה — הרשמה</title>
   <meta property="og:title" content="לירן יוגה — הצטרפו אלינו">
   <meta property="og:description" content="בואו לתרגל — בחרו את המנוי המתאים לכם">
-  <meta property="og:image" content="https://liran-yoga.vercel.app/og-image.jpg">
-  <meta property="og:url" content="https://liran-yoga.vercel.app">
+  <meta property="og:image" content="https://liran-yoga.netlify.app/liran.jpg">
+  <meta property="og:url" content="https://liran-yoga.netlify.app">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -138,7 +138,7 @@
     .payment-section { display: none; }
     .payment-section.show { display: block; }
 
-    .bit-box {
+    .pay-box {
       background: white;
       border-radius: 14px;
       border: 2px solid #ede8e0;
@@ -146,21 +146,9 @@
       text-align: center;
       margin-bottom: 1rem;
     }
-    .bit-box h3 { color: #6b4f2a; font-size: 1.1rem; margin-bottom: 0.3rem; }
-    .bit-amount { font-size: 3rem; font-weight: 700; color: #c47e2b; margin: 0.5rem 0; }
-    .bit-phone {
-      font-size: 1.6rem;
-      font-weight: 700;
-      letter-spacing: 1px;
-      color: #2d2a24;
-      background: #fdf6ee;
-      border-radius: 10px;
-      padding: 0.6rem 1.2rem;
-      display: inline-block;
-      margin: 0.5rem 0 0.25rem;
-    }
-    .bit-label { font-size: 0.82rem; color: #8a7a6a; }
-    .bit-note {
+    .pay-box h3 { color: #6b4f2a; font-size: 1.1rem; margin-bottom: 0.3rem; }
+    .pay-amount { font-size: 3rem; font-weight: 700; color: #c47e2b; margin: 0.5rem 0; }
+    .pay-note {
       font-size: 0.83rem;
       color: #8a7a6a;
       line-height: 1.7;
@@ -168,6 +156,8 @@
       padding-top: 1rem;
       border-top: 1px solid #ede8e0;
     }
+    .btn-paybox { background: #0077ff; color: white; }
+    .btn-paybox:hover { background: #005ecc; }
 
     /* הצלחה */
     .success-section { display: none; text-align: center; padding: 1rem 0; }
@@ -216,19 +206,14 @@
       <button class="btn btn-main" id="submit-btn" onclick="submitRegistration()">המשך לתשלום</button>
     </div>
 
-    <!-- שלב 3: תשלום בBit -->
+    <!-- שלב 3: תשלום -->
     <div class="payment-section" id="payment-section">
-      <div class="bit-box">
-        <h3>תשלום דרך Bit</h3>
-        <div class="bit-amount">₪<span id="pay-amount"></span></div>
-        <div class="bit-label">העבירו למספר</div>
-        <div class="bit-phone">053-246-2667</div>
-        <div style="display:flex;gap:0.75rem;margin-top:1rem;flex-wrap:wrap;justify-content:center">
-          <button class="btn btn-main" id="copy-btn" onclick="copyPhone()" style="flex:1;min-width:130px">העתק מספר</button>
-          <a href="bit://" class="btn btn-main" style="flex:1;min-width:130px;text-decoration:none;text-align:center;background:#0f4c9e">פתח Bit</a>
-        </div>
-        <div class="bit-note">
-          לאחר התשלום — לחצו על הכפתור למטה.
+      <div class="pay-box">
+        <h3>תשלום דרך PayBox</h3>
+        <div class="pay-amount">₪<span id="pay-amount"></span></div>
+        <a id="paybox-btn" href="https://paybox.me/0532462667" target="_blank" class="btn btn-paybox" style="display:inline-block;text-decoration:none;margin-top:0.5rem">שלם דרך PayBox</a>
+        <div class="pay-note">
+          לאחר ביצוע התשלום — לחצו על הכפתור למטה.
         </div>
       </div>
       <button class="btn btn-green" onclick="confirmSent()">שלחתי את התשלום ✓</button>
@@ -236,7 +221,7 @@
 
     <!-- הצלחה -->
     <div class="success-section" id="success-section">
-      <div class="success-icon"><svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#6b4f2a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12"/><path d="M12 12C12 7 7 4 3 6c4 1 7 4 9 6"/><path d="M12 12c0-5 5-8 9-6-4 1-7 4-9 6"/></svg></div>
+      <div class="success-icon">🌿</div>
       <h2>תודה, <span id="success-name"></span>!</h2>
       <p>ההרשמה התקבלה.<br>נתראה על המזרן.</p>
     </div>
@@ -306,20 +291,6 @@
     document.getElementById('payment-section').classList.add('show');
   }
 
-  function setBitLink() {}
-
-  function copyPhone() {
-    navigator.clipboard.writeText('0532462667').then(() => {
-      const btn = document.getElementById('copy-btn');
-      btn.textContent = '✓ המספר הועתק!';
-      btn.style.background = '#3a7d54';
-      setTimeout(() => {
-        btn.textContent = '📋 העתיקו מספר לתשלום';
-        btn.style.background = '';
-      }, 3000);
-    });
-  }
-
   async function confirmSent() {
     const start = new Date();
     const expiry = new Date(start);
@@ -334,10 +305,15 @@
     });
 
     const name = document.getElementById('reg-name').value.trim();
-    fetch('/api/notify', {
+    fetch('https://onesignal.com/api/v1/notifications', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, plan: selectedPlan.name })
+      body: JSON.stringify({
+        app_id: '620d9e69-dc4a-4143-b007-50e74ae31e21',
+        included_segments: ['Total Subscriptions'],
+        headings: { he: 'הרשמה חדשה' },
+        contents: { he: `${name} נרשמ/ה למנוי ${selectedPlan.name} — ממתין לאישור תשלום` }
+      })
     });
 
     document.getElementById('payment-section').classList.remove('show');
