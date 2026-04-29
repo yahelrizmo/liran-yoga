@@ -138,6 +138,20 @@
     .btn-copy-link svg { width: 13px; height: 13px; stroke: white; }
     .btn-copy-link:hover { background: #a3641f; }
 
+    /* ── MODAL ───────────────────────────────────────────────── */
+    .modal-backdrop {
+      position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,0.45);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .modal-backdrop.hidden { display: none; }
+    .modal {
+      background: white; border-radius: 16px; padding: 1.75rem;
+      width: 90%; max-width: 460px; box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+    }
+    .modal h3 { color: #6b4f2a; margin-bottom: 1.25rem; font-size: 1.05rem; }
+    .modal-actions { display: flex; gap: 0.75rem; margin-top: 1.25rem; }
+
     /* ── MOBILE ──────────────────────────────────────────────── */
     @media (max-width: 720px) {
       body { flex-direction: column; height: auto; overflow: auto; }
@@ -155,6 +169,24 @@
   </style>
 </head>
 <body>
+
+<!-- EDIT CLIENT MODAL -->
+<div class="modal-backdrop hidden" id="edit-modal">
+  <div class="modal">
+    <h3>עריכת לקוח</h3>
+    <input type="hidden" id="edit-id">
+    <div class="form-grid">
+      <div><label>שם מלא *</label><input type="text" id="edit-name"></div>
+      <div><label>טלפון *</label><input type="tel" id="edit-phone"></div>
+      <div><label>אימייל</label><input type="email" id="edit-email"></div>
+      <div><label>הערות</label><input type="text" id="edit-notes"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="saveClient()">שמור</button>
+      <button class="btn" style="background:#e2e8f0" onclick="closeEditModal()">ביטול</button>
+    </div>
+  </div>
+</div>
 
 <!-- PIN SCREEN -->
 <div id="pin-screen">
@@ -226,6 +258,7 @@
       <h2>רשימת לקוחות</h2>
       <table>
         <thead><tr><th>שם</th><th>טלפון</th><th>אימייל</th><th>הערות</th><th>תאריך הצטרפות</th><th></th></tr></thead>
+
         <tbody id="clients-table"></tbody>
       </table>
     </div>
@@ -258,7 +291,7 @@
     <div class="link-row">
       <i data-lucide="link"></i>
       <span>קישור לשיעורים השבוע</span>
-      <button class="btn-copy-link" id="copy-schedule-btn" onclick="copyLink('copy-schedule-btn','https://liran-yoga.netlify.app/schedule.html')"><i data-lucide="copy"></i> העתק</button>
+      <button class="btn-copy-link" id="copy-schedule-btn" onclick="copyLink('copy-schedule-btn','https://liran-yoga.vercel.app/schedule.html')"><i data-lucide="copy"></i> העתק</button>
     </div>
     <div class="card">
       <h2>יצירת שיעור חדש</h2>
@@ -286,7 +319,7 @@
     <div class="link-row">
       <i data-lucide="link"></i>
       <span>קישור להרשמה למנוי</span>
-      <button class="btn-copy-link" id="copy-register-btn" onclick="copyLink('copy-register-btn','https://liran-yoga.netlify.app')"><i data-lucide="copy"></i> העתק</button>
+      <button class="btn-copy-link" id="copy-register-btn" onclick="copyLink('copy-register-btn','https://liran-yoga.vercel.app/register.html')"><i data-lucide="copy"></i> העתק</button>
     </div>
     <div class="card">
       <h2>רישום לקוח לשיעור</h2>
@@ -370,7 +403,10 @@
           <td>${c.email || '—'}</td>
           <td>${c.notes || '—'}</td>
           <td>${fmtDate(c.created_at)}</td>
-          <td><button class="btn btn-danger btn-sm" onclick="deleteClient(${c.id})">מחק</button></td>
+          <td style="display:flex;gap:0.4rem">
+            <button class="btn btn-sm" style="background:#e2e8f0" onclick="openEditModal(${c.id},'${c.full_name.replace(/'/g,"\\'")}','${c.phone}','${(c.email||'').replace(/'/g,"\\'")}','${(c.notes||'').replace(/'/g,"\\'")}')">עריכה</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteClient(${c.id})">מחק</button>
+          </td>
         </tr>`).join('')
       : '<tr><td colspan="6" class="empty">אין לקוחות עדיין</td></tr>';
   }
@@ -385,6 +421,33 @@
     if (error) return showMsg('שגיאה: ' + error.message, 'error');
     showMsg('✓ לקוח נוסף בהצלחה');
     ['client-name','client-phone','client-email','client-notes'].forEach(id => document.getElementById(id).value = '');
+    loadClients();
+  }
+
+  function openEditModal(id, name, phone, email, notes) {
+    document.getElementById('edit-id').value = id;
+    document.getElementById('edit-name').value = name;
+    document.getElementById('edit-phone').value = phone;
+    document.getElementById('edit-email').value = email;
+    document.getElementById('edit-notes').value = notes;
+    document.getElementById('edit-modal').classList.remove('hidden');
+  }
+
+  function closeEditModal() {
+    document.getElementById('edit-modal').classList.add('hidden');
+  }
+
+  async function saveClient() {
+    const id = document.getElementById('edit-id').value;
+    const name = document.getElementById('edit-name').value.trim();
+    const phone = document.getElementById('edit-phone').value.trim();
+    const email = document.getElementById('edit-email').value.trim();
+    const notes = document.getElementById('edit-notes').value.trim();
+    if (!name || !phone) return showMsg('שם וטלפון הם שדות חובה', 'error');
+    const { error } = await db.from('clients').update({ full_name: name, phone, email: email || null, notes: notes || null }).eq('id', id);
+    if (error) return showMsg('שגיאה: ' + error.message, 'error');
+    showMsg('✓ פרטי הלקוח עודכנו');
+    closeEditModal();
     loadClients();
   }
 
