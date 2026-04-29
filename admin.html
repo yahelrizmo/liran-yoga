@@ -153,18 +153,21 @@
     .modal-actions { display: flex; gap: 0.75rem; margin-top: 1.25rem; }
 
     /* ── HOME ────────────────────────────────────────────────── */
-    .home-greeting { font-size: 1.6rem; font-weight: 700; color: #6b4f2a; margin-bottom: 0.25rem; }
-    .home-date { font-size: 0.9rem; color: #8a7a6a; margin-bottom: 1.5rem; }
-    .home-nav { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    #section-home { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; min-height: calc(100vh - 2px); padding: 2rem 1rem; }
+    .home-greeting { font-size: 2rem; font-weight: 700; color: #6b4f2a; margin-bottom: 0.3rem; }
+    .home-date { font-size: 0.88rem; color: #8a7a6a; margin-bottom: 1.5rem; }
+    #section-home .stats { margin-bottom: 2rem; }
+    .home-nav { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.85rem; width: 100%; max-width: 420px; margin-bottom: 2rem; }
     .home-card {
-      background: white; border-radius: 14px; padding: 1.25rem 1rem;
+      background: white; border-radius: 14px; padding: 1.1rem 0.75rem;
       text-align: center; cursor: pointer; border: 2px solid #ede8e0;
       transition: border-color 0.2s, background 0.2s;
     }
     .home-card:hover { border-color: #c47e2b; background: #fdf6ee; }
     .home-card .hc-icon { margin-bottom: 0.4rem; }
-    .home-card .hc-icon svg { width: 28px; height: 28px; stroke: #c47e2b; }
-    .home-card .hc-label { font-size: 0.88rem; font-weight: 700; color: #6b4f2a; }
+    .home-card .hc-icon svg { width: 26px; height: 26px; stroke: #c47e2b; }
+    .home-card .hc-label { font-size: 0.82rem; font-weight: 700; color: #6b4f2a; }
+    .home-links { display: flex; flex-direction: column; gap: 0.6rem; width: 100%; max-width: 420px; }
 
     /* ── ALERTS ──────────────────────────────────────────────── */
     .alerts-list { display: flex; flex-direction: column; gap: 0.75rem; }
@@ -287,6 +290,11 @@
       <div class="home-card" onclick="navTo('subscriptions')"><div class="hc-icon"><i data-lucide="credit-card"></i></div><div class="hc-label">מנויים</div></div>
       <div class="home-card" onclick="navTo('classes')"><div class="hc-icon"><i data-lucide="calendar"></i></div><div class="hc-label">שיעורים</div></div>
       <div class="home-card" onclick="navTo('registrations')"><div class="hc-icon"><i data-lucide="clipboard-list"></i></div><div class="hc-label">הרשמות</div></div>
+      <div class="home-card" onclick="enableNotifications()"><div class="hc-icon"><i data-lucide="bell-ring"></i></div><div class="hc-label">התראות Push</div></div>
+    </div>
+    <div class="home-links">
+      <button class="btn-copy-link" id="home-copy-reg" onclick="copyLink('home-copy-reg','https://liran-yoga.vercel.app/register.html')" style="justify-content:center;width:100%"><i data-lucide="copy"></i> העתק קישור הרשמה למנוי</button>
+      <button class="btn-copy-link" id="home-copy-sch" onclick="copyLink('home-copy-sch','https://liran-yoga.vercel.app/schedule.html')" style="justify-content:center;width:100%"><i data-lucide="copy"></i> העתק קישור לשיעורים השבוע</button>
     </div>
   </div>
 
@@ -432,6 +440,7 @@
     document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
     document.getElementById('section-' + name).classList.add('active');
     btn.classList.add('active');
+    document.querySelector('nav').style.display = name === 'home' ? 'none' : 'flex';
     if (name === 'home') loadHome();
     if (name === 'alerts') loadAlerts();
     if (name === 'clients') loadClients();
@@ -856,6 +865,7 @@
 
   // Initial load
   pinCheck();
+  document.querySelector('nav').style.display = 'none';
   loadHome();
   lucide.createIcons();
 </script>
