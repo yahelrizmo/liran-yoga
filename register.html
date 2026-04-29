@@ -156,8 +156,6 @@
       padding-top: 1rem;
       border-top: 1px solid #ede8e0;
     }
-    .btn-paybox { background: #0077ff; color: white; }
-    .btn-paybox:hover { background: #005ecc; }
 
     /* הצלחה */
     .success-section { display: none; text-align: center; padding: 1rem 0; }
@@ -209,14 +207,14 @@
     <!-- שלב 3: תשלום -->
     <div class="payment-section" id="payment-section">
       <div class="pay-box">
-        <h3>בחרו אמצעי תשלום</h3>
+        <h3>תשלום דרך Bit</h3>
         <div class="pay-amount">₪<span id="pay-amount"></span></div>
-        <a href="https://paybox.me/0532462667" target="_blank" class="btn btn-paybox" style="display:block;text-decoration:none;margin-top:0.75rem">שלמו דרך PayBox</a>
-        <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #ede8e0">
-          <div style="font-size:0.82rem;color:#8a7a6a;margin-bottom:0.5rem">או העבירו דרך Bit למספר:</div>
-          <div style="display:flex;align-items:center;justify-content:center;gap:0.75rem;flex-wrap:wrap">
-            <span style="font-size:1.3rem;font-weight:700;letter-spacing:1px;color:#2d2a24">053-246-2667</span>
-            <button id="copy-bit-btn" onclick="copyBitPhone()" class="btn btn-main" style="width:auto;padding:0.45rem 1rem;font-size:0.85rem;margin-top:0">העתק מספר</button>
+        <a href="https://www.bitpay.co.il/app/me/3306D997-59E6-86DB-20A0-EC64E4B22CD8BC47" target="_blank" class="btn btn-main" style="display:block;text-decoration:none;margin-top:0.75rem">פתחו את Bit לתשלום</a>
+        <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #ede8e0;font-size:0.82rem;color:#8a7a6a">
+          אין Bit? העבירו למספר:
+          <div style="display:flex;align-items:center;justify-content:center;gap:0.75rem;margin-top:0.4rem;flex-wrap:wrap">
+            <span style="font-size:1.2rem;font-weight:700;color:#2d2a24">053-246-2667</span>
+            <button id="copy-bit-btn" onclick="copyBitPhone()" class="btn btn-main" style="width:auto;padding:0.4rem 0.9rem;font-size:0.82rem;margin-top:0">העתק</button>
           </div>
         </div>
         <div class="pay-note">לאחר ביצוע התשלום — לחצו על הכפתור למטה.</div>
