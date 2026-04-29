@@ -12,6 +12,7 @@
   <link rel="apple-touch-icon" href="icon-192.png">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   <script>
     window.OneSignalDeferred = window.OneSignalDeferred || [];
@@ -920,19 +921,6 @@
   }
 
   // ── BACKUP ────────────────────────────────────────────────
-  function buildExcel(sheets) {
-    const esc = v => String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    const cell = v => `<Cell><Data ss:Type="String">${esc(v)}</Data></Cell>`;
-    const xmlSheets = sheets.map(s => `
-      <Worksheet ss:Name="${esc(s.name)}">
-        <Table>
-          <Row>${s.headers.map(cell).join('')}</Row>
-          ${s.rows.map(r => `<Row>${r.map(cell).join('')}</Row>`).join('')}
-        </Table>
-      </Worksheet>`).join('');
-    return `<?xml version="1.0" encoding="UTF-8"?>\n<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">${xmlSheets}</Workbook>`;
-  }
-
   async function exportBackup() {
     const btn = document.getElementById('backup-btn');
     btn.textContent = 'מכין גיבוי...';
@@ -945,37 +933,30 @@
       db.from('class_registrations').select('*, clients(full_name,phone), classes(title,class_date,class_time)').order('created_at', { ascending: false }),
     ]);
 
-    const excel = buildExcel([
-      {
-        name: 'לקוחות',
-        headers: ['שם מלא','טלפון','אימייל','הערות','תאריך הצטרפות'],
-        rows: (clients.data||[]).map(c => [c.full_name, c.phone, c.email, c.notes, c.created_at?.split('T')[0]])
-      },
-      {
-        name: 'מנויים',
-        headers: ['לקוח','טלפון','סוג מנוי','תרגולים שנותרו','תאריך התחלה','תאריך פקיעה','פעיל'],
-        rows: (subscriptions.data||[]).map(s => [s.clients?.full_name, s.clients?.phone, s.subscription_types?.name, s.classes_remaining, s.start_date, s.expiry_date, s.is_active ? 'כן' : 'לא'])
-      },
-      {
-        name: 'שיעורים',
-        headers: ['כותרת','תאריך','שעה','קיבולת','הערות','הסתיים'],
-        rows: (classes.data||[]).map(c => [c.title, c.class_date, c.class_time?.slice(0,5), c.max_capacity, c.notes, c.completed ? 'כן' : 'לא'])
-      },
-      {
-        name: 'הרשמות',
-        headers: ['שיעור','תאריך שיעור','לקוח','טלפון'],
-        rows: (registrations.data||[]).map(r => [r.classes?.title, r.classes?.class_date, r.clients?.full_name, r.clients?.phone])
-      },
-    ]);
+    const wb = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+      ['שם מלא','טלפון','אימייל','הערות','תאריך הצטרפות'],
+      ...(clients.data||[]).map(c => [c.full_name, c.phone, c.email||'', c.notes||'', c.created_at?.split('T')[0]||''])
+    ]), 'לקוחות');
+
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+      ['לקוח','טלפון','סוג מנוי','תרגולים שנותרו','תאריך התחלה','תאריך פקיעה','פעיל'],
+      ...(subscriptions.data||[]).map(s => [s.clients?.full_name, s.clients?.phone, s.subscription_types?.name, s.classes_remaining, s.start_date, s.expiry_date, s.is_active ? 'כן' : 'לא'])
+    ]), 'מנויים');
+
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+      ['כותרת','תאריך','שעה','קיבולת','הערות','הסתיים'],
+      ...(classes.data||[]).map(c => [c.title, c.class_date, c.class_time?.slice(0,5)||'', c.max_capacity, c.notes||'', c.completed ? 'כן' : 'לא'])
+    ]), 'שיעורים');
+
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+      ['שיעור','תאריך שיעור','לקוח','טלפון'],
+      ...(registrations.data||[]).map(r => [r.classes?.title, r.classes?.class_date, r.clients?.full_name, r.clients?.phone])
+    ]), 'הרשמות');
 
     const dateStr = new Date().toISOString().split('T')[0];
-    const blob = new Blob([excel], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `גיבוי-לירן-יוגה-${dateStr}.xls`;
-    a.click();
-    URL.revokeObjectURL(url);
+    XLSX.writeFile(wb, `גיבוי-לירן-יוגה-${dateStr}.xlsx`);
 
     btn.innerHTML = '<i data-lucide="check"></i> גיבוי הורד בהצלחה';
     btn.style.borderColor = '#3a7d54';
