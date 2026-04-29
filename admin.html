@@ -152,6 +152,39 @@
     .modal h3 { color: #6b4f2a; margin-bottom: 1.25rem; font-size: 1.05rem; }
     .modal-actions { display: flex; gap: 0.75rem; margin-top: 1.25rem; }
 
+    /* ── HOME ────────────────────────────────────────────────── */
+    .home-greeting { font-size: 1.6rem; font-weight: 700; color: #6b4f2a; margin-bottom: 0.25rem; }
+    .home-date { font-size: 0.9rem; color: #8a7a6a; margin-bottom: 1.5rem; }
+    .home-nav { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .home-card {
+      background: white; border-radius: 14px; padding: 1.25rem 1rem;
+      text-align: center; cursor: pointer; border: 2px solid #ede8e0;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .home-card:hover { border-color: #c47e2b; background: #fdf6ee; }
+    .home-card .hc-icon { margin-bottom: 0.4rem; }
+    .home-card .hc-icon svg { width: 28px; height: 28px; stroke: #c47e2b; }
+    .home-card .hc-label { font-size: 0.88rem; font-weight: 700; color: #6b4f2a; }
+
+    /* ── ALERTS ──────────────────────────────────────────────── */
+    .alerts-list { display: flex; flex-direction: column; gap: 0.75rem; }
+    .alert-bubble {
+      background: white; border-radius: 14px; border: 2px solid #ede8e0;
+      padding: 1rem 1.2rem;
+    }
+    .alert-bubble.urgent { border-color: #fc8181; }
+    .alert-bubble.warn { border-color: #f6ad55; }
+    .alert-bubble.info { border-color: #76e4f7; }
+    .alert-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; }
+    .alert-icon { font-size: 1.3rem; }
+    .alert-title { font-weight: 700; font-size: 0.9rem; color: #2d2a24; }
+    .alert-body { font-size: 0.85rem; color: #718096; margin-bottom: 0.75rem; line-height: 1.5; }
+    .alert-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .btn-alert { padding: 0.35rem 0.8rem; border: none; border-radius: 7px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
+    .btn-alert-copy { background: #e2e8f0; color: #2d2a24; }
+    .btn-alert-wa { background: #25d366; color: white; }
+    .alerts-empty { text-align: center; color: #8a7a6a; padding: 3rem 1rem; font-size: 0.95rem; line-height: 1.8; }
+
     /* ── MOBILE ──────────────────────────────────────────────── */
     @media (max-width: 720px) {
       body { flex-direction: column; height: auto; overflow: auto; }
@@ -227,15 +260,43 @@
 
 <div class="app-content">
 <nav>
-  <button class="active" onclick="showSection('clients', this)"><i data-lucide="users"></i> לקוחות</button>
+  <button class="active" onclick="showSection('home', this)"><i data-lucide="home"></i> בית</button>
+  <button onclick="showSection('alerts', this)" id="alerts-tab"><i data-lucide="bell"></i> התראות</button>
+  <button onclick="showSection('clients', this)"><i data-lucide="users"></i> לקוחות</button>
   <button onclick="showSection('subscriptions', this)"><i data-lucide="credit-card"></i> מנויים</button>
   <button onclick="showSection('classes', this)"><i data-lucide="calendar"></i> שיעורים</button>
   <button onclick="showSection('registrations', this)"><i data-lucide="clipboard-list"></i> הרשמות</button>
-  <button id="notif-btn" onclick="enableNotifications()" style="margin-right:auto;border-bottom-color:transparent"><i data-lucide="bell"></i></button>
+  <button id="notif-btn" onclick="enableNotifications()" style="margin-right:auto;border-bottom-color:transparent"><i data-lucide="bell-ring"></i></button>
 </nav>
 
 <main>
   <div id="msg-global"></div>
+
+  <!-- HOME -->
+  <div id="section-home" class="section active">
+    <div class="home-greeting">שלום לירן</div>
+    <div class="home-date" id="home-date"></div>
+    <div class="stats" id="home-stats">
+      <div class="stat"><div class="stat-number" id="hs-clients">—</div><div class="stat-label">לקוחות</div></div>
+      <div class="stat"><div class="stat-number" id="hs-active">—</div><div class="stat-label">מנויים פעילים</div></div>
+      <div class="stat"><div class="stat-number" id="hs-pending">—</div><div class="stat-label">ממתינים לאישור</div></div>
+    </div>
+    <div class="home-nav">
+      <div class="home-card" onclick="navTo('alerts')"><div class="hc-icon"><i data-lucide="bell"></i></div><div class="hc-label">התראות</div></div>
+      <div class="home-card" onclick="navTo('clients')"><div class="hc-icon"><i data-lucide="users"></i></div><div class="hc-label">לקוחות</div></div>
+      <div class="home-card" onclick="navTo('subscriptions')"><div class="hc-icon"><i data-lucide="credit-card"></i></div><div class="hc-label">מנויים</div></div>
+      <div class="home-card" onclick="navTo('classes')"><div class="hc-icon"><i data-lucide="calendar"></i></div><div class="hc-label">שיעורים</div></div>
+      <div class="home-card" onclick="navTo('registrations')"><div class="hc-icon"><i data-lucide="clipboard-list"></i></div><div class="hc-label">הרשמות</div></div>
+    </div>
+  </div>
+
+  <!-- ALERTS -->
+  <div id="section-alerts" class="section">
+    <div class="card">
+      <h2>התראות ועדכונים</h2>
+      <div id="alerts-list" class="alerts-list"><div class="alerts-empty">טוען...</div></div>
+    </div>
+  </div>
 
   <!-- CLIENTS -->
   <div id="section-clients" class="section active">
@@ -371,10 +432,90 @@
     document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
     document.getElementById('section-' + name).classList.add('active');
     btn.classList.add('active');
+    if (name === 'home') loadHome();
+    if (name === 'alerts') loadAlerts();
     if (name === 'clients') loadClients();
     if (name === 'subscriptions') { loadClientsSelect('sub-client'); loadSubTypes(); loadSubscriptions(); }
     if (name === 'classes') loadClasses();
     if (name === 'registrations') { loadClassesSelect(); loadClientsSelect('reg-client', loadClientSubs); loadRegistrations(); }
+  }
+
+  function navTo(name) {
+    const btn = [...document.querySelectorAll('nav button')].find(b => b.onclick?.toString().includes(`'${name}'`));
+    if (btn) showSection(name, btn);
+  }
+
+  async function loadHome() {
+    document.getElementById('home-date').textContent = new Date().toLocaleDateString('he-IL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    const [{ count: clients }, { count: active }, { count: pending }] = await Promise.all([
+      db.from('clients').select('*', { count: 'exact', head: true }),
+      db.from('subscriptions').select('*', { count: 'exact', head: true }).eq('is_active', true),
+      db.from('subscriptions').select('*', { count: 'exact', head: true }).eq('is_active', false),
+    ]);
+    document.getElementById('hs-clients').textContent = clients ?? '—';
+    document.getElementById('hs-active').textContent = active ?? '—';
+    document.getElementById('hs-pending').textContent = pending ?? '—';
+    lucide.createIcons();
+  }
+
+  async function loadAlerts() {
+    const today = new Date().toISOString().split('T')[0];
+    const in7 = new Date(); in7.setDate(in7.getDate() + 7);
+    const in7str = in7.toISOString().split('T')[0];
+
+    const [pendingSubs, expiring, lastClass] = await Promise.all([
+      db.from('subscriptions').select('*, clients(full_name, phone), subscription_types(name)').eq('is_active', false).order('start_date', { ascending: false }),
+      db.from('subscriptions').select('*, clients(full_name, phone), subscription_types(name)').eq('is_active', true).gte('expiry_date', today).lte('expiry_date', in7str),
+      db.from('subscriptions').select('*, clients(full_name, phone), subscription_types(name)').eq('is_active', true).eq('classes_remaining', 1).gte('expiry_date', today),
+    ]);
+
+    const alerts = [];
+
+    pendingSubs.data?.forEach(s => alerts.push({
+      type: 'urgent', icon: 'user-plus', title: 'הרשמה חדשה — ממתינה לאישור תשלום',
+      body: `${s.clients?.full_name} נרשמ/ה למנוי "${s.subscription_types?.name}"`,
+      phone: s.clients?.phone
+    }));
+
+    expiring.data?.forEach(s => alerts.push({
+      type: 'warn', icon: 'clock', title: 'מנוי קרוב לפקיעה',
+      body: `${s.clients?.full_name} — "${s.subscription_types?.name}" · פג ב-${fmtDate(s.expiry_date)} · נותרו ${s.classes_remaining} תרגולים`,
+      phone: s.clients?.phone
+    }));
+
+    lastClass.data?.forEach(s => alerts.push({
+      type: 'warn', icon: 'alert-triangle', title: 'נותר שיעור אחד בלבד',
+      body: `${s.clients?.full_name} — "${s.subscription_types?.name}" · תוקף עד ${fmtDate(s.expiry_date)}`,
+      phone: s.clients?.phone
+    }));
+
+    if (!alerts.length) {
+      document.getElementById('alerts-list').innerHTML = `<div class="alerts-empty"><i data-lucide="check-circle" style="width:32px;height:32px;stroke:#3a7d54;display:block;margin:0 auto 0.75rem"></i>הכל תקין — אין התראות כרגע</div>`;
+      lucide.createIcons();
+      return;
+    }
+
+    document.getElementById('alerts-list').innerHTML = alerts.map(a => `
+      <div class="alert-bubble ${a.type}">
+        <div class="alert-header">
+          <span class="alert-icon"><i data-lucide="${a.icon}" style="width:18px;height:18px;vertical-align:middle"></i></span>
+          <span class="alert-title">${a.title}</span>
+        </div>
+        <div class="alert-body">${a.body}</div>
+        <div class="alert-actions">
+          <button class="btn-alert btn-alert-copy" onclick="copyAlertPhone('${a.phone}', this)"><i data-lucide="copy" style="width:13px;height:13px;vertical-align:middle"></i> ${a.phone}</button>
+          <a class="btn-alert btn-alert-wa" href="https://wa.me/972${a.phone?.replace(/^0/, '').replace(/-/g, '')}" target="_blank"><i data-lucide="message-circle" style="width:13px;height:13px;vertical-align:middle"></i> WhatsApp</a>
+        </div>
+      </div>`).join('');
+    lucide.createIcons();
+  }
+
+  function copyAlertPhone(phone, btn) {
+    navigator.clipboard.writeText(phone).then(() => {
+      const orig = btn.textContent;
+      btn.textContent = '✓ הועתק';
+      setTimeout(() => btn.textContent = orig, 2000);
+    });
   }
 
   function showMsg(text, type = 'success') {
@@ -403,8 +544,8 @@
           <td>${c.email || '—'}</td>
           <td>${c.notes || '—'}</td>
           <td>${fmtDate(c.created_at)}</td>
-          <td style="display:flex;gap:0.4rem">
-            <button class="btn btn-sm" style="background:#e2e8f0" onclick="openEditModal(${c.id},'${c.full_name.replace(/'/g,"\\'")}','${c.phone}','${(c.email||'').replace(/'/g,"\\'")}','${(c.notes||'').replace(/'/g,"\\'")}')">עריכה</button>
+          <td>
+            <button class="btn btn-sm" style="background:#e2e8f0;margin-left:0.3rem" onclick="openEditModal(${c.id},'${c.full_name.replace(/'/g,"\\'")}','${c.phone}','${(c.email||'').replace(/'/g,"\\'")}','${(c.notes||'').replace(/'/g,"\\'")}')">עריכה</button>
             <button class="btn btn-danger btn-sm" onclick="deleteClient(${c.id})">מחק</button>
           </td>
         </tr>`).join('')
@@ -715,7 +856,7 @@
 
   // Initial load
   pinCheck();
-  loadClients();
+  loadHome();
   lucide.createIcons();
 </script>
 </body>

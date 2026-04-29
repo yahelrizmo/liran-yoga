@@ -6,8 +6,8 @@
   <title>לירן יוגה — הרשמה</title>
   <meta property="og:title" content="לירן יוגה — הצטרפו אלינו">
   <meta property="og:description" content="בואו לתרגל — בחרו את המנוי המתאים לכם">
-  <meta property="og:image" content="https://liran-yoga.netlify.app/liran.jpg">
-  <meta property="og:url" content="https://liran-yoga.netlify.app">
+  <meta property="og:image" content="https://liran-yoga.vercel.app/og-image.jpg">
+  <meta property="og:url" content="https://liran-yoga.vercel.app/register.html">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -173,7 +173,7 @@
 <body>
 
 <div class="bg">
-  <img src="liran.jpg" alt="">
+  <img src="og-image.jpg" alt="">
 </div>
 
 <div class="page">
@@ -209,12 +209,17 @@
     <!-- שלב 3: תשלום -->
     <div class="payment-section" id="payment-section">
       <div class="pay-box">
-        <h3>תשלום דרך PayBox</h3>
+        <h3>בחרו אמצעי תשלום</h3>
         <div class="pay-amount">₪<span id="pay-amount"></span></div>
-        <a id="paybox-btn" href="https://paybox.me/0532462667" target="_blank" class="btn btn-paybox" style="display:inline-block;text-decoration:none;margin-top:0.5rem">שלם דרך PayBox</a>
-        <div class="pay-note">
-          לאחר ביצוע התשלום — לחצו על הכפתור למטה.
+        <a href="https://paybox.me/0532462667" target="_blank" class="btn btn-paybox" style="display:block;text-decoration:none;margin-top:0.75rem">שלמו דרך PayBox</a>
+        <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #ede8e0">
+          <div style="font-size:0.82rem;color:#8a7a6a;margin-bottom:0.5rem">או העבירו דרך Bit למספר:</div>
+          <div style="display:flex;align-items:center;justify-content:center;gap:0.75rem;flex-wrap:wrap">
+            <span style="font-size:1.3rem;font-weight:700;letter-spacing:1px;color:#2d2a24">053-246-2667</span>
+            <button id="copy-bit-btn" onclick="copyBitPhone()" class="btn btn-main" style="width:auto;padding:0.45rem 1rem;font-size:0.85rem;margin-top:0">העתק מספר</button>
+          </div>
         </div>
+        <div class="pay-note">לאחר ביצוע התשלום — לחצו על הכפתור למטה.</div>
       </div>
       <button class="btn btn-green" onclick="confirmSent()">שלחתי את התשלום ✓</button>
     </div>
@@ -289,6 +294,15 @@
     document.getElementById('pay-amount').textContent = selectedPlan.price;
     setBitLink();
     document.getElementById('payment-section').classList.add('show');
+  }
+
+  function copyBitPhone() {
+    navigator.clipboard.writeText('0532462667').then(() => {
+      const btn = document.getElementById('copy-bit-btn');
+      btn.textContent = '✓ הועתק';
+      btn.style.background = '#3a7d54';
+      setTimeout(() => { btn.textContent = 'העתק מספר'; btn.style.background = ''; }, 2500);
+    });
   }
 
   async function confirmSent() {
