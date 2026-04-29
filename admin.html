@@ -190,6 +190,11 @@
     .alert-filter { padding: 0.35rem 0.9rem; border: 2px solid #ede8e0; border-radius: 20px; background: white; font-size: 0.82rem; font-weight: 600; color: #8a7a6a; cursor: pointer; }
     .alert-filter.active { border-color: #c47e2b; background: #fdf0e0; color: #6b4f2a; }
 
+    .search-input { width: 100%; padding: 0.6rem 0.9rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem; margin-bottom: 1rem; font-family: inherit; background: white; }
+    .search-input:focus { outline: none; border-color: #c47e2b; }
+    #section-home .stats { grid-template-columns: repeat(2, 1fr); }
+    #section-home .stats .stat:last-child { grid-column: span 2; max-width: 200px; margin: 0 auto; width: 100%; }
+
     /* ── MOBILE ──────────────────────────────────────────────── */
     @media (max-width: 720px) {
       body { flex-direction: column; height: auto; overflow: auto; }
@@ -302,6 +307,7 @@
   <div id="section-alerts" class="section">
     <div class="card">
       <h2>התראות ועדכונים</h2>
+      <input type="text" class="search-input" id="alerts-search" placeholder="חיפוש לפי שם לקוח..." oninput="filterAlerts(null, null)">
       <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1rem">
         <button class="alert-filter active" onclick="filterAlerts('all', this)">הכל</button>
         <button class="alert-filter" onclick="filterAlerts('urgent', this)">הרשמות חדשות</button>
@@ -331,9 +337,9 @@
 
     <div class="card">
       <h2>רשימת לקוחות</h2>
+      <input type="text" class="search-input" id="clients-search" placeholder="חיפוש לפי שם או טלפון..." oninput="liveSearch('clients-search','clients-table')">
       <table>
         <thead><tr><th>שם</th><th>טלפון</th><th>אימייל</th><th>הערות</th><th>תאריך הצטרפות</th><th></th></tr></thead>
-
         <tbody id="clients-table"></tbody>
       </table>
     </div>
@@ -354,6 +360,7 @@
 
     <div class="card">
       <h2>מנויים פעילים</h2>
+      <input type="text" class="search-input" id="subs-search" placeholder="חיפוש לפי שם לקוח או טלפון..." oninput="liveSearch('subs-search','subscriptions-table')">
       <table>
         <thead><tr><th>לקוח</th><th>סוג מנוי</th><th>תרגולים שנותרו</th><th>תאריך פקיעה</th><th>סטטוס</th><th>עריכה</th></tr></thead>
         <tbody id="subscriptions-table"></tbody>
@@ -382,6 +389,7 @@
 
     <div class="card">
       <h2>שיעורים</h2>
+      <input type="text" class="search-input" id="classes-search" placeholder="חיפוש לפי כותרת או תאריך..." oninput="liveSearch('classes-search','classes-table')">
       <table>
         <thead><tr><th>כותרת</th><th>תאריך</th><th>שעה</th><th>קיבולת</th><th>הערות</th><th></th></tr></thead>
         <tbody id="classes-table"></tbody>
@@ -408,6 +416,7 @@
 
     <div class="card">
       <h2>כל ההרשמות</h2>
+      <input type="text" class="search-input" id="regs-search" placeholder="חיפוש לפי שם, טלפון או תאריך..." oninput="liveSearch('regs-search','registrations-table')">
       <table>
         <thead><tr><th>שיעור</th><th>תאריך</th><th>שעה</th><th>לקוח</th><th>טלפון</th><th>מנוי</th><th></th></tr></thead>
         <tbody id="registrations-table"></tbody>
@@ -475,6 +484,10 @@
 
   async function loadAlerts() {
     allAlerts = [];
+    alertFilter = 'all';
+    const searchEl = document.getElementById('alerts-search');
+    if (searchEl) searchEl.value = '';
+    document.querySelectorAll('.alert-filter').forEach((b, i) => b.classList.toggle('active', i === 0));
     const today = new Date().toISOString().split('T')[0];
     const in7 = new Date(); in7.setDate(in7.getDate() + 7);
     const in7str = in7.toISOString().split('T')[0];
@@ -520,14 +533,25 @@
   }
 
   let allAlerts = [];
+  let alertFilter = 'all';
+
   function filterAlerts(type, btn) {
-    document.querySelectorAll('.alert-filter').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    const filtered = type === 'all' ? allAlerts
-      : type === 'urgent' ? allAlerts.filter(a => a.category === 'urgent')
-      : type === 'expiring' ? allAlerts.filter(a => a.category === 'expiring')
-      : allAlerts.filter(a => a.category === 'last');
+    if (btn) {
+      document.querySelectorAll('.alert-filter').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      alertFilter = type;
+    }
+    const q = (document.getElementById('alerts-search')?.value || '').trim().toLowerCase();
+    let filtered = alertFilter === 'all' ? allAlerts : allAlerts.filter(a => a.category === alertFilter);
+    if (q) filtered = filtered.filter(a => (a.body + ' ' + a.title).toLowerCase().includes(q));
     renderAlerts(filtered);
+  }
+
+  function liveSearch(inputId, tableBodyId) {
+    const q = (document.getElementById(inputId)?.value || '').trim().toLowerCase();
+    document.querySelectorAll('#' + tableBodyId + ' tr').forEach(tr => {
+      tr.style.display = !q || tr.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
   }
 
   function renderAlerts(alerts) {
