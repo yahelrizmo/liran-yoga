@@ -201,6 +201,19 @@
     #section-home .stats { grid-template-columns: repeat(2, 1fr); }
     #section-home .stats .stat:last-child { grid-column: span 2; max-width: 200px; margin: 0 auto; width: 100%; }
 
+    /* ── CLASS GROUPS ───────────────────────────────────────── */
+    .class-group { background: white; border-radius: 12px; border: 1px solid #ede8e0; margin-bottom: 0.75rem; overflow: hidden; }
+    .class-group-header { padding: 1rem 1.2rem; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; transition: background 0.2s; }
+    .class-group-header:hover { background: #fdf6ee; }
+    .class-group-title { font-weight: 700; font-size: 0.95rem; color: #2d2a24; }
+    .class-group-meta { font-size: 0.82rem; color: #8a7a6a; margin-top: 0.2rem; }
+    .class-group-count { font-size: 0.9rem; font-weight: 700; color: #c47e2b; margin-right: auto; white-space: nowrap; }
+    .class-group-count.full { color: #e53e3e; }
+    .class-group-body { border-top: 1px solid #ede8e0; display: none; }
+    .class-group-body.open { display: block; }
+    .class-group-body table { margin: 0; }
+    .class-group-body th { background: #fdf6ee; }
+
     /* ── MOBILE ──────────────────────────────────────────────── */
     @media (max-width: 720px) {
       body { flex-direction: column; height: auto; overflow: auto; }
@@ -422,12 +435,8 @@
     </div>
 
     <div class="card">
-      <h2>כל ההרשמות</h2>
-      <input type="text" class="search-input" id="regs-search" placeholder="חיפוש לפי שם, טלפון או תאריך..." oninput="liveSearch('regs-search','registrations-table')">
-      <table>
-        <thead><tr><th>שיעור</th><th>תאריך</th><th>שעה</th><th>לקוח</th><th>טלפון</th><th>מנוי</th><th></th></tr></thead>
-        <tbody id="registrations-table"></tbody>
-      </table>
+      <h2>הרשמות לפי שיעורים</h2>
+      <div id="registrations-list"><div class="empty">טוען...</div></div>
     </div>
   </div>
 </main>
@@ -862,27 +871,69 @@
     loadRegistrations();
   }
 
-  async function removeRegistration(id) {
+  async function removeRegistration(id, classId) {
     if (!confirm('להסיר הרשמה זו?')) return;
     await db.from('class_registrations').delete().eq('id', id);
-    loadRegistrations();
+    loadRegistrations(classId);
   }
 
-  async function loadRegistrations() {
-    const { data } = await db.from('class_registrations')
-      .select('*, clients(full_name, phone), classes(title, class_date, class_time), subscriptions(subscription_types(name))')
-      .order('created_at', { ascending: false });
-    document.getElementById('registrations-table').innerHTML = data?.length
-      ? data.map(r => `<tr>
-          <td><strong>${r.classes?.title}</strong></td>
-          <td>${fmtDateWithDay(r.classes?.class_date)}</td>
-          <td>${r.classes?.class_time?.slice(0,5)}</td>
-          <td>${r.clients?.full_name}</td>
-          <td><a href="tel:${r.clients?.phone}">${r.clients?.phone}</a></td>
-          <td>${r.subscriptions?.subscription_types?.name}</td>
-          <td><button class="btn btn-danger btn-sm" onclick="removeRegistration(${r.id})">הסר</button></td>
-        </tr>`).join('')
-      : '<tr><td colspan="7" class="empty">אין הרשמות</td></tr>';
+  async function loadRegistrations(keepOpenId = null) {
+    const { data: classes } = await db.from('classes').select('*').order('class_date').order('class_time');
+    if (!classes?.length) {
+      document.getElementById('registrations-list').innerHTML = '<div class="empty">אין שיעורים</div>';
+      return;
+    }
+    const classIds = classes.map(c => c.id);
+    const { data: allRegs } = await db.from('class_registrations').select('class_id').in('class_id', classIds);
+    const counts = {};
+    allRegs?.forEach(r => { counts[r.class_id] = (counts[r.class_id] || 0) + 1; });
+
+    document.getElementById('registrations-list').innerHTML = classes.map(c => {
+      const count = counts[c.id] || 0;
+      const isFull = count >= c.max_capacity;
+      return `
+        <div class="class-group">
+          <div class="class-group-header" onclick="toggleClassRegs(${c.id}, this)">
+            <div style="flex:1">
+              <div class="class-group-title">${c.title}${c.completed ? ' <span class="badge badge-green" style="font-size:0.7rem">הסתיים</span>' : ''}</div>
+              <div class="class-group-meta">${fmtDateWithDay(c.class_date)} · ${c.class_time?.slice(0,5)}</div>
+            </div>
+            <div class="class-group-count${isFull ? ' full' : ''}">${count} / ${c.max_capacity} רשומים</div>
+            <i data-lucide="chevron-down" id="chev-${c.id}" style="width:18px;height:18px;stroke:#8a7a6a;transition:transform 0.2s;flex-shrink:0"></i>
+          </div>
+          <div class="class-group-body" id="cgb-${c.id}"></div>
+        </div>`;
+    }).join('');
+    lucide.createIcons();
+    if (keepOpenId) toggleClassRegs(keepOpenId, null);
+  }
+
+  async function toggleClassRegs(classId, headerEl) {
+    const body = document.getElementById('cgb-' + classId);
+    const chev = document.getElementById('chev-' + classId);
+    const isOpen = body.classList.contains('open');
+    if (isOpen) {
+      body.classList.remove('open');
+      if (chev) chev.style.transform = '';
+      return;
+    }
+    body.classList.add('open');
+    if (chev) chev.style.transform = 'rotate(180deg)';
+    body.innerHTML = '<div class="empty" style="padding:1rem">טוען...</div>';
+    const { data: regs } = await db.from('class_registrations')
+      .select('*, clients(full_name, phone), subscriptions(subscription_types(name))')
+      .eq('class_id', classId);
+    body.innerHTML = regs?.length
+      ? `<table>
+          <thead><tr><th>לקוח</th><th>טלפון</th><th>מנוי</th><th></th></tr></thead>
+          <tbody>${regs.map(r => `<tr>
+            <td><strong>${r.clients?.full_name}</strong></td>
+            <td><a href="tel:${r.clients?.phone}">${r.clients?.phone}</a></td>
+            <td>${r.subscriptions?.subscription_types?.name || '—'}</td>
+            <td><button class="btn btn-danger btn-sm" onclick="removeRegistration(${r.id}, ${classId})">הסר</button></td>
+          </tr>`).join('')}</tbody>
+        </table>`
+      : '<div class="empty" style="padding:1rem">אין רשומים לשיעור זה</div>';
   }
 
   // ── PIN ────────────────────────────────────────────────────
