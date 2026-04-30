@@ -446,6 +446,8 @@
 
   function todayStr() { return new Date().toISOString().split('T')[0]; }
   function fmtDate(d) { return d ? new Date(d).toLocaleDateString('he-IL') : ''; }
+  const _days = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+  function fmtDateWithDay(d) { if (!d) return ''; const dt = new Date(d); return `יום ${_days[dt.getDay()]}, ${dt.toLocaleDateString('he-IL')}`; }
 
   async function enableNotifications() {
     window.OneSignalDeferred = window.OneSignalDeferred || [];
@@ -768,7 +770,7 @@
     document.getElementById('classes-table').innerHTML = data?.length
       ? data.map(c => `<tr style="${c.completed ? 'opacity:0.55' : ''}">
           <td><strong>${c.title}</strong></td>
-          <td>${fmtDate(c.class_date)}</td>
+          <td>${fmtDateWithDay(c.class_date)}</td>
           <td>${c.class_time?.slice(0,5)}</td>
           <td>${c.max_capacity}</td>
           <td>${c.notes || '—'}</td>
@@ -829,7 +831,7 @@
   async function loadClassesSelect() {
     const { data } = await db.from('classes').select('*').order('class_date').order('class_time');
     document.getElementById('reg-class').innerHTML = data?.map(c =>
-      `<option value="${c.id}">${c.title} — ${fmtDate(c.class_date)} ${c.class_time?.slice(0,5)}</option>`
+      `<option value="${c.id}">${c.title} — ${fmtDateWithDay(c.class_date)} ${c.class_time?.slice(0,5)}</option>`
     ).join('') || '<option>אין שיעורים</option>';
   }
 
@@ -873,7 +875,7 @@
     document.getElementById('registrations-table').innerHTML = data?.length
       ? data.map(r => `<tr>
           <td><strong>${r.classes?.title}</strong></td>
-          <td>${fmtDate(r.classes?.class_date)}</td>
+          <td>${fmtDateWithDay(r.classes?.class_date)}</td>
           <td>${r.classes?.class_time?.slice(0,5)}</td>
           <td>${r.clients?.full_name}</td>
           <td><a href="tel:${r.clients?.phone}">${r.clients?.phone}</a></td>
