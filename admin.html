@@ -851,11 +851,11 @@
     const clientId = document.getElementById('reg-client').value;
     const subId = document.getElementById('reg-subscription').value;
     if (!classId || !clientId || !subId) return showMsg('נא למלא את כל השדות', 'error');
+    const { data: exists } = await db.from('class_registrations')
+      .select('id').eq('client_id', +clientId).eq('class_id', +classId).maybeSingle();
+    if (exists) return showMsg('הלקוח כבר רשום לשיעור זה', 'error');
     const { error } = await db.from('class_registrations').insert({ client_id: +clientId, class_id: +classId, subscription_id: +subId });
-    if (error) {
-      if (error.code === '23505') return showMsg('הלקוח כבר רשום לשיעור זה', 'error');
-      return showMsg('שגיאה: ' + error.message, 'error');
-    }
+    if (error) return showMsg('שגיאה: ' + error.message, 'error');
     showMsg('✓ לקוח נרשם לשיעור בהצלחה — הניכוי יתבצע בסיום השיעור');
     loadRegistrations();
   }

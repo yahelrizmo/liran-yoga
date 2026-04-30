@@ -201,6 +201,12 @@
         <label>אימייל (אופציונלי)</label>
         <input type="email" id="reg-email" placeholder="mail@example.com">
       </div>
+      <div class="form-group" style="margin-top:1.2rem;background:#f9f5ef;border-radius:12px;padding:1rem 1.1rem;border:2px solid #ede8e0" id="health-box">
+        <label style="display:flex;align-items:flex-start;gap:0.75rem;cursor:pointer;font-size:0.88rem;color:#2d2a24;font-weight:400">
+          <input type="checkbox" id="health-check" style="width:20px;height:20px;flex-shrink:0;margin-top:0.1rem;accent-color:#6b4f2a;cursor:pointer">
+          <span>אני מצהיר/ה כי אני בריא/ה ואין לי מניעה רפואית לעסוק בפעילות גופנית. אני מודע/ת לכך שהתרגול נעשה על אחריותי המלאה.</span>
+        </label>
+      </div>
       <button class="btn btn-main" id="submit-btn" onclick="submitRegistration()">המשך לתשלום</button>
     </div>
 
@@ -209,7 +215,7 @@
       <div class="pay-box">
         <h3>תשלום דרך Bit</h3>
         <div class="pay-amount">₪<span id="pay-amount"></span></div>
-        <a href="https://www.bitpay.co.il/app/me/3306D997-59E6-86DB-20A0-EC64E4B22CD8BC47" target="_blank" class="btn btn-main" style="display:block;text-decoration:none;margin-top:0.75rem">פתחו את Bit לתשלום</a>
+        <a href="https://www.bitpay.co.il/app/me/AA88B37B-CCD9-809C-A819-CA949304346C4DA8" target="_blank" class="btn btn-main" style="display:block;text-decoration:none;margin-top:0.75rem">פתחו את Bit לתשלום</a>
         <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #ede8e0;font-size:0.82rem;color:#8a7a6a">
           אין Bit? העבירו למספר:
           <div style="display:flex;align-items:center;justify-content:center;gap:0.75rem;margin-top:0.4rem;flex-wrap:wrap">
@@ -271,6 +277,7 @@
     const phone = document.getElementById('reg-phone').value.trim();
     const email = document.getElementById('reg-email').value.trim();
     if (!name || !phone) return showMsg('נא למלא שם וטלפון');
+    if (!document.getElementById('health-check').checked) return showMsg('נא לאשר את הצהרת הבריאות');
 
     const btn = document.getElementById('submit-btn');
     btn.disabled = true;

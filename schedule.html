@@ -153,7 +153,7 @@
     document.getElementById('sub-badge').innerHTML = `
       <div>שלום <strong>${client.full_name}</strong> 👋</div>
       <div style="margin-top:0.4rem">מנוי: <strong>${activeSub.subscription_types?.name}</strong></div>
-      <div style="margin-top:0.2rem">נותרו: <span class="remaining">${activeSub.classes_remaining}</span> תרגולים</div>
+      <div style="margin-top:0.2rem">נותרו: <span class="remaining">${activeSub.classes_remaining}</span> תרגולים · תוקף עד ${new Date(activeSub.expiry_date).toLocaleDateString('he-IL')}</div>
     `;
 
     document.getElementById('step-phone').classList.add('hidden');
