@@ -22,7 +22,7 @@
   </script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Segoe UI', Arial, sans-serif; background: #fdf6ee; color: #2d2a24; display: flex; height: 100vh; overflow: hidden; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #e8f4ef; color: #2d2a24; display: flex; height: 100vh; overflow: hidden; }
 
     .sidebar {
       width: 300px;
@@ -52,10 +52,10 @@
 
     .app-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 
-    nav { background: white; border-bottom: 2px solid #ede8e0; display: flex; flex-shrink: 0; }
-    nav button { padding: 0.85rem 1.3rem; border: none; background: none; cursor: pointer; font-size: 0.88rem; color: #8a7a6a; border-bottom: 3px solid transparent; display: flex; align-items: center; gap: 0.4rem; }
-    nav button.active { color: #6b4f2a; border-bottom-color: #c47e2b; font-weight: 600; }
-    nav button:hover { background: #fdf6ee; }
+    nav { background: white; border-bottom: 2px solid #b8d5c2; display: flex; flex-shrink: 0; }
+    nav button { padding: 0.85rem 1.3rem; border: none; background: none; cursor: pointer; font-size: 0.88rem; color: #6a8a7a; border-bottom: 3px solid transparent; display: flex; align-items: center; gap: 0.4rem; }
+    nav button.active { color: #2d2a24; border-bottom-color: #2d5a44; font-weight: 600; }
+    nav button:hover { background: #e8f4ef; }
     nav button svg { width: 16px; height: 16px; stroke-width: 1.8; }
     .nav-badge { background: #e53e3e; color: white; font-size: 0.65rem; font-weight: 700; border-radius: 50%; min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; padding: 0 3px; }
     .hc-badge { position: absolute; top: 8px; left: 8px; background: #e53e3e; color: white; font-size: 0.65rem; font-weight: 700; border-radius: 50%; min-width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; padding: 0 3px; }
@@ -65,24 +65,24 @@
     .section { display: none; }
     .section.active { display: block; }
 
-    .card { background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,0.08); border: 1px solid #ede8e0; }
-    h2 { font-size: 1.15rem; margin-bottom: 1rem; color: #6b4f2a; }
+    .card { background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,0.08); border: 1px solid #b8d5c2; }
+    h2 { font-size: 1.15rem; margin-bottom: 1rem; color: #2d2a24; }
 
     .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 1rem; }
-    label { display: block; font-size: 0.85rem; color: #718096; margin-bottom: 0.25rem; }
-    input, select, textarea { width: 100%; padding: 0.6rem 0.8rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; }
-    input:focus, select:focus { outline: none; border-color: #c47e2b; }
+    label { display: block; font-size: 0.85rem; color: #5a7a6a; margin-bottom: 0.25rem; }
+    input, select, textarea { width: 100%; padding: 0.6rem 0.8rem; border: 1px solid #b8d5c2; border-radius: 8px; font-size: 0.95rem; }
+    input:focus, select:focus { outline: none; border-color: #2d5a44; }
 
     .btn { padding: 0.6rem 1.2rem; border: none; border-radius: 8px; cursor: pointer; font-size: 0.95rem; font-weight: 600; }
-    .btn-primary { background: #6b4f2a; color: white; }
-    .btn-primary:hover { background: #4e3720; }
+    .btn-primary { background: #2d2a24; color: white; }
+    .btn-primary:hover { background: #1a1814; }
     .btn-danger { background: #e53e3e; color: white; }
     .btn-sm { padding: 0.3rem 0.7rem; font-size: 0.8rem; }
 
     table { width: 100%; border-collapse: collapse; }
-    th { background: #fdf6ee; padding: 0.75rem; text-align: right; font-size: 0.85rem; color: #8a7a6a; border-bottom: 2px solid #ede8e0; }
-    td { padding: 0.75rem; border-bottom: 1px solid #f5ede0; font-size: 0.9rem; }
-    tr:hover td { background: #fdf6ee; }
+    th { background: #e8f4ef; padding: 0.75rem; text-align: right; font-size: 0.85rem; color: #2d5a44; border-bottom: 2px solid #b8d5c2; }
+    td { padding: 0.75rem; border-bottom: 1px solid #d4eade; font-size: 0.9rem; }
+    tr:hover td { background: #e8f4ef; }
 
     .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
     .badge-green { background: #c6f6d5; color: #276749; }
@@ -90,30 +90,30 @@
     .badge-red { background: #fed7d7; color: #c53030; }
 
     .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
-    .stat { background: white; border-radius: 12px; padding: 1rem; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    .stat-number { font-size: 2rem; font-weight: 900; color: #c47e2b; }
-    .stat-label { font-size: 0.8rem; color: #718096; margin-top: 0.25rem; }
+    .stat { background: white; border-radius: 12px; padding: 1rem; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border: 1px solid #b8d5c2; }
+    .stat-number { font-size: 2rem; font-weight: 900; color: #2d5a44; }
+    .stat-label { font-size: 0.8rem; color: #6a8a7a; margin-top: 0.25rem; }
 
     .msg { padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-weight: 600; }
     .msg-success { background: #c6f6d5; color: #276749; }
     .msg-error { background: #fed7d7; color: #c53030; }
 
-    .empty { text-align: center; color: #718096; padding: 2rem; }
+    .empty { text-align: center; color: #6a8a7a; padding: 2rem; }
 
     /* ── PIN SCREEN ──────────────────────────────────────────── */
     #pin-screen {
       position: fixed; inset: 0; z-index: 9999;
-      background: #fdf6ee;
+      background: #e8f4ef;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       gap: 1.5rem;
     }
     #pin-screen.hidden { display: none; }
     .pin-logo { text-align: center; }
-    .pin-logo h1 { font-size: 2rem; font-weight: 700; color: #6b4f2a; }
-    .pin-logo p { color: #8a7a6a; font-size: 0.9rem; margin-top: 0.3rem; }
+    .pin-logo h1 { font-size: 2rem; font-weight: 700; color: #2d2a24; }
+    .pin-logo p { color: #6a8a7a; font-size: 0.9rem; margin-top: 0.3rem; }
     .pin-dots { display: flex; gap: 0.75rem; justify-content: center; }
-    .pin-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #c47e2b; background: transparent; transition: background 0.15s; }
-    .pin-dot.filled { background: #c47e2b; }
+    .pin-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #2d5a44; background: transparent; transition: background 0.15s; }
+    .pin-dot.filled { background: #2d5a44; }
     .pin-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; width: 240px; }
     .pin-key {
       padding: 1rem; border: none; border-radius: 12px;
@@ -121,25 +121,25 @@
       box-shadow: 0 1px 3px rgba(0,0,0,0.12); cursor: pointer;
       transition: background 0.15s;
     }
-    .pin-key:active { background: #ede8e0; }
+    .pin-key:active { background: #b8d5c2; }
     .pin-key.wide { grid-column: span 2; }
     .pin-error { color: #c53030; font-size: 0.85rem; min-height: 1.2em; text-align: center; }
 
     /* ── LINK ROW ────────────────────────────────────────────── */
     .link-row {
       display: flex; align-items: center; gap: 0.6rem;
-      background: #fdf6ee; border: 1px solid #ede8e0; border-radius: 10px;
-      padding: 0.65rem 1rem; margin-bottom: 1rem; font-size: 0.85rem; color: #6b4f2a;
+      background: #e8f4ef; border: 1px solid #b8d5c2; border-radius: 10px;
+      padding: 0.65rem 1rem; margin-bottom: 1rem; font-size: 0.85rem; color: #2d2a24;
     }
-    .link-row svg { width: 15px; height: 15px; flex-shrink: 0; stroke: #c47e2b; }
+    .link-row svg { width: 15px; height: 15px; flex-shrink: 0; stroke: #2d5a44; }
     .link-row span { flex: 1; font-weight: 600; }
     .btn-copy-link {
       padding: 0.35rem 0.9rem; border: none; border-radius: 7px;
-      background: #c47e2b; color: white; font-size: 0.82rem; font-weight: 700;
+      background: #2d5a44; color: white; font-size: 0.82rem; font-weight: 700;
       cursor: pointer; transition: background 0.2s; display: flex; align-items: center; gap: 0.35rem;
     }
     .btn-copy-link svg { width: 13px; height: 13px; stroke: white; }
-    .btn-copy-link:hover { background: #a3641f; }
+    .btn-copy-link:hover { background: #1e3d2e; }
 
     /* ── MODAL ───────────────────────────────────────────────── */
     .modal-backdrop {
@@ -152,33 +152,33 @@
       background: white; border-radius: 16px; padding: 1.75rem;
       width: 90%; max-width: 460px; box-shadow: 0 8px 40px rgba(0,0,0,0.2);
     }
-    .modal h3 { color: #6b4f2a; margin-bottom: 1.25rem; font-size: 1.05rem; }
+    .modal h3 { color: #2d2a24; margin-bottom: 1.25rem; font-size: 1.05rem; }
     .modal-actions { display: flex; gap: 0.75rem; margin-top: 1.25rem; }
 
     /* ── HOME ────────────────────────────────────────────────── */
     #section-home.active { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; min-height: calc(100vh - 2px); padding: 2rem 1rem; }
-    .home-greeting { font-size: 2rem; font-weight: 700; color: #6b4f2a; margin-bottom: 0.3rem; }
-    .home-date { font-size: 0.88rem; color: #8a7a6a; margin-bottom: 1.5rem; }
+    .home-greeting { font-size: 2rem; font-weight: 700; color: #2d2a24; margin-bottom: 0.3rem; }
+    .home-date { font-size: 0.88rem; color: #6a8a7a; margin-bottom: 1.5rem; }
     #section-home .stats { margin-bottom: 2rem; }
     .home-nav { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.85rem; width: 100%; max-width: 340px; margin-bottom: 2rem; }
     .home-card {
       position: relative; background: white; border-radius: 14px; padding: 1.1rem 0.75rem;
-      text-align: center; cursor: pointer; border: 2px solid #ede8e0;
+      text-align: center; cursor: pointer; border: 2px solid #b8d5c2;
       transition: border-color 0.2s, background 0.2s;
     }
-    .home-card:hover { border-color: #c47e2b; background: #fdf6ee; }
+    .home-card:hover { border-color: #2d5a44; background: #e8f4ef; }
     .home-card .hc-icon { margin-bottom: 0.4rem; }
-    .home-card .hc-icon svg { width: 26px; height: 26px; stroke: #c47e2b; }
-    .home-card .hc-label { font-size: 0.82rem; font-weight: 700; color: #6b4f2a; }
+    .home-card .hc-icon svg { width: 26px; height: 26px; stroke: #2d5a44; }
+    .home-card .hc-label { font-size: 0.82rem; font-weight: 700; color: #2d2a24; }
     .home-links { display: flex; flex-direction: column; gap: 0.6rem; width: 100%; max-width: 420px; margin-bottom: 1rem; }
-    .btn-backup { width: 100%; max-width: 420px; padding: 0.75rem; border: 2px solid #ede8e0; border-radius: 12px; background: white; color: #8a7a6a; font-size: 0.88rem; font-weight: 600; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: border-color 0.2s, color 0.2s; }
-    .btn-backup:hover { border-color: #c47e2b; color: #6b4f2a; }
+    .btn-backup { width: 100%; max-width: 420px; padding: 0.75rem; border: 2px solid #b8d5c2; border-radius: 12px; background: white; color: #6a8a7a; font-size: 0.88rem; font-weight: 600; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: border-color 0.2s, color 0.2s; }
+    .btn-backup:hover { border-color: #2d5a44; color: #2d2a24; }
     .btn-backup svg { width: 16px; height: 16px; }
 
     /* ── ALERTS ──────────────────────────────────────────────── */
     .alerts-list { display: flex; flex-direction: column; gap: 0.75rem; }
     .alert-bubble {
-      background: white; border-radius: 14px; border: 2px solid #ede8e0;
+      background: white; border-radius: 14px; border: 2px solid #b8d5c2;
       padding: 1rem 1.2rem;
     }
     .alert-bubble.urgent { border-color: #fc8181; }
@@ -187,32 +187,32 @@
     .alert-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; }
     .alert-icon { font-size: 1.3rem; }
     .alert-title { font-weight: 700; font-size: 0.9rem; color: #2d2a24; }
-    .alert-body { font-size: 0.85rem; color: #718096; margin-bottom: 0.75rem; line-height: 1.5; }
+    .alert-body { font-size: 0.85rem; color: #6a8a7a; margin-bottom: 0.75rem; line-height: 1.5; }
     .alert-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
     .btn-alert { padding: 0.35rem 0.8rem; border: none; border-radius: 7px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
     .btn-alert-copy { background: #e2e8f0; color: #2d2a24; }
     .btn-alert-wa { background: #25d366; color: white; }
-    .alerts-empty { text-align: center; color: #8a7a6a; padding: 3rem 1rem; font-size: 0.95rem; line-height: 1.8; }
-    .alert-filter { padding: 0.35rem 0.9rem; border: 2px solid #ede8e0; border-radius: 20px; background: white; font-size: 0.82rem; font-weight: 600; color: #8a7a6a; cursor: pointer; }
-    .alert-filter.active { border-color: #c47e2b; background: #fdf0e0; color: #6b4f2a; }
+    .alerts-empty { text-align: center; color: #6a8a7a; padding: 3rem 1rem; font-size: 0.95rem; line-height: 1.8; }
+    .alert-filter { padding: 0.35rem 0.9rem; border: 2px solid #b8d5c2; border-radius: 20px; background: white; font-size: 0.82rem; font-weight: 600; color: #6a8a7a; cursor: pointer; }
+    .alert-filter.active { border-color: #2d5a44; background: #e8f4ef; color: #2d2a24; }
 
-    .search-input { width: 100%; padding: 0.6rem 0.9rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem; margin-bottom: 1rem; font-family: inherit; background: white; }
-    .search-input:focus { outline: none; border-color: #c47e2b; }
+    .search-input { width: 100%; padding: 0.6rem 0.9rem; border: 1px solid #b8d5c2; border-radius: 8px; font-size: 0.9rem; margin-bottom: 1rem; font-family: inherit; background: white; }
+    .search-input:focus { outline: none; border-color: #2d5a44; }
     #section-home .stats { grid-template-columns: repeat(2, 1fr); }
     #section-home .stats .stat:last-child { grid-column: span 2; max-width: 200px; margin: 0 auto; width: 100%; }
 
     /* ── CLASS GROUPS ───────────────────────────────────────── */
-    .class-group { background: white; border-radius: 12px; border: 1px solid #ede8e0; margin-bottom: 0.75rem; overflow: hidden; }
+    .class-group { background: white; border-radius: 12px; border: 1px solid #b8d5c2; margin-bottom: 0.75rem; overflow: hidden; }
     .class-group-header { padding: 1rem 1.2rem; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; transition: background 0.2s; }
-    .class-group-header:hover { background: #fdf6ee; }
+    .class-group-header:hover { background: #e8f4ef; }
     .class-group-title { font-weight: 700; font-size: 0.95rem; color: #2d2a24; }
-    .class-group-meta { font-size: 0.82rem; color: #8a7a6a; margin-top: 0.2rem; }
-    .class-group-count { font-size: 0.9rem; font-weight: 700; color: #c47e2b; margin-right: auto; white-space: nowrap; }
+    .class-group-meta { font-size: 0.82rem; color: #6a8a7a; margin-top: 0.2rem; }
+    .class-group-count { font-size: 0.9rem; font-weight: 700; color: #2d5a44; margin-right: auto; white-space: nowrap; }
     .class-group-count.full { color: #e53e3e; }
-    .class-group-body { border-top: 1px solid #ede8e0; display: none; }
+    .class-group-body { border-top: 1px solid #b8d5c2; display: none; }
     .class-group-body.open { display: block; }
     .class-group-body table { margin: 0; }
-    .class-group-body th { background: #fdf6ee; }
+    .class-group-body th { background: #e8f4ef; }
 
     /* ── MOBILE ──────────────────────────────────────────────── */
     @media (max-width: 720px) {
@@ -238,11 +238,11 @@
     <h3 id="history-client-name" style="font-size:1.15rem"></h3>
     <div id="history-client-meta" style="font-size:0.83rem;color:#8a7a6a;margin-bottom:1.25rem"></div>
     <div style="margin-bottom:1.5rem">
-      <div style="font-weight:700;color:#6b4f2a;font-size:0.9rem;margin-bottom:0.6rem;border-bottom:2px solid #ede8e0;padding-bottom:0.3rem">מנויים</div>
+      <div style="font-weight:700;color:#2d2a24;font-size:0.9rem;margin-bottom:0.6rem;border-bottom:2px solid #b8d5c2;padding-bottom:0.3rem">מנויים</div>
       <div id="history-subs"></div>
     </div>
     <div>
-      <div style="font-weight:700;color:#6b4f2a;font-size:0.9rem;margin-bottom:0.6rem;border-bottom:2px solid #ede8e0;padding-bottom:0.3rem">הרשמות לשיעורים</div>
+      <div style="font-weight:700;color:#2d2a24;font-size:0.9rem;margin-bottom:0.6rem;border-bottom:2px solid #b8d5c2;padding-bottom:0.3rem">הרשמות לשיעורים</div>
       <div id="history-regs"></div>
     </div>
     <div class="modal-actions" style="margin-top:1.5rem">
