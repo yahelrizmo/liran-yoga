@@ -70,7 +70,8 @@
 
     .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 1rem; }
     label { display: block; font-size: 0.85rem; color: #5a7a6a; margin-bottom: 0.25rem; }
-    input, select, textarea { width: 100%; padding: 0.6rem 0.8rem; border: 1px solid #b8d5c2; border-radius: 8px; font-size: 0.95rem; }
+    input, select, textarea { width: 100%; padding: 0.6rem 0.8rem; border: 1px solid #b8d5c2; border-radius: 8px; font-size: 0.95rem; min-width: 0; box-sizing: border-box; }
+    input[type="date"], input[type="time"] { -webkit-appearance: none; appearance: none; }
     input:focus, select:focus { outline: none; border-color: #2d5a44; }
 
     .btn { padding: 0.6rem 1.2rem; border: none; border-radius: 8px; cursor: pointer; font-size: 0.95rem; font-weight: 600; }
@@ -442,7 +443,7 @@
           </select>
         </div>
       </div>
-      <div id="recurrence-preview" style="display:none;margin-top:0.75rem;font-size:0.82rem;color:#6b4f2a;background:#fdf6ee;border:1px solid #e8d9c0;border-radius:8px;padding:0.6rem 1rem;line-height:1.8"></div>
+      <div id="recurrence-preview" style="display:none;margin-top:0.75rem;font-size:0.82rem;color:#2d5a44;background:#e8f4ef;border:1px solid #b8d5c2;border-radius:8px;padding:0.6rem 1rem;line-height:1.8"></div>
       <button class="btn btn-primary" style="margin-top:1rem" onclick="addClass()">צור שיעור</button>
     </div>
 
