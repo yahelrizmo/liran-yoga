@@ -71,8 +71,11 @@
     .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 1rem; }
     label { display: block; font-size: 0.85rem; color: #5a7a6a; margin-bottom: 0.25rem; }
     input, select, textarea { width: 100%; padding: 0.6rem 0.8rem; border: 1px solid #b8d5c2; border-radius: 8px; font-size: 0.95rem; box-sizing: border-box; }
-    input[type="date"], input[type="time"] { -webkit-appearance: none; appearance: none; width: 100%; }
+    input[type="date"], input[type="time"] { -webkit-appearance: none; appearance: none; display: block; width: 100%; }
     input:focus, select:focus { outline: none; border-color: #2d5a44; }
+    .form-grid > div { min-width: 0; overflow: hidden; }
+    a { color: #2d5a44; text-decoration: none; }
+    a:hover { color: #1e3d2e; text-decoration: underline; }
 
     .btn { padding: 0.6rem 1.2rem; border: none; border-radius: 8px; cursor: pointer; font-size: 0.95rem; font-weight: 600; }
     .btn-primary { background: #2d2a24; color: white; }
@@ -742,7 +745,7 @@
     document.getElementById('stat-clients').textContent = data?.length ?? 0;
     document.getElementById('clients-table').innerHTML = data?.length
       ? data.map(c => `<tr>
-          <td><strong style="cursor:pointer;color:#6b4f2a;text-decoration:underline dotted" onclick="openClientHistory(${c.id},'${c.full_name.replace(/'/g,"\\'")}','${c.phone}','${(c.email||'').replace(/'/g,"\\'")}','${fmtDate(c.created_at)}')" title="לחץ לפרופיל מלא">${c.full_name}</strong></td>
+          <td><strong style="cursor:pointer;color:#2d5a44;text-decoration:underline dotted" onclick="openClientHistory(${c.id},'${c.full_name.replace(/'/g,"\\'")}','${c.phone}','${(c.email||'').replace(/'/g,"\\'")}','${fmtDate(c.created_at)}')" title="לחץ לפרופיל מלא">${c.full_name}</strong></td>
           <td><a href="tel:${c.phone}">${c.phone}</a></td>
           <td>${c.email || '—'}</td>
           <td>${c.notes || '—'}</td>
@@ -947,8 +950,8 @@
       : '<tr><td colspan="6" class="empty">אין שיעורים קרובים</td></tr>';
 
     const completedRows = completed.length
-      ? `<tr onclick="toggleCompleted('classes')" style="cursor:pointer;background:#f5f0ea">
-          <td colspan="6" id="completed-classes-label" style="padding:0.65rem 0.75rem;font-size:0.85rem;color:#6b4f2a;font-weight:600;user-select:none">▸ שיעורים שהסתיימו (${completed.length})</td>
+      ? `<tr onclick="toggleCompleted('classes')" style="cursor:pointer;background:#e8f4ef">
+          <td colspan="6" id="completed-classes-label" style="padding:0.65rem 0.75rem;font-size:0.85rem;color:#2d5a44;font-weight:600;user-select:none">▸ שיעורים שהסתיימו (${completed.length})</td>
         </tr>
         ${completed.map(c => `<tr class="completed-classes-row" style="display:none;opacity:0.55">${renderCells(c)}</tr>`).join('')}`
       : '';
@@ -1146,8 +1149,8 @@
       : '<div class="empty">אין שיעורים פעילים</div>';
 
     const completedHTML = completed.length
-      ? `<div onclick="toggleCompleted('registrations')" style="cursor:pointer;background:#f5f0ea;border-radius:10px;padding:0.65rem 1rem;margin-bottom:0.5rem;border:1px solid #ede8e0;margin-top:0.5rem">
-          <span id="completed-registrations-label" style="font-size:0.85rem;color:#6b4f2a;font-weight:600;user-select:none">▸ הרשמות לשיעורים שהסתיימו (${completed.length})</span>
+      ? `<div onclick="toggleCompleted('registrations')" style="cursor:pointer;background:#e8f4ef;border-radius:10px;padding:0.65rem 1rem;margin-bottom:0.5rem;border:1px solid #b8d5c2;margin-top:0.5rem">
+          <span id="completed-registrations-label" style="font-size:0.85rem;color:#2d5a44;font-weight:600;user-select:none">▸ הרשמות לשיעורים שהסתיימו (${completed.length})</span>
         </div>
         <div id="completed-registrations-rows" style="display:none">
           ${completed.map(renderGroup).join('')}
@@ -1433,17 +1436,17 @@ td { padding: 2.5mm 3mm; color: #2d2a24; border-bottom: 1px solid #e2efe8; }
 .td-num { font-weight: 700; color: #2d5a44; }
 .total-row td { background: #e8f4ef; font-weight: 700; border-top: 1.5px solid #b8d5c2; color: #2d5a44; }
 .footer { position: absolute; bottom: 10mm; left: 16mm; right: 16mm; display: flex; justify-content: space-between; font-size: 0.67rem; color: #9ab5aa; border-top: 1px solid #b8d5c2; padding-top: 3mm; }
-.action-bar { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: #2d2a24; display: flex; align-items: center; justify-content: center; gap: 1rem; padding: 0.75rem 1.5rem; }
-.action-bar button { padding: 0.55rem 1.2rem; border: none; border-radius: 8px; font-family: 'Heebo', sans-serif; font-size: 0.95rem; font-weight: 700; cursor: pointer; }
-.btn-print { background: #2d5a44; color: white; }
-.btn-close { background: rgba(255,255,255,0.15); color: white; }
-.action-bar .hint { font-size: 0.78rem; color: rgba(255,255,255,0.55); }
+.action-bar { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: white; border-bottom: 2px solid #b8d5c2; display: flex; align-items: center; justify-content: center; gap: 0.75rem; padding: 0.75rem 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.action-bar button { padding: 0.55rem 1.2rem; border: none; border-radius: 8px; font-family: 'Heebo', sans-serif; font-size: 0.9rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; }
+.btn-print { background: #2d2a24; color: white; }
+.btn-close { background: white; color: #2d2a24; border: 1.5px solid #b8d5c2; }
+.action-bar .hint { font-size: 0.75rem; color: #8a9a8a; }
 @media print { .action-bar { display: none; } body { background: white; padding: 0; } .page { box-shadow: none; margin-top: 0; } }
 </style></head><body>
 <div class="action-bar">
-  <button class="btn-print" onclick="window.print()">🖨 הדפס / שמור PDF</button>
-  <button class="btn-close" onclick="window.close()">✕ סגור חלון</button>
-  <span class="hint">שמירה כ-PDF: בחרי "שמור כ-PDF" ביעד ההדפסה</span>
+  <button class="btn-print" onclick="window.print()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> הדפס / שמור PDF</button>
+  <button class="btn-close" onclick="window.close()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> סגור</button>
+  <span class="hint">לשמירה כ-PDF — בחרי "שמור כ-PDF" ביעד ההדפסה</span>
 </div>
 <div class="page" style="margin-top:3.5rem">
   <div class="header">
