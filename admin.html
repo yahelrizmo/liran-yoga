@@ -857,7 +857,8 @@
           ? '<span class="badge badge-green">הסתיים ✓</span>'
           : `<button class="btn btn-sm" style="background:#2d6a4f;color:white" onclick="endClass(${c.id})">סיים שיעור</button>`
         }
-        <button class="btn btn-sm" style="background:#e8f0fe;color:#1a56db" onclick="downloadICS(${JSON.stringify(c).replace(/"/g,'&quot;')})">📅 יומן</button>
+        <button class="btn btn-sm" style="background:#e8f0fe;color:#1a56db" onclick="downloadICS(${JSON.stringify(c).replace(/"/g,'&quot;')})">📅 אפל</button>
+        <button class="btn btn-sm" style="background:#e8f0fe;color:#1a56db" onclick="openGoogleCal(${JSON.stringify(c).replace(/"/g,'&quot;')})">📅 גוגל</button>
         <button class="btn btn-danger btn-sm" onclick="deleteClass(${c.id})">מחק</button>
       </div></td>`;
 
@@ -873,6 +874,17 @@
       : '';
 
     document.getElementById('classes-table').innerHTML = activeRows + completedRows;
+  }
+
+  function openGoogleCal(c) {
+    const [y, m, d] = c.class_date.split('-');
+    const [h, min] = (c.class_time || '00:00').split(':');
+    const pad = n => String(n).padStart(2,'0');
+    const endH = String((+h + 1) % 24).padStart(2,'0');
+    const start = `${y}${m}${d}T${pad(h)}${pad(min)}00`;
+    const end = `${y}${m}${d}T${endH}${pad(min)}00`;
+    const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(c.title)}&dates=${start}/${end}${c.notes ? '&details=' + encodeURIComponent(c.notes) : ''}`;
+    window.open(url, '_blank');
   }
 
   function downloadICS(c) {
