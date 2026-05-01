@@ -232,6 +232,25 @@
 </head>
 <body>
 
+<!-- CLIENT HISTORY MODAL -->
+<div class="modal-backdrop hidden" id="history-modal" onclick="closeHistoryModal(event)">
+  <div class="modal" style="max-width:640px;max-height:85vh;overflow-y:auto" onclick="event.stopPropagation()">
+    <h3 id="history-client-name" style="font-size:1.15rem"></h3>
+    <div id="history-client-meta" style="font-size:0.83rem;color:#8a7a6a;margin-bottom:1.25rem"></div>
+    <div style="margin-bottom:1.5rem">
+      <div style="font-weight:700;color:#6b4f2a;font-size:0.9rem;margin-bottom:0.6rem;border-bottom:2px solid #ede8e0;padding-bottom:0.3rem">מנויים</div>
+      <div id="history-subs"></div>
+    </div>
+    <div>
+      <div style="font-weight:700;color:#6b4f2a;font-size:0.9rem;margin-bottom:0.6rem;border-bottom:2px solid #ede8e0;padding-bottom:0.3rem">הרשמות לשיעורים</div>
+      <div id="history-regs"></div>
+    </div>
+    <div class="modal-actions" style="margin-top:1.5rem">
+      <button class="btn" style="background:#e2e8f0" onclick="closeHistoryModal()">סגור</button>
+    </div>
+  </div>
+</div>
+
 <!-- EDIT CLIENT MODAL -->
 <div class="modal-backdrop hidden" id="edit-modal">
   <div class="modal">
@@ -399,11 +418,21 @@
       <h2>יצירת שיעור חדש</h2>
       <div class="form-grid">
         <div><label>כותרת *</label><input type="text" id="class-title" placeholder="לדוגמה: יוגה בוקר"></div>
-        <div><label>תאריך *</label><input type="date" id="class-date"></div>
+        <div><label>תאריך ראשון *</label><input type="date" id="class-date" onchange="updateRecurrencePreview()"></div>
         <div><label>שעה *</label><input type="time" id="class-time"></div>
         <div><label>מקסימום משתתפים</label><input type="number" id="class-capacity" value="10" min="1"></div>
         <div><label>הערות</label><input type="text" id="class-notes" placeholder="הערות..."></div>
+        <div>
+          <label>סוג שיעור</label>
+          <select id="class-recurrence" onchange="updateRecurrencePreview()">
+            <option value="once">שיעור חד פעמי</option>
+            <option value="month">שבועי — חודש קרוב (~4 שיעורים)</option>
+            <option value="3months">שבועי — 3 חודשים (~13 שיעורים)</option>
+            <option value="year">שבועי — שנה קרובה (~52 שיעורים)</option>
+          </select>
+        </div>
       </div>
+      <div id="recurrence-preview" style="display:none;margin-top:0.75rem;font-size:0.82rem;color:#6b4f2a;background:#fdf6ee;border:1px solid #e8d9c0;border-radius:8px;padding:0.6rem 1rem;line-height:1.8"></div>
       <button class="btn btn-primary" style="margin-top:1rem" onclick="addClass()">צור שיעור</button>
     </div>
 
@@ -633,7 +662,7 @@
     document.getElementById('stat-clients').textContent = data?.length ?? 0;
     document.getElementById('clients-table').innerHTML = data?.length
       ? data.map(c => `<tr>
-          <td><strong>${c.full_name}</strong></td>
+          <td><strong style="cursor:pointer;color:#6b4f2a;text-decoration:underline dotted" onclick="openClientHistory(${c.id},'${c.full_name.replace(/'/g,"\\'")}','${c.phone}','${(c.email||'').replace(/'/g,"\\'")}','${fmtDate(c.created_at)}')" title="לחץ לפרופיל מלא">${c.full_name}</strong></td>
           <td><a href="tel:${c.phone}">${c.phone}</a></td>
           <td>${c.email || '—'}</td>
           <td>${c.notes || '—'}</td>
@@ -690,6 +719,44 @@
     if (!confirm('למחוק לקוח זה? הפעולה לא ניתנת לביטול.')) return;
     await db.from('clients').delete().eq('id', id);
     loadClients();
+  }
+
+  async function openClientHistory(id, name, phone, email, joined) {
+    document.getElementById('history-client-name').textContent = name;
+    document.getElementById('history-client-meta').innerHTML =
+      `טלפון: <strong>${phone}</strong>${email ? ` · אימייל: <strong>${email}</strong>` : ''} · הצטרף/ה: ${joined}`;
+    document.getElementById('history-subs').innerHTML = '<div class="empty">טוען...</div>';
+    document.getElementById('history-regs').innerHTML = '<div class="empty">טוען...</div>';
+    document.getElementById('history-modal').classList.remove('hidden');
+
+    const [subsRes, regsRes] = await Promise.all([
+      db.from('subscriptions').select('*, subscription_types(name)').eq('client_id', id).order('start_date', { ascending: false }),
+      db.from('class_registrations').select('*, classes(title, class_date, class_time)').eq('client_id', id).order('registered_at', { ascending: false })
+    ]);
+
+    const subs = subsRes.data || [];
+    document.getElementById('history-subs').innerHTML = subs.length
+      ? `<table><thead><tr><th>סוג מנוי</th><th>התחלה</th><th>סיום</th><th>שנותרו</th><th>סטטוס</th></tr></thead><tbody>${
+        subs.map(s => {
+          const expired = s.expiry_date < todayStr();
+          const status = !s.is_active ? 'ממתין לאישור' : expired ? 'פג תוקף' : s.classes_remaining <= 0 ? 'נוצל' : 'פעיל';
+          const cls = status === 'פעיל' ? 'badge-green' : status === 'ממתין לאישור' ? 'badge-orange' : 'badge-red';
+          return `<tr><td>${s.subscription_types?.name||'—'}</td><td>${fmtDate(s.start_date)}</td><td>${fmtDate(s.expiry_date)}</td><td>${s.classes_remaining}</td><td><span class="badge ${cls}">${status}</span></td></tr>`;
+        }).join('')
+      }</tbody></table>`
+      : '<div class="empty" style="padding:0.75rem 0">אין מנויים</div>';
+
+    const regs = regsRes.data || [];
+    document.getElementById('history-regs').innerHTML = regs.length
+      ? `<table><thead><tr><th>שיעור</th><th>תאריך</th><th>שעה</th></tr></thead><tbody>${
+        regs.map(r => `<tr><td>${r.classes?.title||'—'}</td><td>${fmtDateWithDay(r.classes?.class_date)}</td><td>${r.classes?.class_time?.slice(0,5)||'—'}</td></tr>`).join('')
+      }</tbody></table>`
+      : '<div class="empty" style="padding:0.75rem 0">אין הרשמות לשיעורים</div>';
+  }
+
+  function closeHistoryModal(e) {
+    if (e && e.currentTarget !== e.target) return;
+    document.getElementById('history-modal').classList.add('hidden');
   }
 
   // ── SUBSCRIPTIONS ─────────────────────────────────────────
@@ -776,22 +843,35 @@
   // ── CLASSES ───────────────────────────────────────────────
   async function loadClasses() {
     const { data } = await db.from('classes').select('*').order('class_date').order('class_time');
-    document.getElementById('classes-table').innerHTML = data?.length
-      ? data.map(c => `<tr style="${c.completed ? 'opacity:0.55' : ''}">
-          <td><strong>${c.title}</strong></td>
-          <td>${fmtDateWithDay(c.class_date)}</td>
-          <td>${c.class_time?.slice(0,5)}</td>
-          <td>${c.max_capacity}</td>
-          <td>${c.notes || '—'}</td>
-          <td style="display:flex;gap:0.4rem;align-items:center">
-            ${c.completed
-              ? '<span class="badge badge-green">הסתיים ✓</span>'
-              : `<button class="btn btn-sm" style="background:#2d6a4f;color:white" onclick="endClass(${c.id})">סיים שיעור</button>`
-            }
-            <button class="btn btn-danger btn-sm" onclick="deleteClass(${c.id})">מחק</button>
-          </td>
-        </tr>`).join('')
-      : '<tr><td colspan="6" class="empty">אין שיעורים</td></tr>';
+    const active = data?.filter(c => !c.completed) || [];
+    const completed = data?.filter(c => c.completed) || [];
+
+    const renderCells = c => `
+      <td><strong>${c.title}</strong></td>
+      <td>${fmtDateWithDay(c.class_date)}</td>
+      <td>${c.class_time?.slice(0,5)}</td>
+      <td>${c.max_capacity}</td>
+      <td>${c.notes || '—'}</td>
+      <td><div style="display:flex;gap:0.4rem;align-items:center;flex-wrap:wrap">
+        ${c.completed
+          ? '<span class="badge badge-green">הסתיים ✓</span>'
+          : `<button class="btn btn-sm" style="background:#2d6a4f;color:white" onclick="endClass(${c.id})">סיים שיעור</button>`
+        }
+        <button class="btn btn-danger btn-sm" onclick="deleteClass(${c.id})">מחק</button>
+      </div></td>`;
+
+    const activeRows = active.length
+      ? active.map(c => `<tr>${renderCells(c)}</tr>`).join('')
+      : '<tr><td colspan="6" class="empty">אין שיעורים קרובים</td></tr>';
+
+    const completedRows = completed.length
+      ? `<tr onclick="toggleCompleted('classes')" style="cursor:pointer;background:#f5f0ea">
+          <td colspan="6" id="completed-classes-label" style="padding:0.65rem 0.75rem;font-size:0.85rem;color:#6b4f2a;font-weight:600;user-select:none">▸ שיעורים שהסתיימו (${completed.length})</td>
+        </tr>
+        ${completed.map(c => `<tr class="completed-classes-row" style="display:none;opacity:0.55">${renderCells(c)}</tr>`).join('')}`
+      : '';
+
+    document.getElementById('classes-table').innerHTML = activeRows + completedRows;
   }
 
   async function endClass(classId) {
@@ -815,18 +895,50 @@
     loadClasses();
   }
 
+  function updateRecurrencePreview() {
+    const date = document.getElementById('class-date').value;
+    const recurrence = document.getElementById('class-recurrence').value;
+    const preview = document.getElementById('recurrence-preview');
+    if (recurrence === 'once' || !date) { preview.style.display = 'none'; return; }
+    const dates = buildRecurringDates(date, recurrence);
+    preview.style.display = 'block';
+    preview.innerHTML = `<strong>יוצרים ${dates.length} שיעורים:</strong><br>${dates.map(d => fmtDateWithDay(d)).join(' · ')}`;
+  }
+
+  function buildRecurringDates(startDate, recurrence) {
+    const days = recurrence === 'month' ? 28 : recurrence === '3months' ? 91 : 365;
+    const dates = [startDate];
+    const start = new Date(startDate);
+    const end = new Date(startDate);
+    end.setDate(end.getDate() + days);
+    const cur = new Date(start);
+    cur.setDate(cur.getDate() + 7);
+    while (cur <= end) {
+      dates.push(cur.toISOString().split('T')[0]);
+      cur.setDate(cur.getDate() + 7);
+    }
+    return dates;
+  }
+
   async function addClass() {
     const title = document.getElementById('class-title').value.trim();
     const date = document.getElementById('class-date').value;
     const time = document.getElementById('class-time').value;
     const capacity = document.getElementById('class-capacity').value;
     const notes = document.getElementById('class-notes').value.trim();
+    const recurrence = document.getElementById('class-recurrence').value;
     if (!title || !date || !time) return showMsg('נא למלא כותרת, תאריך ושעה', 'error');
-    const { error } = await db.from('classes').insert({ title, class_date: date, class_time: time, max_capacity: +capacity, notes: notes || null });
+
+    const dates = recurrence === 'once' ? [date] : buildRecurringDates(date, recurrence);
+    const rows = dates.map(d => ({ title, class_date: d, class_time: time, max_capacity: +capacity, notes: notes || null }));
+    const { error } = await db.from('classes').insert(rows);
     if (error) return showMsg('שגיאה: ' + error.message, 'error');
-    showMsg('✓ שיעור נוצר בהצלחה');
+
+    showMsg(dates.length === 1 ? '✓ שיעור נוצר בהצלחה' : `✓ ${dates.length} שיעורים נוצרו בהצלחה`);
     document.getElementById('class-title').value = '';
     document.getElementById('class-notes').value = '';
+    document.getElementById('class-recurrence').value = 'once';
+    document.getElementById('recurrence-preview').style.display = 'none';
     loadClasses();
   }
 
@@ -888,24 +1000,61 @@
     const counts = {};
     allRegs?.forEach(r => { counts[r.class_id] = (counts[r.class_id] || 0) + 1; });
 
-    document.getElementById('registrations-list').innerHTML = classes.map(c => {
+    const renderGroup = c => {
       const count = counts[c.id] || 0;
       const isFull = count >= c.max_capacity;
-      return `
-        <div class="class-group">
-          <div class="class-group-header" onclick="toggleClassRegs(${c.id}, this)">
-            <div style="flex:1">
-              <div class="class-group-title">${c.title}${c.completed ? ' <span class="badge badge-green" style="font-size:0.7rem">הסתיים</span>' : ''}</div>
-              <div class="class-group-meta">${fmtDateWithDay(c.class_date)} · ${c.class_time?.slice(0,5)}</div>
-            </div>
-            <div class="class-group-count${isFull ? ' full' : ''}">${count} / ${c.max_capacity} רשומים</div>
-            <i data-lucide="chevron-down" id="chev-${c.id}" style="width:18px;height:18px;stroke:#8a7a6a;transition:transform 0.2s;flex-shrink:0"></i>
+      return `<div class="class-group">
+        <div class="class-group-header" onclick="toggleClassRegs(${c.id}, this)">
+          <div style="flex:1">
+            <div class="class-group-title">${c.title}${c.completed ? ' <span class="badge badge-green" style="font-size:0.7rem">הסתיים</span>' : ''}</div>
+            <div class="class-group-meta">${fmtDateWithDay(c.class_date)} · ${c.class_time?.slice(0,5)}</div>
           </div>
-          <div class="class-group-body" id="cgb-${c.id}"></div>
-        </div>`;
-    }).join('');
+          <div class="class-group-count${isFull ? ' full' : ''}">${count} / ${c.max_capacity} רשומים</div>
+          <i data-lucide="chevron-down" id="chev-${c.id}" style="width:18px;height:18px;stroke:#8a7a6a;transition:transform 0.2s;flex-shrink:0"></i>
+        </div>
+        <div class="class-group-body" id="cgb-${c.id}"></div>
+      </div>`;
+    };
+
+    const active = classes.filter(c => !c.completed);
+    const completed = classes.filter(c => c.completed);
+
+    const activeHTML = active.length
+      ? active.map(renderGroup).join('')
+      : '<div class="empty">אין שיעורים פעילים</div>';
+
+    const completedHTML = completed.length
+      ? `<div onclick="toggleCompleted('registrations')" style="cursor:pointer;background:#f5f0ea;border-radius:10px;padding:0.65rem 1rem;margin-bottom:0.5rem;border:1px solid #ede8e0;margin-top:0.5rem">
+          <span id="completed-registrations-label" style="font-size:0.85rem;color:#6b4f2a;font-weight:600;user-select:none">▸ הרשמות לשיעורים שהסתיימו (${completed.length})</span>
+        </div>
+        <div id="completed-registrations-rows" style="display:none">
+          ${completed.map(renderGroup).join('')}
+        </div>`
+      : '';
+
+    document.getElementById('registrations-list').innerHTML = activeHTML + completedHTML;
     lucide.createIcons();
     if (keepOpenId) toggleClassRegs(keepOpenId, null);
+  }
+
+  function toggleCompleted(type) {
+    if (type === 'classes') {
+      const rows = document.querySelectorAll('.completed-classes-row');
+      const label = document.getElementById('completed-classes-label');
+      const isHidden = !rows.length || rows[0].style.display === 'none';
+      rows.forEach(r => r.style.display = isHidden ? '' : 'none');
+      if (label) label.textContent = (isHidden ? '▾ ' : '▸ ') + `שיעורים שהסתיימו (${rows.length})`;
+    } else {
+      const container = document.getElementById('completed-registrations-rows');
+      const label = document.getElementById('completed-registrations-label');
+      if (!container) return;
+      const isHidden = container.style.display === 'none';
+      container.style.display = isHidden ? '' : 'none';
+      if (label) {
+        const count = container.querySelectorAll('.class-group').length;
+        label.textContent = (isHidden ? '▾ ' : '▸ ') + `הרשמות לשיעורים שהסתיימו (${count})`;
+      }
+    }
   }
 
   async function toggleClassRegs(classId, headerEl) {
