@@ -220,7 +220,7 @@
       .sidebar { display: none; }
       .app-content { overflow: visible; }
       main { overflow: visible; }
-      nav { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      nav { overflow-x: auto; -webkit-overflow-scrolling: touch; position: sticky; top: 0; z-index: 100; }
       nav button { white-space: nowrap; padding: 0.75rem 1rem; font-size: 0.82rem; }
       .form-grid { grid-template-columns: 1fr; }
       .stats { grid-template-columns: repeat(2, 1fr); }
@@ -314,6 +314,7 @@
   <button onclick="showSection('subscriptions', this)"><i data-lucide="credit-card"></i> מנויים</button>
   <button onclick="showSection('classes', this)"><i data-lucide="calendar"></i> שיעורים</button>
   <button onclick="showSection('registrations', this)"><i data-lucide="clipboard-list"></i> הרשמות</button>
+  <button onclick="showSection('settings', this)"><i data-lucide="settings"></i> הגדרות</button>
 </nav>
 
 <main>
@@ -333,7 +334,8 @@
       <div class="home-card" onclick="navTo('clients')"><div class="hc-icon"><i data-lucide="users"></i></div><div class="hc-label">לקוחות</div></div>
       <div class="home-card" onclick="navTo('subscriptions')"><div class="hc-icon"><i data-lucide="credit-card"></i></div><div class="hc-label">מנויים</div></div>
       <div class="home-card" onclick="navTo('classes')"><div class="hc-icon"><i data-lucide="calendar"></i></div><div class="hc-label">שיעורים</div></div>
-      <div class="home-card" onclick="navTo('registrations')" style="grid-column:span 2;max-width:160px;margin:0 auto;width:100%"><div class="hc-icon"><i data-lucide="clipboard-list"></i></div><div class="hc-label">הרשמות</div></div>
+      <div class="home-card" onclick="navTo('registrations')"><div class="hc-icon"><i data-lucide="clipboard-list"></i></div><div class="hc-label">הרשמות</div></div>
+      <div class="home-card" onclick="navTo('settings')"><div class="hc-icon"><i data-lucide="settings"></i></div><div class="hc-label">הגדרות</div></div>
     </div>
     <div class="home-links">
       <button class="btn-copy-link" id="home-copy-reg" onclick="copyLink('home-copy-reg','https://liran-yoga.vercel.app/register.html')" style="justify-content:center;width:100%"><i data-lucide="copy"></i> העתק קישור הרשמה למנוי</button>
@@ -446,6 +448,27 @@
     </div>
   </div>
 
+  <!-- SETTINGS -->
+  <div id="section-settings" class="section">
+    <div class="card">
+      <h2>הוספת סוג מנוי</h2>
+      <div class="form-grid">
+        <div><label>שם המנוי *</label><input type="text" id="st-name" placeholder="לדוגמה: מנוי חודשי"></div>
+        <div><label>מחיר ₪ *</label><input type="number" id="st-price" min="0" placeholder="480"></div>
+        <div><label>מספר תרגולים *</label><input type="number" id="st-classes" min="1" placeholder="8"></div>
+        <div><label>תוקף (ימים) *</label><input type="number" id="st-days" min="1" placeholder="30"></div>
+      </div>
+      <button class="btn btn-primary" style="margin-top:1rem" onclick="addSubType()">הוסף סוג מנוי</button>
+    </div>
+    <div class="card">
+      <h2>סוגי מנויים קיימים</h2>
+      <table>
+        <thead><tr><th>שם</th><th>מחיר</th><th>תרגולים</th><th>תוקף</th><th>סטטוס</th><th></th></tr></thead>
+        <tbody id="sub-types-table"></tbody>
+      </table>
+    </div>
+  </div>
+
   <!-- REGISTRATIONS -->
   <div id="section-registrations" class="section">
     <div class="link-row">
@@ -509,6 +532,7 @@
     if (name === 'subscriptions') { loadClientsSelect('sub-client'); loadSubTypes(); loadSubscriptions(); }
     if (name === 'classes') loadClasses();
     if (name === 'registrations') { loadClassesSelect(); loadClientsSelect('reg-client', loadClientSubs); loadRegistrations(); }
+    if (name === 'settings') loadSettings();
   }
 
   function navTo(name) {
@@ -1230,6 +1254,47 @@
       btn.disabled = false;
       lucide.createIcons();
     }, 3000);
+  }
+
+  // ── SETTINGS ──────────────────────────────────────────────
+  async function loadSettings() {
+    const { data } = await db.from('subscription_types').select('*').order('price');
+    document.getElementById('sub-types-table').innerHTML = data?.map(t => `<tr>
+      <td><strong>${t.name}</strong></td>
+      <td>₪${t.price}</td>
+      <td>${t.classes_count}</td>
+      <td>${t.validity_days} ימים</td>
+      <td><span class="badge ${t.is_active ? 'badge-green' : 'badge-red'}">${t.is_active ? 'פעיל' : 'לא פעיל'}</span></td>
+      <td style="display:flex;gap:0.4rem">
+        <button class="btn btn-sm" style="background:#e2e8f0;color:#2d2a24" onclick="toggleSubType(${t.id}, ${t.is_active})">${t.is_active ? 'השבת' : 'הפעל'}</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteSubType(${t.id})">מחק</button>
+      </td>
+    </tr>`).join('') || '<tr><td colspan="6" class="empty">אין סוגי מנויים</td></tr>';
+  }
+
+  async function addSubType() {
+    const name = document.getElementById('st-name').value.trim();
+    const price = +document.getElementById('st-price').value;
+    const classes = +document.getElementById('st-classes').value;
+    const days = +document.getElementById('st-days').value;
+    if (!name || !price || !classes || !days) return showMsg('נא למלא את כל השדות', 'error');
+    const { error } = await db.from('subscription_types').insert({ name, price, classes_count: classes, validity_days: days, is_active: true });
+    if (error) return showMsg('שגיאה: ' + error.message, 'error');
+    showMsg('✓ סוג מנוי נוסף בהצלחה');
+    ['st-name','st-price','st-classes','st-days'].forEach(id => document.getElementById(id).value = '');
+    loadSettings();
+  }
+
+  async function toggleSubType(id, current) {
+    await db.from('subscription_types').update({ is_active: !current }).eq('id', id);
+    loadSettings();
+  }
+
+  async function deleteSubType(id) {
+    if (!confirm('למחוק סוג מנוי זה? לא ניתן לשחזר.')) return;
+    const { error } = await db.from('subscription_types').delete().eq('id', id);
+    if (error) return showMsg('שגיאה: ' + error.message, 'error');
+    loadSettings();
   }
 
   // Initial load
