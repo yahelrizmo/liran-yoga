@@ -1265,10 +1265,10 @@
       <td>${t.classes_count}</td>
       <td>${t.validity_days} ימים</td>
       <td><span class="badge ${t.is_active ? 'badge-green' : 'badge-red'}">${t.is_active ? 'פעיל' : 'לא פעיל'}</span></td>
-      <td style="display:flex;gap:0.4rem">
+      <td><div style="display:flex;gap:0.4rem">
         <button class="btn btn-sm" style="background:#e2e8f0;color:#2d2a24" onclick="toggleSubType(${t.id}, ${t.is_active})">${t.is_active ? 'השבת' : 'הפעל'}</button>
         <button class="btn btn-danger btn-sm" onclick="deleteSubType(${t.id})">מחק</button>
-      </td>
+      </div></td>
     </tr>`).join('') || '<tr><td colspan="6" class="empty">אין סוגי מנויים</td></tr>';
   }
 
