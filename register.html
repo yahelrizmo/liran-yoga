@@ -14,88 +14,30 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
     html { height: 100%; }
-    body {
-      font-family: 'Heebo', sans-serif;
-      color: #2d2a24;
-      min-height: 100%;
-      position: relative;
-    }
+    body { font-family: 'Heebo', sans-serif; color: #2d2a24; min-height: 100%; position: relative; }
 
-    /* תמונה ברקע גוללת עם הדף */
-    .bg {
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      z-index: 0;
-      height: 100%;
-      min-height: 100vh;
-    }
-    .bg img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: center top;
-      display: block;
-    }
-    .bg::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: rgba(10, 20, 10, 0.52);
-    }
+    .bg { position: absolute; top: 0; left: 0; right: 0; z-index: 0; height: 100%; min-height: 100vh; }
+    .bg img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+    .bg::after { content: ''; position: absolute; inset: 0; background: rgba(10,20,10,0.52); }
 
-    /* תוכן מרכזי */
-    .page {
-      position: relative;
-      z-index: 1;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 3rem 1.2rem 4rem;
-    }
+    .page { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 3rem 1.2rem 4rem; }
 
-    .logo {
-      text-align: center;
-      color: white;
-      margin-bottom: 2.5rem;
-    }
+    .logo { text-align: center; color: white; margin-bottom: 2.5rem; }
     .logo h1 { font-size: 2.6rem; font-weight: 700; letter-spacing: 2px; text-shadow: 0 2px 14px rgba(0,0,0,0.6); }
     .logo p { font-size: 1rem; font-weight: 300; opacity: 0.88; margin-top: 0.4rem; text-shadow: 0 1px 8px rgba(0,0,0,0.5); }
 
-    /* כרטיס הטופס */
-    .card {
-      background: rgba(255, 250, 244, 0.96);
-      backdrop-filter: blur(8px);
-      border-radius: 20px;
-      padding: 2rem 1.8rem;
-      width: 100%;
-      max-width: 560px;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.25);
-    }
+    .card { background: rgba(255,250,244,0.96); backdrop-filter: blur(8px); border-radius: 20px; padding: 2rem 1.8rem; width: 100%; max-width: 560px; box-shadow: 0 8px 40px rgba(0,0,0,0.25); }
 
-    .step-title {
-      font-size: 1rem;
-      font-weight: 700;
-      color: #6b4f2a;
-      margin-bottom: 1rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 2px solid #ede8e0;
-    }
+    /* mode toggle */
+    .mode-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1.5rem; }
+    .mode-btn { padding: 0.75rem; border: 2px solid #ede8e0; border-radius: 12px; background: white; font-family: 'Heebo', sans-serif; font-size: 0.9rem; font-weight: 700; color: #8a7a6a; cursor: pointer; transition: all 0.2s; }
+    .mode-btn.active { border-color: #6b4f2a; background: #6b4f2a; color: white; }
+
+    .step-title { font-size: 1rem; font-weight: 700; color: #6b4f2a; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #ede8e0; }
 
     .plans { display: grid; gap: 0.6rem; margin-bottom: 1.5rem; }
-    .plan {
-      border: 2px solid #ede8e0;
-      border-radius: 12px;
-      padding: 0.85rem 1.1rem;
-      cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: white;
-      transition: border-color 0.2s, background 0.2s;
-    }
+    .plan { border: 2px solid #ede8e0; border-radius: 12px; padding: 0.85rem 1.1rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: white; transition: border-color 0.2s, background 0.2s; }
     .plan:hover { border-color: #c47e2b; }
     .plan.selected { border-color: #c47e2b; background: #fdf0e0; }
     .plan-name { font-weight: 600; font-size: 0.95rem; }
@@ -104,60 +46,37 @@
 
     .form-group { margin-bottom: 0.9rem; }
     label { display: block; font-size: 0.82rem; color: #8a7a6a; margin-bottom: 0.25rem; font-weight: 600; }
-    input {
-      width: 100%;
-      padding: 0.7rem 1rem;
-      border: 2px solid #ede8e0;
-      border-radius: 10px;
-      font-size: 1rem;
-      font-family: 'Heebo', sans-serif;
-      background: white;
-      transition: border-color 0.2s;
-    }
+    input[type=text], input[type=tel], input[type=email] { width: 100%; padding: 0.7rem 1rem; border: 2px solid #ede8e0; border-radius: 10px; font-size: 1rem; font-family: 'Heebo', sans-serif; background: white; transition: border-color 0.2s; }
     input:focus { outline: none; border-color: #c47e2b; }
 
-    .btn {
-      width: 100%;
-      padding: 0.95rem;
-      border: none;
-      border-radius: 12px;
-      font-size: 1.05rem;
-      font-weight: 700;
-      cursor: pointer;
-      font-family: 'Heebo', sans-serif;
-      transition: background 0.2s;
-      margin-top: 1.2rem;
-    }
+    .btn { width: 100%; padding: 0.95rem; border: none; border-radius: 12px; font-size: 1.05rem; font-weight: 700; cursor: pointer; font-family: 'Heebo', sans-serif; transition: background 0.2s; margin-top: 1.2rem; }
     .btn-main { background: #6b4f2a; color: white; }
     .btn-main:hover { background: #4e3720; }
     .btn-main:disabled { background: #c0aa8e; cursor: not-allowed; }
     .btn-green { background: #3a7d54; color: white; }
     .btn-green:hover { background: #2a5e3f; }
 
-    /* תשלום */
+    .health-box { margin-top: 1.2rem; background: #f9f5ef; border-radius: 12px; padding: 1rem 1.1rem; border: 2px solid #ede8e0; margin-bottom: 0; }
+    .health-label { display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer; font-size: 0.88rem; color: #2d2a24; font-weight: 400; }
+    .health-label input[type=checkbox] { width: 20px; height: 20px; flex-shrink: 0; margin-top: 0.1rem; accent-color: #6b4f2a; cursor: pointer; }
+
+    /* existing client result boxes */
+    .found-box { background: #f0f7f3; border: 2px solid #3a7d54; border-radius: 12px; padding: 1rem 1.2rem; margin-bottom: 1.2rem; }
+    .found-box .found-name { font-size: 1.1rem; font-weight: 700; color: #3a7d54; }
+    .found-box .found-sub { font-size: 0.85rem; color: #2d6a4f; margin-top: 0.25rem; }
+    .block-box { background: #fff5f0; border: 2px solid #e07050; border-radius: 12px; padding: 1rem 1.2rem; text-align: center; }
+    .block-box p { color: #7a3a25; font-size: 0.9rem; line-height: 1.7; }
+    .block-box strong { font-size: 1rem; display: block; margin-bottom: 0.4rem; }
+
+    /* payment */
     .payment-section { display: none; }
     .payment-section.show { display: block; }
-
-    .pay-box {
-      background: white;
-      border-radius: 14px;
-      border: 2px solid #ede8e0;
-      padding: 1.5rem;
-      text-align: center;
-      margin-bottom: 1rem;
-    }
+    .pay-box { background: white; border-radius: 14px; border: 2px solid #ede8e0; padding: 1.5rem; text-align: center; margin-bottom: 1rem; }
     .pay-box h3 { color: #6b4f2a; font-size: 1.1rem; margin-bottom: 0.3rem; }
     .pay-amount { font-size: 3rem; font-weight: 700; color: #c47e2b; margin: 0.5rem 0; }
-    .pay-note {
-      font-size: 0.83rem;
-      color: #8a7a6a;
-      line-height: 1.7;
-      margin-top: 1rem;
-      padding-top: 1rem;
-      border-top: 1px solid #ede8e0;
-    }
+    .pay-note { font-size: 0.83rem; color: #8a7a6a; line-height: 1.7; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #ede8e0; }
 
-    /* הצלחה */
+    /* success */
     .success-section { display: none; text-align: center; padding: 1rem 0; }
     .success-section.show { display: block; }
     .success-icon { font-size: 3.5rem; margin-bottom: 0.75rem; }
@@ -166,13 +85,12 @@
 
     .msg { padding: 0.7rem 1rem; border-radius: 8px; margin-bottom: 0.75rem; font-weight: 600; font-size: 0.88rem; }
     .msg-error { background: #fed7d7; color: #c53030; }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
 
-<div class="bg">
-  <img src="og-image.jpg" alt="">
-</div>
+<div class="bg"><img src="og-image.jpg" alt=""></div>
 
 <div class="page">
   <div class="logo">
@@ -183,34 +101,47 @@
   <div class="card">
     <div id="msg-area"></div>
 
-    <!-- שלב 1+2: בחירת מנוי + פרטים -->
+    <!-- STEP: REGISTER -->
     <div id="step-register">
-      <div class="step-title">בחרו סוג מנוי</div>
-      <div class="plans" id="plans-list"></div>
 
-      <div class="step-title">פרטים אישיים</div>
-      <div class="form-group">
-        <label>שם מלא *</label>
-        <input type="text" id="reg-name" placeholder="שם ומשפחה">
+      <!-- mode toggle -->
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="btn-new" onclick="setMode('new')">מנוי ראשון — לקוח חדש</button>
+        <button class="mode-btn" id="btn-existing" onclick="setMode('existing')">חידוש מנוי — לקוח קיים</button>
       </div>
-      <div class="form-group">
-        <label>מספר טלפון *</label>
-        <input type="tel" id="reg-phone" placeholder="05X-XXXXXXX">
+
+      <!-- NEW CLIENT -->
+      <div id="form-new">
+        <div class="step-title">בחרו סוג מנוי</div>
+        <div class="plans" id="plans-new"></div>
+        <div class="step-title">פרטים אישיים</div>
+        <div class="form-group"><label>שם מלא *</label><input type="text" id="reg-name" placeholder="שם ומשפחה"></div>
+        <div class="form-group"><label>מספר טלפון *</label><input type="tel" id="reg-phone" placeholder="05X-XXXXXXX"></div>
+        <div class="form-group"><label>אימייל (אופציונלי)</label><input type="email" id="reg-email" placeholder="mail@example.com"></div>
+        <div class="form-group health-box">
+          <label class="health-label">
+            <input type="checkbox" id="health-check-new">
+            <span>אני מצהיר/ה כי אני בריא/ה ואין לי מניעה רפואית לעסוק בפעילות גופנית. אני מודע/ת לכך שהתרגול נעשה על אחריותי המלאה.<br><span style="color:#8a7a6a;font-size:0.82rem">לא בטוח/ה? תמיד אפשר <a href="https://wa.me/972532462667" target="_blank" style="color:#6b4f2a;font-weight:600;text-decoration:underline">להתייעץ עם לירן</a> לפני ההרשמה.</span></span>
+          </label>
+        </div>
+        <button class="btn btn-main" id="submit-new-btn" onclick="submitNew()">המשך לתשלום</button>
       </div>
-      <div class="form-group">
-        <label>אימייל (אופציונלי)</label>
-        <input type="email" id="reg-email" placeholder="mail@example.com">
+
+      <!-- EXISTING CLIENT -->
+      <div id="form-existing" class="hidden">
+        <div class="step-title">מה מספר הטלפון שלך?</div>
+        <div class="form-group"><input type="tel" id="existing-phone" placeholder="05X-XXXXXXX" inputmode="numeric"></div>
+        <button class="btn btn-main" id="search-btn" onclick="findExistingClient()">חיפוש</button>
+
+        <!-- result area -->
+        <div id="existing-result" class="hidden" style="margin-top:1.5rem">
+          <!-- filled dynamically -->
+        </div>
       </div>
-      <div class="form-group" style="margin-top:1.2rem;background:#f9f5ef;border-radius:12px;padding:1rem 1.1rem;border:2px solid #ede8e0" id="health-box">
-        <label style="display:flex;align-items:flex-start;gap:0.75rem;cursor:pointer;font-size:0.88rem;color:#2d2a24;font-weight:400">
-          <input type="checkbox" id="health-check" style="width:20px;height:20px;flex-shrink:0;margin-top:0.1rem;accent-color:#6b4f2a;cursor:pointer">
-          <span>אני מצהיר/ה כי אני בריא/ה ואין לי מניעה רפואית לעסוק בפעילות גופנית. אני מודע/ת לכך שהתרגול נעשה על אחריותי המלאה.<br><span style="color:#8a7a6a;font-size:0.82rem">לא בטוח/ה? תמיד אפשר <a href="https://wa.me/972532462667" target="_blank" style="color:#6b4f2a;font-weight:600;text-decoration:underline">להתייעץ עם לירן</a> לפני ההרשמה.</span></span>
-        </label>
-      </div>
-      <button class="btn btn-main" id="submit-btn" onclick="submitRegistration()">המשך לתשלום</button>
+
     </div>
 
-    <!-- שלב 3: תשלום -->
+    <!-- PAYMENT -->
     <div class="payment-section" id="payment-section">
       <div class="pay-box">
         <h3>תשלום דרך Bit</h3>
@@ -228,7 +159,7 @@
       <button class="btn btn-green" onclick="confirmSent()">שלחתי את התשלום ✓</button>
     </div>
 
-    <!-- הצלחה -->
+    <!-- SUCCESS -->
     <div class="success-section" id="success-section">
       <div class="success-icon">🌿</div>
       <h2>תודה, <span id="success-name"></span>!</h2>
@@ -246,18 +177,31 @@
 
   let selectedPlan = null;
   let pendingClientId = null;
+  let pendingClientName = '';
+  let currentMode = 'new';
+
+  function setMode(mode) {
+    currentMode = mode;
+    document.getElementById('btn-new').classList.toggle('active', mode === 'new');
+    document.getElementById('btn-existing').classList.toggle('active', mode === 'existing');
+    document.getElementById('form-new').classList.toggle('hidden', mode !== 'new');
+    document.getElementById('form-existing').classList.toggle('hidden', mode !== 'existing');
+    document.getElementById('msg-area').innerHTML = '';
+    selectedPlan = null;
+    document.querySelectorAll('.plan').forEach(p => p.classList.remove('selected'));
+  }
 
   async function loadPlans() {
     const { data } = await db.from('subscription_types').select('*').eq('is_active', true);
-    document.getElementById('plans-list').innerHTML = data?.map(p => `
+    const html = data?.map(p => `
       <div class="plan" onclick="selectPlan(this, ${p.id}, ${p.price}, '${p.name.replace(/'/g,"\\'")}', ${p.classes_count}, ${p.validity_days})">
         <div>
           <div class="plan-name">${p.name}</div>
           <div class="plan-meta">${p.classes_count} תרגול${p.classes_count > 1 ? 'ים' : ''} · תוקף ${p.validity_days} ימים</div>
         </div>
         <div class="plan-price">₪${p.price}</div>
-      </div>
-    `).join('');
+      </div>`).join('');
+    document.getElementById('plans-new').innerHTML = html;
   }
 
   function selectPlan(el, id, price, name, classes, days) {
@@ -271,30 +215,106 @@
     setTimeout(() => document.getElementById('msg-area').innerHTML = '', 4000);
   }
 
-  async function submitRegistration() {
+  // ── NEW CLIENT ──────────────────────────────────────────
+  async function submitNew() {
     if (!selectedPlan) return showMsg('נא לבחור סוג מנוי');
     const name = document.getElementById('reg-name').value.trim();
     const phone = document.getElementById('reg-phone').value.trim();
     const email = document.getElementById('reg-email').value.trim();
     if (!name || !phone) return showMsg('נא למלא שם וטלפון');
-    if (!document.getElementById('health-check').checked) return showMsg('נא לאשר את הצהרת הבריאות');
+    if (!document.getElementById('health-check-new').checked) return showMsg('נא לאשר את הצהרת הבריאות');
 
-    const btn = document.getElementById('submit-btn');
-    btn.disabled = true;
-    btn.textContent = 'שומרת...';
+    const btn = document.getElementById('submit-new-btn');
+    btn.disabled = true; btn.textContent = 'שומרת...';
 
-    let clientId;
     const { data: existing } = await db.from('clients').select('id').eq('phone', phone).maybeSingle();
     if (existing) {
-      clientId = existing.id;
+      pendingClientId = existing.id;
     } else {
       const { data: newClient, error } = await db.from('clients').insert({ full_name: name, phone, email: email || null }).select().single();
       if (error) { btn.disabled = false; btn.textContent = 'המשך לתשלום'; return showMsg('שגיאה, נסו שוב'); }
-      clientId = newClient.id;
+      pendingClientId = newClient.id;
+    }
+    pendingClientName = name;
+    goToPayment();
+  }
+
+  // ── EXISTING CLIENT ─────────────────────────────────────
+  async function findExistingClient() {
+    const phone = document.getElementById('existing-phone').value.trim();
+    if (!phone) return showMsg('נא להכניס מספר טלפון');
+
+    const btn = document.getElementById('search-btn');
+    btn.disabled = true; btn.textContent = 'מחפש...';
+
+    const { data: client } = await db.from('clients').select('*').eq('phone', phone).maybeSingle();
+    btn.disabled = false; btn.textContent = 'חיפוש';
+
+    if (!client) {
+      showMsg('מספר הטלפון לא נמצא. האם אתה לקוח חדש?');
+      return;
     }
 
-    pendingClientId = clientId;
+    const today = new Date().toISOString().split('T')[0];
+    const { data: activeSubs } = await db.from('subscriptions')
+      .select('*, subscription_types(name)')
+      .eq('client_id', client.id)
+      .eq('is_active', true)
+      .gt('classes_remaining', 0)
+      .gte('expiry_date', today);
 
+    const resultEl = document.getElementById('existing-result');
+    resultEl.classList.remove('hidden');
+
+    if (activeSubs?.length) {
+      const sub = activeSubs[0];
+      const expiry = new Date(sub.expiry_date).toLocaleDateString('he-IL');
+      resultEl.innerHTML = `
+        <div class="block-box">
+          <strong>שלום ${client.full_name} 👋</strong>
+          <p>יש לך מנוי פעיל:<br>
+          <strong style="color:#c47e2b">${sub.subscription_types?.name}</strong><br>
+          נותרו ${sub.classes_remaining} תרגולים · תוקף עד ${expiry}</p>
+          <p style="margin-top:0.75rem;font-size:0.82rem">לא ניתן לחדש מנוי כל עוד יש מנוי פעיל.<br>
+          לשאלות — <a href="https://wa.me/972532462667" target="_blank" style="color:#6b4f2a;font-weight:600;text-decoration:underline">פנה/י ללירן</a></p>
+        </div>`;
+    } else {
+      pendingClientId = client.id;
+      pendingClientName = client.full_name;
+      resultEl.innerHTML = `
+        <div class="found-box">
+          <div class="found-name">שלום ${client.full_name} 👋</div>
+          <div class="found-sub">לא נמצא מנוי פעיל — בחר/י מנוי לחידוש</div>
+        </div>
+        <div class="step-title">בחרו סוג מנוי</div>
+        <div class="plans" id="plans-existing"></div>
+        <div class="form-group health-box">
+          <label class="health-label">
+            <input type="checkbox" id="health-check-existing">
+            <span>אני מצהיר/ה כי אני בריא/ה ואין לי מניעה רפואית לעסוק בפעילות גופנית. אני מודע/ת לכך שהתרגול נעשה על אחריותי המלאה.<br><span style="color:#8a7a6a;font-size:0.82rem">לא בטוח/ה? תמיד אפשר <a href="https://wa.me/972532462667" target="_blank" style="color:#6b4f2a;font-weight:600;text-decoration:underline">להתייעץ עם לירן</a> לפני ההרשמה.</span></span>
+          </label>
+        </div>
+        <button class="btn btn-main" onclick="submitExisting()">המשך לתשלום</button>`;
+      const { data: plans } = await db.from('subscription_types').select('*').eq('is_active', true);
+      document.getElementById('plans-existing').innerHTML = plans?.map(p => `
+        <div class="plan" onclick="selectPlan(this, ${p.id}, ${p.price}, '${p.name.replace(/'/g,"\\'")}', ${p.classes_count}, ${p.validity_days})">
+          <div>
+            <div class="plan-name">${p.name}</div>
+            <div class="plan-meta">${p.classes_count} תרגול${p.classes_count > 1 ? 'ים' : ''} · תוקף ${p.validity_days} ימים</div>
+          </div>
+          <div class="plan-price">₪${p.price}</div>
+        </div>`).join('');
+    }
+  }
+
+  async function submitExisting() {
+    if (!selectedPlan) return showMsg('נא לבחור סוג מנוי');
+    if (!document.getElementById('health-check-existing').checked) return showMsg('נא לאשר את הצהרת הבריאות');
+    goToPayment();
+  }
+
+  // ── SHARED ──────────────────────────────────────────────
+  function goToPayment() {
     document.getElementById('step-register').style.display = 'none';
     document.getElementById('pay-amount').textContent = selectedPlan.price;
     document.getElementById('payment-section').classList.add('show');
@@ -305,7 +325,7 @@
       const btn = document.getElementById('copy-bit-btn');
       btn.textContent = '✓ הועתק';
       btn.style.background = '#3a7d54';
-      setTimeout(() => { btn.textContent = 'העתק מספר'; btn.style.background = ''; }, 2500);
+      setTimeout(() => { btn.textContent = 'העתק'; btn.style.background = ''; }, 2500);
     });
   }
 
@@ -322,7 +342,6 @@
       is_active: false
     });
 
-    const name = document.getElementById('reg-name').value.trim();
     fetch('https://onesignal.com/api/v1/notifications', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -330,12 +349,12 @@
         app_id: '620d9e69-dc4a-4143-b007-50e74ae31e21',
         included_segments: ['Total Subscriptions'],
         headings: { he: 'הרשמה חדשה' },
-        contents: { he: `${name} נרשמ/ה למנוי ${selectedPlan.name} — ממתין לאישור תשלום` }
+        contents: { he: `${pendingClientName} נרשמ/ה למנוי ${selectedPlan.name} — ממתין לאישור תשלום` }
       })
     });
 
     document.getElementById('payment-section').classList.remove('show');
-    document.getElementById('success-name').textContent = name;
+    document.getElementById('success-name').textContent = pendingClientName;
     document.getElementById('success-section').classList.add('show');
   }
 
