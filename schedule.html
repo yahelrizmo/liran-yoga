@@ -119,7 +119,7 @@
   // Set week label
   const now = new Date();
   const weekEnd = new Date(now);
-  weekEnd.setDate(now.getDate() + 7);
+  weekEnd.setDate(now.getDate() + 14);
   document.getElementById('week-label').textContent =
     `שיעורים ${now.toLocaleDateString('he-IL')} — ${weekEnd.toLocaleDateString('he-IL')}`;
 
