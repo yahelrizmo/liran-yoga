@@ -1433,9 +1433,19 @@ td { padding: 2.5mm 3mm; color: #2d2a24; border-bottom: 1px solid #e2efe8; }
 .td-num { font-weight: 700; color: #2d5a44; }
 .total-row td { background: #e8f4ef; font-weight: 700; border-top: 1.5px solid #b8d5c2; color: #2d5a44; }
 .footer { position: absolute; bottom: 10mm; left: 16mm; right: 16mm; display: flex; justify-content: space-between; font-size: 0.67rem; color: #9ab5aa; border-top: 1px solid #b8d5c2; padding-top: 3mm; }
-@media print { body { background: white; padding: 0; } .page { box-shadow: none; } }
+.action-bar { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: #2d2a24; display: flex; align-items: center; justify-content: center; gap: 1rem; padding: 0.75rem 1.5rem; }
+.action-bar button { padding: 0.55rem 1.2rem; border: none; border-radius: 8px; font-family: 'Heebo', sans-serif; font-size: 0.95rem; font-weight: 700; cursor: pointer; }
+.btn-print { background: #2d5a44; color: white; }
+.btn-close { background: rgba(255,255,255,0.15); color: white; }
+.action-bar .hint { font-size: 0.78rem; color: rgba(255,255,255,0.55); }
+@media print { .action-bar { display: none; } body { background: white; padding: 0; } .page { box-shadow: none; margin-top: 0; } }
 </style></head><body>
-<div class="page">
+<div class="action-bar">
+  <button class="btn-print" onclick="window.print()">🖨 הדפס / שמור PDF</button>
+  <button class="btn-close" onclick="window.close()">✕ סגור חלון</button>
+  <span class="hint">שמירה כ-PDF: בחרי "שמור כ-PDF" ביעד ההדפסה</span>
+</div>
+<div class="page" style="margin-top:3.5rem">
   <div class="header">
     <div class="header-right">
       <img src="https://liran-yoga.vercel.app/icon-192.png" width="54" height="54" style="border-radius:12px">
@@ -1466,7 +1476,6 @@ td { padding: 2.5mm 3mm; color: #2d2a24; border-bottom: 1px solid #e2efe8; }
     <span>עמוד 1 מתוך 1</span>
   </div>
 </div>
-<script>window.onload = () => window.print()<\/script>
 </body></html>`;
 
     const win = window.open('', '_blank');
