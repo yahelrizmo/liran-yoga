@@ -214,8 +214,18 @@
     .class-group-body table { margin: 0; }
     .class-group-body th { background: #e8f4ef; }
 
+    /* ── FORMS GRID ─────────────────────────────────────────── */
+    .forms-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+    .forms-grid-2 .card { margin-bottom: 0; }
+
+    /* settings gear in nav */
+    .nav-settings-btn { margin-right: auto; border-bottom: none !important; color: #8a9a8a !important; }
+    .nav-settings-btn:hover { color: #2d2a24 !important; }
+    .nav-settings-btn.active { color: #2d2a24 !important; border-bottom: none !important; }
+
     /* ── MOBILE ──────────────────────────────────────────────── */
     @media (max-width: 720px) {
+      .forms-grid-2 { grid-template-columns: 1fr; }
       body { flex-direction: column; height: auto; overflow: auto; }
       .sidebar { display: none; }
       .app-content { overflow: visible; }
@@ -311,10 +321,8 @@
   <button onclick="goHome()" style="border-bottom-color:transparent"><i data-lucide="home"></i></button>
   <button onclick="showSection('alerts', this)" id="alerts-tab"><i data-lucide="bell"></i> התראות <span id="alerts-nav-badge" class="nav-badge" style="display:none"></span></button>
   <button onclick="showSection('clients', this)"><i data-lucide="users"></i> לקוחות</button>
-  <button onclick="showSection('subscriptions', this)"><i data-lucide="credit-card"></i> מנויים</button>
   <button onclick="showSection('classes', this)"><i data-lucide="calendar"></i> שיעורים</button>
-  <button onclick="showSection('registrations', this)"><i data-lucide="clipboard-list"></i> הרשמות</button>
-  <button onclick="showSection('settings', this)"><i data-lucide="settings"></i> הגדרות</button>
+  <button class="nav-settings-btn" onclick="showSection('settings', this)" title="הגדרות"><i data-lucide="settings"></i></button>
 </nav>
 
 <main>
@@ -329,13 +337,10 @@
       <div class="stat"><div class="stat-number" id="hs-active">—</div><div class="stat-label">מנויים פעילים</div></div>
       <div class="stat"><div class="stat-number" id="hs-pending">—</div><div class="stat-label">ממתינים לאישור</div></div>
     </div>
-    <div class="home-nav">
+    <div class="home-nav" style="grid-template-columns:repeat(2,1fr)">
       <div class="home-card" id="alerts-home-card" onclick="navTo('alerts')"><span id="alerts-home-badge" class="hc-badge" style="display:none"></span><div class="hc-icon"><i data-lucide="bell"></i></div><div class="hc-label">התראות</div></div>
       <div class="home-card" onclick="navTo('clients')"><div class="hc-icon"><i data-lucide="users"></i></div><div class="hc-label">לקוחות</div></div>
-      <div class="home-card" onclick="navTo('subscriptions')"><div class="hc-icon"><i data-lucide="credit-card"></i></div><div class="hc-label">מנויים</div></div>
-      <div class="home-card" onclick="navTo('classes')"><div class="hc-icon"><i data-lucide="calendar"></i></div><div class="hc-label">שיעורים</div></div>
-      <div class="home-card" onclick="navTo('registrations')"><div class="hc-icon"><i data-lucide="clipboard-list"></i></div><div class="hc-label">הרשמות</div></div>
-      <div class="home-card" onclick="navTo('settings')"><div class="hc-icon"><i data-lucide="settings"></i></div><div class="hc-label">הגדרות</div></div>
+      <div class="home-card" onclick="navTo('classes')" style="grid-column:span 2;max-width:160px;margin:0 auto;width:100%"><div class="hc-icon"><i data-lucide="calendar"></i></div><div class="hc-label">שיעורים</div></div>
     </div>
     <div class="home-links">
       <button class="btn-copy-link" id="home-copy-reg" onclick="copyLink('home-copy-reg','https://liran-yoga.vercel.app/register.html')" style="justify-content:center;width:100%"><i data-lucide="copy"></i> העתק קישור הרשמה למנוי</button>
@@ -365,15 +370,27 @@
       <div class="stat"><div class="stat-number" id="stat-clients">—</div><div class="stat-label">לקוחות</div></div>
     </div>
 
-    <div class="card">
-      <h2>הוספת לקוח חדש</h2>
-      <div class="form-grid">
-        <div><label>שם מלא *</label><input type="text" id="client-name" placeholder="שם ומשפחה"></div>
-        <div><label>טלפון *</label><input type="tel" id="client-phone" placeholder="05X-XXXXXXX"></div>
-        <div><label>אימייל</label><input type="email" id="client-email" placeholder="mail@example.com"></div>
-        <div><label>הערות</label><input type="text" id="client-notes" placeholder="הערות..."></div>
+    <div class="forms-grid-2">
+      <div class="card">
+        <h2>הוספת לקוח חדש</h2>
+        <div class="form-grid">
+          <div><label>שם מלא *</label><input type="text" id="client-name" placeholder="שם ומשפחה"></div>
+          <div><label>טלפון *</label><input type="tel" id="client-phone" placeholder="05X-XXXXXXX"></div>
+          <div><label>אימייל</label><input type="email" id="client-email" placeholder="mail@example.com"></div>
+          <div><label>הערות</label><input type="text" id="client-notes" placeholder="הערות..."></div>
+        </div>
+        <button class="btn btn-primary" style="margin-top:1rem" onclick="addClient()">הוסף לקוח</button>
       </div>
-      <button class="btn btn-primary" style="margin-top:1rem" onclick="addClient()">הוסף לקוח</button>
+      <div class="card">
+        <h2>שיוך מנוי ללקוח</h2>
+        <div class="form-grid">
+          <div><label>לקוח *</label><select id="sub-client"></select></div>
+          <div><label>סוג מנוי *</label><select id="sub-type" onchange="updateSubInfo()"></select></div>
+          <div><label>תאריך התחלה</label><input type="date" id="sub-start"></div>
+        </div>
+        <p id="sub-info" style="margin-top:0.75rem;color:#718096;font-size:0.9rem;"></p>
+        <button class="btn btn-primary" style="margin-top:1rem" onclick="addSubscription()">שייך מנוי</button>
+      </div>
     </div>
 
     <div class="card">
@@ -383,20 +400,6 @@
         <thead><tr><th>שם</th><th>טלפון</th><th>אימייל</th><th>הערות</th><th>תאריך הצטרפות</th><th></th></tr></thead>
         <tbody id="clients-table"></tbody>
       </table>
-    </div>
-  </div>
-
-  <!-- SUBSCRIPTIONS -->
-  <div id="section-subscriptions" class="section">
-    <div class="card">
-      <h2>שיוך מנוי ללקוח</h2>
-      <div class="form-grid">
-        <div><label>לקוח *</label><select id="sub-client"></select></div>
-        <div><label>סוג מנוי *</label><select id="sub-type" onchange="updateSubInfo()"></select></div>
-        <div><label>תאריך התחלה</label><input type="date" id="sub-start"></div>
-      </div>
-      <p id="sub-info" style="margin-top:0.75rem;color:#718096;font-size:0.9rem;"></p>
-      <button class="btn btn-primary" style="margin-top:1rem" onclick="addSubscription()">שייך מנוי</button>
     </div>
 
     <div class="card">
@@ -415,6 +418,11 @@
       <i data-lucide="link"></i>
       <span>קישור לשיעורים השבוע</span>
       <button class="btn-copy-link" id="copy-schedule-btn" onclick="copyLink('copy-schedule-btn','https://liran-yoga.vercel.app/schedule.html')"><i data-lucide="copy"></i> העתק</button>
+    </div>
+    <div class="link-row">
+      <i data-lucide="link"></i>
+      <span>קישור להרשמה למנוי</span>
+      <button class="btn-copy-link" id="copy-register-btn" onclick="copyLink('copy-register-btn','https://liran-yoga.vercel.app/register.html')"><i data-lucide="copy"></i> העתק</button>
     </div>
     <div class="card">
       <h2>יצירת שיעור חדש</h2>
@@ -446,6 +454,27 @@
         <tbody id="classes-table"></tbody>
       </table>
     </div>
+
+    <div class="forms-grid-2">
+      <div class="card">
+        <h2>רישום לקוח לשיעור</h2>
+        <div class="form-grid">
+          <div><label>שיעור *</label><select id="reg-class"></select></div>
+          <div><label>לקוח *</label><select id="reg-client" onchange="loadClientSubs()"></select></div>
+          <div><label>מנוי לשימוש *</label><select id="reg-subscription"></select></div>
+        </div>
+        <button class="btn btn-primary" style="margin-top:1rem" onclick="addRegistration()">רשום לשיעור</button>
+      </div>
+      <div class="card" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;color:#6a8a7a;font-size:0.9rem;line-height:1.8">
+        <i data-lucide="info" style="width:28px;height:28px;stroke:#b8d5c2;margin-bottom:0.5rem"></i>
+        ניכוי תרגול מהמנוי<br>מתבצע בסיום שיעור<br>דרך כפתור "סיים שיעור"
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>הרשמות לפי שיעורים</h2>
+      <div id="registrations-list"><div class="empty">טוען...</div></div>
+    </div>
   </div>
 
   <!-- SETTINGS -->
@@ -469,28 +498,6 @@
     </div>
   </div>
 
-  <!-- REGISTRATIONS -->
-  <div id="section-registrations" class="section">
-    <div class="link-row">
-      <i data-lucide="link"></i>
-      <span>קישור להרשמה למנוי</span>
-      <button class="btn-copy-link" id="copy-register-btn" onclick="copyLink('copy-register-btn','https://liran-yoga.vercel.app/register.html')"><i data-lucide="copy"></i> העתק</button>
-    </div>
-    <div class="card">
-      <h2>רישום לקוח לשיעור</h2>
-      <div class="form-grid">
-        <div><label>שיעור *</label><select id="reg-class"></select></div>
-        <div><label>לקוח *</label><select id="reg-client" onchange="loadClientSubs()"></select></div>
-        <div><label>מנוי לשימוש *</label><select id="reg-subscription"></select></div>
-      </div>
-      <button class="btn btn-primary" style="margin-top:1rem" onclick="addRegistration()">רשום לשיעור</button>
-    </div>
-
-    <div class="card">
-      <h2>הרשמות לפי שיעורים</h2>
-      <div id="registrations-list"><div class="empty">טוען...</div></div>
-    </div>
-  </div>
 </main>
 </div>
 
@@ -528,10 +535,8 @@
     document.getElementById('main-nav').style.display = name === 'home' ? 'none' : 'flex';
     if (name === 'home') loadHome();
     if (name === 'alerts') loadAlerts();
-    if (name === 'clients') loadClients();
-    if (name === 'subscriptions') { loadClientsSelect('sub-client'); loadSubTypes(); loadSubscriptions(); }
-    if (name === 'classes') loadClasses();
-    if (name === 'registrations') { loadClassesSelect(); loadClientsSelect('reg-client', loadClientSubs); loadRegistrations(); }
+    if (name === 'clients') { loadClients(); loadClientsSelect('sub-client'); loadSubTypes(); loadSubscriptions(); }
+    if (name === 'classes') { loadClasses(); loadClassesSelect(); loadClientsSelect('reg-client', loadClientSubs); loadRegistrations(); }
     if (name === 'settings') loadSettings();
   }
 
