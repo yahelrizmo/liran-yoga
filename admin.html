@@ -219,6 +219,22 @@
     .forms-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
     .forms-grid-2 .card { margin-bottom: 0; }
 
+    /* ── ACCORDION ───────────────────────────────────────────── */
+    .accordion { background: white; border-radius: 12px; border: 1px solid #b8d5c2; margin-bottom: 0.75rem; overflow: hidden; }
+    .accordion-header { padding: 1rem 1.2rem; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: background 0.2s; }
+    .accordion-header:hover { background: #e8f4ef; }
+    .accordion-header-title { font-weight: 700; font-size: 0.95rem; color: #2d2a24; display: flex; align-items: center; gap: 0.5rem; }
+    .accordion-header-title svg { width: 18px; height: 18px; stroke: #2d5a44; }
+    .accordion-body { border-top: 1px solid #b8d5c2; display: none; padding: 1.5rem; }
+    .accordion-body.open { display: block; }
+    .accordion-chevron { transition: transform 0.2s; flex-shrink: 0; }
+
+    /* ── SUMMARY CHART ───────────────────────────────────────── */
+    .chart-bar-row { margin-bottom: 0.75rem; }
+    .chart-bar-label { display: flex; justify-content: space-between; font-size: 0.82rem; margin-bottom: 0.25rem; color: #2d2a24; }
+    .chart-bar-track { background: #e8f4ef; border-radius: 4px; height: 10px; overflow: hidden; }
+    .chart-bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+
     /* settings gear in nav */
     .nav-settings-btn { margin-right: auto; border-bottom: none !important; color: #8a9a8a !important; }
     .nav-settings-btn:hover { color: #2d2a24 !important; }
@@ -471,23 +487,66 @@
 
   <!-- SETTINGS -->
   <div id="section-settings" class="section">
-    <div class="card">
-      <h2>הוספת סוג מנוי</h2>
-      <div class="form-grid">
-        <div><label>שם המנוי *</label><input type="text" id="st-name" placeholder="לדוגמה: מנוי חודשי"></div>
-        <div><label>מחיר ₪ *</label><input type="number" id="st-price" min="0" placeholder="480"></div>
-        <div><label>מספר תרגולים *</label><input type="number" id="st-classes" min="1" placeholder="8"></div>
-        <div><label>תוקף (ימים) *</label><input type="number" id="st-days" min="1" placeholder="30"></div>
+
+    <!-- לשונית 1: הגדרות מנוי -->
+    <div class="accordion">
+      <div class="accordion-header" onclick="toggleAccordion('acc-sub-types')">
+        <div class="accordion-header-title"><i data-lucide="credit-card"></i> הגדרות מנוי</div>
+        <i data-lucide="chevron-down" class="accordion-chevron" id="chev-acc-sub-types" style="width:18px;height:18px;stroke:#8a7a6a"></i>
       </div>
-      <button class="btn btn-primary" style="margin-top:1rem" onclick="addSubType()">הוסף סוג מנוי</button>
+      <div class="accordion-body open" id="acc-sub-types">
+        <div style="margin-bottom:1.5rem">
+          <h2 style="margin-bottom:1rem">הוספת סוג מנוי</h2>
+          <div class="form-grid">
+            <div><label>שם המנוי *</label><input type="text" id="st-name" placeholder="לדוגמה: מנוי חודשי"></div>
+            <div><label>מחיר ₪ *</label><input type="number" id="st-price" min="0" placeholder="480"></div>
+            <div><label>מספר תרגולים *</label><input type="number" id="st-classes" min="1" placeholder="8"></div>
+            <div><label>תוקף (ימים) *</label><input type="number" id="st-days" min="1" placeholder="30"></div>
+          </div>
+          <button class="btn btn-primary" style="margin-top:1rem" onclick="addSubType()">הוסף סוג מנוי</button>
+        </div>
+        <h2 style="margin-bottom:1rem">סוגי מנויים קיימים</h2>
+        <table>
+          <thead><tr><th>שם</th><th>מחיר</th><th>תרגולים</th><th>תוקף</th><th>סטטוס</th><th></th></tr></thead>
+          <tbody id="sub-types-table"></tbody>
+        </table>
+      </div>
     </div>
-    <div class="card">
-      <h2>סוגי מנויים קיימים</h2>
-      <table>
-        <thead><tr><th>שם</th><th>מחיר</th><th>תרגולים</th><th>תוקף</th><th>סטטוס</th><th></th></tr></thead>
-        <tbody id="sub-types-table"></tbody>
-      </table>
+
+    <!-- לשונית 2: סיכום חודשי -->
+    <div class="accordion">
+      <div class="accordion-header" onclick="toggleAccordion('acc-summary')">
+        <div class="accordion-header-title"><i data-lucide="bar-chart-2"></i> סיכום חודשי</div>
+        <i data-lucide="chevron-down" class="accordion-chevron" id="chev-acc-summary" style="width:18px;height:18px;stroke:#8a7a6a"></i>
+      </div>
+      <div class="accordion-body" id="acc-summary">
+        <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;margin-bottom:1.5rem">
+          <label style="font-weight:700;font-size:0.9rem">חודש:</label>
+          <input type="month" id="summary-month" style="width:auto;flex:1;min-width:150px">
+          <button class="btn btn-primary" onclick="loadSummary()">טען נתונים</button>
+        </div>
+        <div id="summary-content" style="display:none">
+          <div style="font-size:1.05rem;font-weight:700;color:#2d2a24;margin-bottom:1rem" id="summary-month-label"></div>
+          <div class="stats" style="margin-bottom:1.5rem">
+            <div class="stat"><div class="stat-number" id="sum-revenue">—</div><div class="stat-label">הכנסות</div></div>
+            <div class="stat"><div class="stat-number" id="sum-subs">—</div><div class="stat-label">מנויים נרכשו</div></div>
+            <div class="stat"><div class="stat-number" id="sum-classes">—</div><div class="stat-label">שיעורים</div></div>
+            <div class="stat"><div class="stat-number" id="sum-clients">—</div><div class="stat-label">לקוחות חדשים</div></div>
+          </div>
+          <div style="font-weight:700;font-size:0.82rem;color:#2d2a24;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:0.75rem;padding-bottom:0.4rem;border-bottom:2px solid #2d2a24">פירוט הכנסות לפי סוג מנוי</div>
+          <table style="margin-bottom:1.5rem">
+            <thead><tr><th>סוג מנוי</th><th>כמות</th><th>מחיר ליחידה</th><th>סה"כ</th></tr></thead>
+            <tbody id="summary-table-body"></tbody>
+          </table>
+          <div style="font-weight:700;font-size:0.82rem;color:#2d2a24;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:0.75rem;padding-bottom:0.4rem;border-bottom:2px solid #2d2a24">התפלגות הכנסות</div>
+          <div id="summary-chart" style="margin-bottom:1.5rem"></div>
+          <button class="btn btn-primary" style="width:100%;display:flex;align-items:center;justify-content:center;gap:0.5rem" onclick="downloadSummaryPDF()">
+            <i data-lucide="download"></i> הורד סיכום PDF
+          </button>
+        </div>
+      </div>
     </div>
+
   </div>
 
 </main>
@@ -1253,8 +1312,174 @@
     }, 3000);
   }
 
+  // ── ACCORDION ─────────────────────────────────────────────
+  function toggleAccordion(id) {
+    const body = document.getElementById(id);
+    const isOpen = body.classList.contains('open');
+    document.querySelectorAll('.accordion-body').forEach(b => b.classList.remove('open'));
+    document.querySelectorAll('.accordion-chevron').forEach(c => c.style.transform = '');
+    if (!isOpen) {
+      body.classList.add('open');
+      const chev = document.getElementById('chev-' + id);
+      if (chev) chev.style.transform = 'rotate(180deg)';
+    }
+  }
+
+  // ── MONTHLY SUMMARY ───────────────────────────────────────
+  let summaryData = null;
+
+  async function loadSummary() {
+    const monthVal = document.getElementById('summary-month').value;
+    if (!monthVal) return showMsg('נא לבחור חודש', 'error');
+    const [year, month] = monthVal.split('-').map(Number);
+    const firstDay = `${year}-${String(month).padStart(2,'0')}-01`;
+    const lastDay = new Date(year, month, 0).toISOString().split('T')[0];
+
+    const [subsRes, clientsRes, classesRes] = await Promise.all([
+      db.from('subscriptions').select('*, subscription_types(name, price)').gte('start_date', firstDay).lte('start_date', lastDay),
+      db.from('clients').select('id, created_at').gte('created_at', firstDay + 'T00:00:00').lte('created_at', lastDay + 'T23:59:59'),
+      db.from('classes').select('*').gte('class_date', firstDay).lte('class_date', lastDay),
+    ]);
+
+    const subs = subsRes.data || [];
+    const clients = clientsRes.data || [];
+    const classes = classesRes.data || [];
+    const revenue = subs.reduce((sum, s) => sum + (s.subscription_types?.price || 0), 0);
+    const completedClasses = classes.filter(c => c.completed).length;
+
+    const byType = {};
+    subs.forEach(s => {
+      const name = s.subscription_types?.name || 'אחר';
+      const price = s.subscription_types?.price || 0;
+      if (!byType[name]) byType[name] = { count: 0, total: 0, price };
+      byType[name].count++;
+      byType[name].total += price;
+    });
+
+    summaryData = { year, month, revenue, subs, clients, classes, completedClasses, byType };
+    renderSummary();
+  }
+
+  const _heMonths = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+
+  function renderSummary() {
+    const { year, month, revenue, subs, clients, completedClasses, classes, byType } = summaryData;
+    const monthName = _heMonths[month - 1] + ' ' + year;
+    document.getElementById('summary-month-label').textContent = monthName;
+    document.getElementById('sum-revenue').textContent = '₪' + revenue.toLocaleString('he-IL');
+    document.getElementById('sum-subs').textContent = subs.length;
+    document.getElementById('sum-classes').textContent = completedClasses + ' / ' + classes.length;
+    document.getElementById('sum-clients').textContent = clients.length;
+
+    const rows = Object.entries(byType).map(([name, d]) => `<tr>
+      <td>${name}</td>
+      <td>${d.count}</td>
+      <td class="td-num" style="color:#2d5a44;font-weight:700">₪${d.price.toLocaleString('he-IL')}</td>
+      <td class="td-num" style="color:#2d5a44;font-weight:700">₪${d.total.toLocaleString('he-IL')}</td>
+    </tr>`).join('');
+    document.getElementById('summary-table-body').innerHTML = rows + `
+      <tr style="background:#e8f4ef;font-weight:700;border-top:2px solid #b8d5c2">
+        <td colspan="3" style="color:#2d5a44">סה"כ הכנסות</td>
+        <td style="color:#2d5a44;font-weight:700">₪${revenue.toLocaleString('he-IL')}</td>
+      </tr>`;
+
+    const colors = ['#2d5a44','#5a8a6a','#8ab5a0','#b8d5c2'];
+    document.getElementById('summary-chart').innerHTML = Object.entries(byType)
+      .sort((a,b) => b[1].total - a[1].total)
+      .map(([name, d], i) => {
+        const pct = revenue > 0 ? (d.total / revenue * 100).toFixed(1) : 0;
+        return `<div class="chart-bar-row">
+          <div class="chart-bar-label"><span>${name}</span><span style="font-weight:700;color:#2d5a44">₪${d.total.toLocaleString('he-IL')} (${pct}%)</span></div>
+          <div class="chart-bar-track"><div class="chart-bar-fill" style="width:${pct}%;background:${colors[i % colors.length]}"></div></div>
+        </div>`;
+      }).join('');
+
+    document.getElementById('summary-content').style.display = 'block';
+    lucide.createIcons();
+  }
+
+  function downloadSummaryPDF() {
+    if (!summaryData) return;
+    const { year, month, revenue, subs, clients, completedClasses, classes, byType } = summaryData;
+    const monthName = _heMonths[month - 1] + ' ' + year;
+    const today = new Date().toLocaleDateString('he-IL');
+
+    const tableRows = Object.entries(byType).map(([name, d]) => `
+      <tr><td>${name}</td><td class="td-num">₪${d.price.toLocaleString('he-IL')}</td><td>${d.count}</td><td class="td-num">₪${d.total.toLocaleString('he-IL')}</td></tr>`).join('');
+
+    const html = `<!DOCTYPE html><html lang="he" dir="rtl"><head><meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #d6e8df; font-family: 'Heebo', sans-serif; padding: 3rem 1rem; }
+.page { background: white; width: 210mm; min-height: 297mm; margin: 0 auto; padding: 14mm 16mm 22mm; box-shadow: 0 8px 40px rgba(0,0,0,0.18); position: relative; }
+.header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 7mm; border-bottom: 2px solid #2d2a24; margin-bottom: 7mm; }
+.header-right { display: flex; align-items: center; gap: 12px; }
+.header-title { font-size: 1.3rem; font-weight: 900; color: #2d2a24; }
+.header-sub { font-size: 0.78rem; color: #5a7a6a; margin-top: 2px; }
+.report-label { font-size: 0.7rem; color: #7a9a8a; text-transform: uppercase; letter-spacing: 1px; }
+.report-month { font-size: 1.1rem; font-weight: 700; color: #2d2a24; margin-top: 2px; }
+.report-date { font-size: 0.73rem; color: #7a9a8a; margin-top: 1px; }
+.stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 4mm; margin-bottom: 7mm; }
+.stat-box { background: #e8f4ef; border: 1px solid #b8d5c2; border-radius: 6px; padding: 4mm; text-align: center; }
+.stat-box .num { font-size: 1.6rem; font-weight: 900; color: #2d2a24; line-height: 1; }
+.stat-box .label { font-size: 0.7rem; color: #5a7a6a; margin-top: 2px; }
+.section-title { font-size: 0.75rem; font-weight: 700; color: #2d2a24; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 3mm; padding-bottom: 1.5mm; border-bottom: 2px solid #2d2a24; }
+.section { margin-bottom: 7mm; }
+table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+thead tr { background: #e8f4ef; }
+th { padding: 2.5mm 3mm; text-align: right; color: #2d2a24; font-weight: 700; font-size: 0.74rem; border-bottom: 1.5px solid #b8d5c2; }
+td { padding: 2.5mm 3mm; color: #2d2a24; border-bottom: 1px solid #e2efe8; }
+.td-num { font-weight: 700; color: #2d5a44; }
+.total-row td { background: #e8f4ef; font-weight: 700; border-top: 1.5px solid #b8d5c2; color: #2d5a44; }
+.footer { position: absolute; bottom: 10mm; left: 16mm; right: 16mm; display: flex; justify-content: space-between; font-size: 0.67rem; color: #9ab5aa; border-top: 1px solid #b8d5c2; padding-top: 3mm; }
+@media print { body { background: white; padding: 0; } .page { box-shadow: none; } }
+</style></head><body>
+<div class="page">
+  <div class="header">
+    <div class="header-right">
+      <img src="https://liran-yoga.vercel.app/icon-192.png" width="54" height="54" style="border-radius:12px">
+      <div><div class="header-title">לירן יוגה</div><div class="header-sub">סיכום פיננסי חודשי</div></div>
+    </div>
+    <div>
+      <div class="report-label">תקופת דוח</div>
+      <div class="report-month">${monthName}</div>
+      <div class="report-date">הופק ב-${today}</div>
+    </div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-box"><div class="num">₪${revenue.toLocaleString('he-IL')}</div><div class="label">הכנסות החודש</div></div>
+    <div class="stat-box"><div class="num">${subs.length}</div><div class="label">מנויים נרכשו</div></div>
+    <div class="stat-box"><div class="num">${completedClasses}</div><div class="label">שיעורים נערכו</div></div>
+    <div class="stat-box"><div class="num">${clients.length}</div><div class="label">לקוחות חדשים</div></div>
+  </div>
+  <div class="section">
+    <div class="section-title">פירוט הכנסות לפי סוג מנוי</div>
+    <table>
+      <thead><tr><th>סוג מנוי</th><th>מחיר ליחידה</th><th>כמות שנרכשה</th><th>סה"כ</th></tr></thead>
+      <tbody>${tableRows}<tr class="total-row"><td colspan="3">סה"כ הכנסות</td><td class="td-num">₪${revenue.toLocaleString('he-IL')}</td></tr></tbody>
+    </table>
+  </div>
+  <div class="footer">
+    <span>© ${year} · כל הזכויות שמורות</span>
+    <span>סיכום חודשי | ${monthName}</span>
+    <span>עמוד 1 מתוך 1</span>
+  </div>
+</div>
+<script>window.onload = () => window.print()<\/script>
+</body></html>`;
+
+    const win = window.open('', '_blank');
+    win.document.write(html);
+    win.document.close();
+  }
+
   // ── SETTINGS ──────────────────────────────────────────────
   async function loadSettings() {
+    const now = new Date();
+    const monthVal = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    if (!document.getElementById('summary-month').value)
+      document.getElementById('summary-month').value = monthVal;
     const { data } = await db.from('subscription_types').select('*').order('price');
     document.getElementById('sub-types-table').innerHTML = data?.map(t => `<tr>
       <td><strong>${t.name}</strong></td>
