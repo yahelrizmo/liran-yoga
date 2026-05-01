@@ -72,6 +72,7 @@
     label { display: block; font-size: 0.85rem; color: #5a7a6a; margin-bottom: 0.25rem; }
     input, select, textarea { width: 100%; padding: 0.6rem 0.8rem; border: 1px solid #b8d5c2; border-radius: 8px; font-size: 0.95rem; box-sizing: border-box; }
     input:focus, select:focus { outline: none; border-color: #2d5a44; }
+    input[type="date"], input[type="time"] { min-height: 2.75rem; }
     .form-grid > div { min-width: 0; overflow: hidden; }
     a { color: #2d5a44; text-decoration: none; }
     a:hover { color: #1e3d2e; text-decoration: underline; }
@@ -1435,11 +1436,11 @@ td { padding: 2.5mm 3mm; color: #2d2a24; border-bottom: 1px solid #e2efe8; }
 .td-num { font-weight: 700; color: #2d5a44; }
 .total-row td { background: #e8f4ef; font-weight: 700; border-top: 1.5px solid #b8d5c2; color: #2d5a44; }
 .footer { position: absolute; bottom: 10mm; left: 16mm; right: 16mm; display: flex; justify-content: space-between; font-size: 0.67rem; color: #9ab5aa; border-top: 1px solid #b8d5c2; padding-top: 3mm; }
-.action-bar { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: white; border-bottom: 2px solid #b8d5c2; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.9rem 1.4rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1); font-family: 'Heebo', sans-serif; }
-.action-btns { display: flex; gap: 0.6rem; align-items: center; }
-.action-bar button { padding: 0.7rem 1.4rem; border: none; border-radius: 10px; font-family: 'Heebo', sans-serif; font-size: 1rem; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.action-bar { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: white; border-bottom: 2px solid #b8d5c2; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.4rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1); font-family: 'Heebo', sans-serif; }
+.action-btns { display: flex; gap: 0.7rem; align-items: center; }
+.action-bar button { padding: 0.85rem 1.8rem; border: none; border-radius: 12px; font-family: 'Heebo', sans-serif; font-size: 1.1rem; font-weight: 700; cursor: pointer; white-space: nowrap; -webkit-appearance: none; }
 .btn-print { background: #2d2a24; color: white; }
-.btn-close { background: #e8f4ef; color: #2d5a44; border: 1.5px solid #b8d5c2; }
+.btn-close { background: #e8f4ef; color: #2d5a44; border: 2px solid #b8d5c2; }
 .action-bar .hint { font-size: 0.78rem; color: #8a9a8a; line-height: 1.5; }
 @media (max-width: 600px) { .action-bar .hint { display: none; } }
 @media print { .action-bar { display: none; } body { background: white; padding: 0; } .page { box-shadow: none; margin-top: 0; } }
