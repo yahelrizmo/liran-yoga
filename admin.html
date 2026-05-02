@@ -1204,6 +1204,11 @@
           <div style="flex:1">
             <div class="class-group-title">${c.title}${c.completed ? ' <span class="badge badge-green" style="font-size:0.7rem">הסתיים</span>' : ''}</div>
             <div class="class-group-meta">${fmtDateWithDay(c.class_date)} · ${c.class_time?.slice(0,5)}</div>
+            <div style="display:flex;gap:0.4rem;margin-top:0.5rem;flex-wrap:wrap" onclick="event.stopPropagation()">
+              ${c.completed ? '' : `<button class="btn btn-sm" style="background:#78855F;color:white" onclick="endClass(${c.id})">סיים שיעור</button>`}
+              <button class="btn btn-sm" style="background:#e8f0fe;color:#1a56db;display:inline-flex;align-items:center;gap:0.3rem" onclick="downloadICS(${JSON.stringify(c).replace(/"/g,'&quot;')})"><i data-lucide="calendar" style="width:13px;height:13px"></i> אפל</button>
+              <button class="btn btn-sm" style="background:#e8f0fe;color:#1a56db;display:inline-flex;align-items:center;gap:0.3rem" onclick="openGoogleCal(${JSON.stringify(c).replace(/"/g,'&quot;')})"><i data-lucide="calendar" style="width:13px;height:13px"></i> גוגל</button>
+            </div>
           </div>
           <div class="class-group-count${isFull ? ' full' : ''}">${count} / ${c.max_capacity} רשומים</div>
           <i data-lucide="chevron-down" id="chev-${c.id}" style="width:18px;height:18px;stroke:#7A6860;transition:transform 0.2s;flex-shrink:0"></i>
