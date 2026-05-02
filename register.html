@@ -32,7 +32,7 @@
     /* mode toggle */
     .mode-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1.5rem; }
     .mode-btn { padding: 0.75rem; border: 2px solid #ede8e0; border-radius: 12px; background: white; font-family: 'Heebo', sans-serif; font-size: 0.9rem; font-weight: 700; color: #8a7a6a; cursor: pointer; transition: all 0.2s; }
-    .mode-btn.active { border-color: #6b4f2a; background: #6b4f2a; color: white; }
+    .mode-btn.active { border-color: #2d5a44; background: #2d5a44; color: white; }
 
     .step-title { font-size: 1rem; font-weight: 700; color: #2d5a44; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #ede8e0; }
 
@@ -58,7 +58,7 @@
 
     .health-box { margin-top: 1.2rem; background: #f9f5ef; border-radius: 12px; padding: 1rem 1.1rem; border: 2px solid #ede8e0; margin-bottom: 0; }
     .health-label { display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer; font-size: 0.88rem; color: #2d2a24; font-weight: 400; }
-    .health-label input[type=checkbox] { width: 20px; height: 20px; flex-shrink: 0; margin-top: 0.1rem; accent-color: #6b4f2a; cursor: pointer; }
+    .health-label input[type=checkbox] { width: 20px; height: 20px; flex-shrink: 0; margin-top: 0.1rem; accent-color: #2d5a44; cursor: pointer; }
 
     /* existing client result boxes */
     .found-box { background: #f0f7f3; border: 2px solid #3a7d54; border-radius: 12px; padding: 1rem 1.2rem; margin-bottom: 1.2rem; }
@@ -121,7 +121,7 @@
         <div class="form-group health-box">
           <label class="health-label">
             <input type="checkbox" id="health-check-new">
-            <span>אני מצהיר/ה כי אני בריא/ה ואין לי מניעה רפואית לעסוק בפעילות גופנית. אני מודע/ת לכך שהתרגול נעשה על אחריותי המלאה.<br><span style="color:#8a7a6a;font-size:0.82rem">לא בטוח/ה? תמיד אפשר <a href="https://wa.me/972532462667" target="_blank" style="color:#6b4f2a;font-weight:600;text-decoration:underline">להתייעץ עם לירן</a> לפני ההרשמה.</span></span>
+            <span>אני מצהיר/ה כי אני בריא/ה ואין לי מניעה רפואית לעסוק בפעילות גופנית. אני מודע/ת לכך שהתרגול נעשה על אחריותי המלאה.<br><span style="color:#8a7a6a;font-size:0.82rem">לא בטוח/ה? תמיד אפשר <a href="https://wa.me/972532462667" target="_blank" style="color:#2d5a44;font-weight:600;text-decoration:underline">להתייעץ עם לירן</a> לפני ההרשמה.</span></span>
           </label>
         </div>
         <button class="btn btn-main" id="submit-new-btn" onclick="submitNew()">המשך לתשלום</button>
@@ -273,10 +273,10 @@
         <div class="block-box">
           <strong>שלום ${client.full_name} 👋</strong>
           <p>יש לך מנוי פעיל:<br>
-          <strong style="color:#c47e2b">${sub.subscription_types?.name}</strong><br>
+          <strong style="color:#2d5a44">${sub.subscription_types?.name}</strong><br>
           נותרו ${sub.classes_remaining} תרגולים · תוקף עד ${expiry}</p>
           <p style="margin-top:0.75rem;font-size:0.82rem">לא ניתן לחדש מנוי כל עוד יש מנוי פעיל.<br>
-          לשאלות — <a href="https://wa.me/972532462667" target="_blank" style="color:#6b4f2a;font-weight:600;text-decoration:underline">פנה/י ללירן</a></p>
+          לשאלות — <a href="https://wa.me/972532462667" target="_blank" style="color:#2d5a44;font-weight:600;text-decoration:underline">פנה/י ללירן</a></p>
         </div>`;
     } else {
       pendingClientId = client.id;
@@ -291,7 +291,7 @@
         <div class="form-group health-box">
           <label class="health-label">
             <input type="checkbox" id="health-check-existing">
-            <span>אני מצהיר/ה כי אני בריא/ה ואין לי מניעה רפואית לעסוק בפעילות גופנית. אני מודע/ת לכך שהתרגול נעשה על אחריותי המלאה.<br><span style="color:#8a7a6a;font-size:0.82rem">לא בטוח/ה? תמיד אפשר <a href="https://wa.me/972532462667" target="_blank" style="color:#6b4f2a;font-weight:600;text-decoration:underline">להתייעץ עם לירן</a> לפני ההרשמה.</span></span>
+            <span>אני מצהיר/ה כי אני בריא/ה ואין לי מניעה רפואית לעסוק בפעילות גופנית. אני מודע/ת לכך שהתרגול נעשה על אחריותי המלאה.<br><span style="color:#8a7a6a;font-size:0.82rem">לא בטוח/ה? תמיד אפשר <a href="https://wa.me/972532462667" target="_blank" style="color:#2d5a44;font-weight:600;text-decoration:underline">להתייעץ עם לירן</a> לפני ההרשמה.</span></span>
           </label>
         </div>
         <button class="btn btn-main" onclick="submitExisting()">המשך לתשלום</button>`;
