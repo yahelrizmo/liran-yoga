@@ -386,13 +386,17 @@
 
   <!-- CLIENTS -->
   <div id="section-clients" class="section">
-    <div class="stats" id="clients-stats">
-      <div class="stat"><div class="stat-number" id="stat-clients">—</div><div class="stat-label">לקוחות</div></div>
+    <div id="clients-stats" style="display:flex;justify-content:center;margin-bottom:1.5rem">
+      <div class="stat" style="min-width:160px;max-width:220px"><div class="stat-number" id="stat-clients">—</div><div class="stat-label">לקוחות</div></div>
     </div>
 
-    <div class="forms-grid-2">
-      <div class="card">
-        <h2>הוספת לקוח חדש</h2>
+    <!-- הוספת לקוח -->
+    <div class="accordion">
+      <div class="accordion-header" onclick="toggleAccordion('acc-add-client')">
+        <div class="accordion-header-title"><i data-lucide="user-plus"></i> הוספת לקוח חדש</div>
+        <i data-lucide="chevron-down" class="accordion-chevron" id="chev-acc-add-client" style="width:18px;height:18px;stroke:#8a7a6a"></i>
+      </div>
+      <div class="accordion-body" id="acc-add-client">
         <div class="form-grid">
           <div><label>שם מלא *</label><input type="text" id="client-name" placeholder="שם ומשפחה"></div>
           <div><label>טלפון *</label><input type="tel" id="client-phone" placeholder="05X-XXXXXXX"></div>
@@ -401,8 +405,15 @@
         </div>
         <button class="btn btn-primary" style="margin-top:1rem" onclick="addClient()">הוסף לקוח</button>
       </div>
-      <div class="card">
-        <h2>שיוך מנוי ללקוח</h2>
+    </div>
+
+    <!-- שיוך מנוי -->
+    <div class="accordion">
+      <div class="accordion-header" onclick="toggleAccordion('acc-add-sub')">
+        <div class="accordion-header-title"><i data-lucide="credit-card"></i> שיוך מנוי ללקוח</div>
+        <i data-lucide="chevron-down" class="accordion-chevron" id="chev-acc-add-sub" style="width:18px;height:18px;stroke:#8a7a6a"></i>
+      </div>
+      <div class="accordion-body" id="acc-add-sub">
         <div class="form-grid">
           <div><label>לקוח *</label><select id="sub-client"></select></div>
           <div><label>סוג מנוי *</label><select id="sub-type" onchange="updateSubInfo()"></select></div>
@@ -413,22 +424,28 @@
       </div>
     </div>
 
+    <!-- רשימת לקוחות מאוחדת -->
     <div class="card">
-      <h2>רשימת לקוחות</h2>
-      <input type="text" class="search-input" id="clients-search" placeholder="חיפוש לפי שם או טלפון..." oninput="liveSearch('clients-search','clients-table')">
-      <table>
-        <thead><tr><th>שם</th><th>טלפון</th><th>אימייל</th><th>הערות</th><th>תאריך הצטרפות</th><th></th></tr></thead>
-        <tbody id="clients-table"></tbody>
-      </table>
-    </div>
-
-    <div class="card">
-      <h2>מנויים פעילים</h2>
-      <input type="text" class="search-input" id="subs-search" placeholder="חיפוש לפי שם לקוח או טלפון..." oninput="liveSearch('subs-search','subscriptions-table')">
-      <table>
-        <thead><tr><th>לקוח</th><th>סוג מנוי</th><th>תרגולים שנותרו</th><th>תאריך פקיעה</th><th>סטטוס</th><th>עריכה</th></tr></thead>
-        <tbody id="subscriptions-table"></tbody>
-      </table>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem">
+        <h2 style="margin:0">לקוחות</h2>
+        <div style="display:flex;gap:0.5rem">
+          <button class="alert-filter active" id="tab-active-clients" onclick="switchClientsTab('active', this)">פעילים</button>
+          <button class="alert-filter" id="tab-past-clients" onclick="switchClientsTab('past', this)">לקוחות עבר</button>
+        </div>
+      </div>
+      <input type="text" class="search-input" id="clients-search" placeholder="חיפוש לפי שם או טלפון..." oninput="filterClientsTable()">
+      <div id="clients-active-view">
+        <table>
+          <thead><tr><th>שם</th><th>טלפון</th><th>מנוי</th><th>נותרו</th><th>תוקף</th><th>סטטוס</th><th></th></tr></thead>
+          <tbody id="clients-table"></tbody>
+        </table>
+      </div>
+      <div id="clients-past-view" style="display:none">
+        <table>
+          <thead><tr><th>שם</th><th>טלפון</th><th>מנוי אחרון</th><th>פג תוקף</th><th></th></tr></thead>
+          <tbody id="past-clients-table"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -444,41 +461,49 @@
       <span>קישור להרשמה למנוי</span>
       <button class="btn-copy-link" id="copy-register-btn" onclick="copyLink('copy-register-btn','https://liran-yoga.vercel.app/register.html')"><i data-lucide="copy"></i> העתק</button>
     </div>
-    <div class="card">
-      <h2>יצירת שיעור חדש</h2>
-      <div class="form-grid">
-        <div><label>כותרת *</label><input type="text" id="class-title" placeholder="לדוגמה: יוגה בוקר"></div>
-        <div><label>תאריך ראשון *</label><input type="date" id="class-date" onchange="updateRecurrencePreview()"></div>
-        <div><label>שעה *</label><input type="time" id="class-time"></div>
-        <div><label>מקסימום משתתפים</label><input type="number" id="class-capacity" value="10" min="1"></div>
-        <div><label>הערות</label><input type="text" id="class-notes" placeholder="הערות..."></div>
-        <div>
-          <label>סוג שיעור</label>
-          <select id="class-recurrence" onchange="updateRecurrencePreview()">
-            <option value="once">שיעור חד פעמי</option>
-            <option value="month">שבועי — חודש קרוב (~4 שיעורים)</option>
-            <option value="3months">שבועי — 3 חודשים (~13 שיעורים)</option>
-            <option value="year">שבועי — שנה קרובה (~52 שיעורים)</option>
-          </select>
-        </div>
+
+    <!-- יצירת שיעור חדש -->
+    <div class="accordion">
+      <div class="accordion-header" onclick="toggleAccordion('acc-new-class')">
+        <div class="accordion-header-title"><i data-lucide="plus-circle"></i> יצירת שיעור חדש</div>
+        <i data-lucide="chevron-down" class="accordion-chevron" id="chev-acc-new-class" style="width:18px;height:18px;stroke:#8a7a6a"></i>
       </div>
-      <div id="recurrence-preview" style="display:none;margin-top:0.75rem;font-size:0.82rem;color:#2d5a44;background:#e8f4ef;border:1px solid #b8d5c2;border-radius:8px;padding:0.6rem 1rem;line-height:1.8"></div>
-      <button class="btn btn-primary" style="margin-top:1rem" onclick="addClass()">צור שיעור</button>
+      <div class="accordion-body" id="acc-new-class">
+        <div class="form-grid">
+          <div><label>כותרת *</label><input type="text" id="class-title" placeholder="לדוגמה: יוגה בוקר"></div>
+          <div><label>תאריך ראשון *</label><input type="date" id="class-date" onchange="updateRecurrencePreview()"></div>
+          <div><label>שעה *</label><input type="time" id="class-time"></div>
+          <div><label>מקסימום משתתפים</label><input type="number" id="class-capacity" value="10" min="1"></div>
+          <div><label>הערות</label><input type="text" id="class-notes" placeholder="הערות..."></div>
+          <div>
+            <label>סוג שיעור</label>
+            <select id="class-recurrence" onchange="updateRecurrencePreview()">
+              <option value="once">שיעור חד פעמי</option>
+              <option value="month">שבועי — חודש קרוב (~4 שיעורים)</option>
+              <option value="3months">שבועי — 3 חודשים (~13 שיעורים)</option>
+              <option value="year">שבועי — שנה קרובה (~52 שיעורים)</option>
+            </select>
+          </div>
+        </div>
+        <div id="recurrence-preview" style="display:none;margin-top:0.75rem;font-size:0.82rem;color:#2d5a44;background:#e8f4ef;border:1px solid #b8d5c2;border-radius:8px;padding:0.6rem 1rem;line-height:1.8"></div>
+        <button class="btn btn-primary" style="margin-top:1rem" onclick="addClass()">צור שיעור</button>
+      </div>
     </div>
 
-    <div class="forms-grid-2">
-      <div class="card">
-        <h2>רישום לקוח לשיעור</h2>
+    <!-- רישום לקוח לשיעור -->
+    <div class="accordion">
+      <div class="accordion-header" onclick="toggleAccordion('acc-reg-class')">
+        <div class="accordion-header-title"><i data-lucide="user-check"></i> רישום לקוח לשיעור</div>
+        <i data-lucide="chevron-down" class="accordion-chevron" id="chev-acc-reg-class" style="width:18px;height:18px;stroke:#8a7a6a"></i>
+      </div>
+      <div class="accordion-body" id="acc-reg-class">
         <div class="form-grid">
           <div><label>שיעור *</label><select id="reg-class"></select></div>
           <div><label>לקוח *</label><select id="reg-client" onchange="loadClientSubs()"></select></div>
           <div><label>מנוי לשימוש *</label><select id="reg-subscription"></select></div>
         </div>
         <button class="btn btn-primary" style="margin-top:1rem" onclick="addRegistration()">רשום לשיעור</button>
-      </div>
-      <div class="card" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;color:#6a8a7a;font-size:0.9rem;line-height:1.8">
-        <i data-lucide="info" style="width:28px;height:28px;stroke:#b8d5c2;margin-bottom:0.5rem"></i>
-        ניכוי תרגול מהמנוי<br>מתבצע בסיום שיעור<br>דרך כפתור "סיים שיעור"
+        <p style="font-size:0.8rem;color:#6a8a7a;margin-top:0.75rem;padding:0.5rem 0.75rem;background:#e8f4ef;border-radius:8px;border:1px solid #b8d5c2">ניכוי תרגול ממנוי מתבצע בסיום שיעור דרך כפתור "סיים שיעור"</p>
       </div>
     </div>
 
@@ -497,7 +522,7 @@
         <div class="accordion-header-title"><i data-lucide="credit-card"></i> הגדרות מנוי</div>
         <i data-lucide="chevron-down" class="accordion-chevron" id="chev-acc-sub-types" style="width:18px;height:18px;stroke:#8a7a6a"></i>
       </div>
-      <div class="accordion-body open" id="acc-sub-types">
+      <div class="accordion-body" id="acc-sub-types">
         <div style="margin-bottom:1.5rem">
           <h2 style="margin-bottom:1rem">הוספת סוג מנוי</h2>
           <div class="form-grid">
@@ -589,7 +614,7 @@
     document.getElementById('main-nav').style.display = name === 'home' ? 'none' : 'flex';
     if (name === 'home') loadHome();
     if (name === 'alerts') loadAlerts();
-    if (name === 'clients') { loadClients(); loadClientsSelect('sub-client'); loadSubTypes(); loadSubscriptions(); }
+    if (name === 'clients') { loadClients(); loadClientsSelect('sub-client'); loadSubTypes(); }
     if (name === 'classes') { loadClasses(); loadClassesSelect(); loadClientsSelect('reg-client', loadClientSubs); loadRegistrations(); }
     if (name === 'settings') loadSettings();
   }
@@ -740,22 +765,87 @@
   }
 
   // ── CLIENTS ──────────────────────────────────────────────
+  let clientsView = 'active';
+
   async function loadClients() {
-    const { data } = await db.from('clients').select('*').order('full_name');
-    document.getElementById('stat-clients').textContent = data?.length ?? 0;
-    document.getElementById('clients-table').innerHTML = data?.length
-      ? data.map(c => `<tr>
-          <td><strong style="cursor:pointer;color:#2d5a44;text-decoration:underline dotted" onclick="openClientHistory(${c.id},'${c.full_name.replace(/'/g,"\\'")}','${c.phone}','${(c.email||'').replace(/'/g,"\\'")}','${fmtDate(c.created_at)}')" title="לחץ לפרופיל מלא">${c.full_name}</strong></td>
+    const [{ data: clients }, { data: subs }] = await Promise.all([
+      db.from('clients').select('*').order('full_name'),
+      db.from('subscriptions').select('*, subscription_types(name)').order('start_date', { ascending: false })
+    ]);
+
+    const today = new Date().toISOString().split('T')[0];
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 60);
+    const cutoffStr = cutoff.toISOString().split('T')[0];
+
+    const subsByClient = {};
+    subs?.forEach(s => {
+      if (!subsByClient[s.client_id]) subsByClient[s.client_id] = [];
+      subsByClient[s.client_id].push(s);
+    });
+
+    const activeClients = [];
+    const pastClients = [];
+
+    clients?.forEach(c => {
+      const clientSubs = subsByClient[c.id] || [];
+      const activeSub = clientSubs.find(s => s.is_active && s.expiry_date >= today && s.classes_remaining > 0);
+      const lastSub = clientSubs[0];
+      const isPast = !activeSub && (!lastSub || lastSub.start_date < cutoffStr);
+      if (isPast) pastClients.push({ c, activeSub, lastSub });
+      else activeClients.push({ c, activeSub, lastSub });
+    });
+
+    document.getElementById('stat-clients').textContent = clients?.length ?? 0;
+
+    document.getElementById('clients-table').innerHTML = activeClients.length
+      ? activeClients.map(({ c, activeSub }) => {
+          const pendingSub = !activeSub ? (subsByClient[c.id] || []).find(s => !s.is_active) : null;
+          return `<tr>
+            <td><strong style="cursor:pointer;color:#2d5a44;text-decoration:underline dotted" onclick="openClientHistory(${c.id},'${c.full_name.replace(/'/g,"\\'")}','${c.phone}','${(c.email||'').replace(/'/g,"\\'")}','${fmtDate(c.created_at)}')">${c.full_name}</strong></td>
+            <td><a href="tel:${c.phone}">${c.phone}</a></td>
+            <td>${activeSub ? activeSub.subscription_types?.name : (pendingSub ? '<span class="badge badge-orange">ממתין לאישור</span>' : '<span class="badge badge-red">אין מנוי</span>')}</td>
+            <td style="text-align:center;font-weight:700">${activeSub ? activeSub.classes_remaining : '—'}</td>
+            <td>${activeSub ? fmtDate(activeSub.expiry_date) : '—'}</td>
+            <td>${activeSub ? statusBadge(activeSub.expiry_date, activeSub.classes_remaining, activeSub.is_active) : ''}</td>
+            <td>
+              ${activeSub ? `<button class="btn btn-sm" style="background:#e2e8f0;margin-left:0.25rem" onclick="adjustClasses(${activeSub.id},${activeSub.classes_remaining},1)">+1</button><button class="btn btn-sm" style="background:#e2e8f0;margin-left:0.25rem" onclick="adjustClasses(${activeSub.id},${activeSub.classes_remaining},-1)">-1</button>` : ''}
+              ${pendingSub ? `<button class="btn btn-sm" style="background:#2d6a4f;color:white;margin-left:0.25rem" onclick="activateSubscription(${pendingSub.id})">הפעל</button>` : ''}
+              <button class="btn btn-sm" style="background:#e2e8f0;margin-left:0.3rem" onclick="openEditModal(${c.id},'${c.full_name.replace(/'/g,"\\'")}','${c.phone}','${(c.email||'').replace(/'/g,"\\'")}','${(c.notes||'').replace(/'/g,"\\'")}')">עריכה</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteClient(${c.id})">מחק</button>
+            </td>
+          </tr>`;
+        }).join('')
+      : '<tr><td colspan="7" class="empty">אין לקוחות</td></tr>';
+
+    document.getElementById('past-clients-table').innerHTML = pastClients.length
+      ? pastClients.map(({ c, lastSub }) => `<tr>
+          <td><strong style="cursor:pointer;color:#2d5a44;text-decoration:underline dotted" onclick="openClientHistory(${c.id},'${c.full_name.replace(/'/g,"\\'")}','${c.phone}','${(c.email||'').replace(/'/g,"\\'")}','${fmtDate(c.created_at)}')">${c.full_name}</strong></td>
           <td><a href="tel:${c.phone}">${c.phone}</a></td>
-          <td>${c.email || '—'}</td>
-          <td>${c.notes || '—'}</td>
-          <td>${fmtDate(c.created_at)}</td>
+          <td>${lastSub ? lastSub.subscription_types?.name : '—'}</td>
+          <td>${lastSub ? fmtDate(lastSub.expiry_date) : '—'}</td>
           <td>
             <button class="btn btn-sm" style="background:#e2e8f0;margin-left:0.3rem" onclick="openEditModal(${c.id},'${c.full_name.replace(/'/g,"\\'")}','${c.phone}','${(c.email||'').replace(/'/g,"\\'")}','${(c.notes||'').replace(/'/g,"\\'")}')">עריכה</button>
             <button class="btn btn-danger btn-sm" onclick="deleteClient(${c.id})">מחק</button>
           </td>
         </tr>`).join('')
-      : '<tr><td colspan="6" class="empty">אין לקוחות עדיין</td></tr>';
+      : '<tr><td colspan="5" class="empty">אין לקוחות עבר</td></tr>';
+  }
+
+  function switchClientsTab(tab, btn) {
+    clientsView = tab;
+    document.querySelectorAll('#tab-active-clients, #tab-past-clients').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('clients-active-view').style.display = tab === 'active' ? '' : 'none';
+    document.getElementById('clients-past-view').style.display = tab === 'past' ? '' : 'none';
+  }
+
+  function filterClientsTable() {
+    const q = (document.getElementById('clients-search')?.value || '').trim().toLowerCase();
+    const tableId = clientsView === 'active' ? 'clients-table' : 'past-clients-table';
+    document.querySelectorAll('#' + tableId + ' tr').forEach(tr => {
+      tr.style.display = !q || tr.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
   }
 
   async function addClient() {
@@ -883,31 +973,12 @@
     loadSubscriptions();
   }
 
-  async function loadSubscriptions() {
-    const { data } = await db.from('subscriptions')
-      .select('*, clients(full_name, phone), subscription_types(name)')
-      .order('expiry_date');
-    document.getElementById('subscriptions-table').innerHTML = data?.length
-      ? data.map(s => `<tr>
-          <td><strong>${s.clients?.full_name}</strong><br><small style="color:#718096">${s.clients?.phone}</small></td>
-          <td>${s.subscription_types?.name}</td>
-          <td style="text-align:center;font-size:1.2rem;font-weight:bold">${s.classes_remaining}</td>
-          <td>${fmtDate(s.expiry_date)}</td>
-          <td>${statusBadge(s.expiry_date, s.classes_remaining, s.is_active)}</td>
-          <td>
-            ${!s.is_active ? `<button class="btn btn-sm" style="background:#2d6a4f;color:white;margin-left:0.25rem" onclick="activateSubscription(${s.id})">הפעל</button>` : ''}
-            <button class="btn btn-sm" style="background:#e2e8f0;margin-left:0.25rem" onclick="adjustClasses(${s.id},${s.classes_remaining},1)" title="הוסף תרגול">+1</button>
-            <button class="btn btn-sm" style="background:#e2e8f0;margin-left:0.25rem" onclick="adjustClasses(${s.id},${s.classes_remaining},-1)" title="הפחת תרגול">-1</button>
-            <button class="btn btn-danger btn-sm" onclick="deleteSubscription(${s.id})">הסר</button>
-          </td>
-        </tr>`).join('')
-      : '<tr><td colspan="6" class="empty">אין מנויים</td></tr>';
-  }
+  function loadSubscriptions() { loadClients(); }
 
   async function activateSubscription(id) {
     await db.from('subscriptions').update({ is_active: true }).eq('id', id);
     showMsg('✓ מנוי הופעל בהצלחה');
-    loadSubscriptions();
+    loadClients();
   }
 
   async function deleteSubscription(id) {
@@ -920,7 +991,7 @@
     const val = current + delta;
     if (val < 0) return showMsg('לא ניתן לרדת מתחת לאפס', 'error');
     await db.from('subscriptions').update({ classes_remaining: val }).eq('id', id);
-    loadSubscriptions();
+    loadClients();
   }
 
   // ── CLASSES ───────────────────────────────────────────────
@@ -1438,7 +1509,7 @@ td { padding: 2.5mm 3mm; color: #2d2a24; border-bottom: 1px solid #e2efe8; }
 .footer { position: absolute; bottom: 10mm; left: 16mm; right: 16mm; display: flex; justify-content: space-between; font-size: 0.67rem; color: #9ab5aa; border-top: 1px solid #b8d5c2; padding-top: 3mm; }
 .action-bar { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: white; border-bottom: 2px solid #b8d5c2; display: flex; flex-direction: column; align-items: stretch; gap: 0.6rem; padding: 1rem 1.2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.12); font-family: 'Heebo', sans-serif; }
 .action-btns { display: flex; gap: 0.6rem; }
-.action-bar button { flex: 1; padding: 1rem 0; border: none; border-radius: 12px; font-family: 'Heebo', sans-serif; font-size: 1.15rem; font-weight: 700; cursor: pointer; -webkit-appearance: none; }
+.action-bar button { flex: 1; padding: 1.2rem 0; border: none; border-radius: 12px; font-family: 'Heebo', sans-serif; font-size: 1.4rem; font-weight: 700; cursor: pointer; -webkit-appearance: none; }
 .btn-print { background: #2d2a24; color: white; }
 .btn-close { background: #e8f4ef; color: #2d5a44; border: 2px solid #b8d5c2; }
 .action-bar .hint { font-size: 0.75rem; color: #8a9a8a; text-align: center; }
