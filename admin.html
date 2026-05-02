@@ -802,7 +802,7 @@
       ? activeClients.map(({ c, activeSub }) => {
           const pendingSub = !activeSub ? (subsByClient[c.id] || []).find(s => !s.is_active) : null;
           return `<tr>
-            <td><strong style="cursor:pointer;color:#78855F;text-decoration:underline dotted" onclick="openClientHistory(${c.id},'${c.full_name.replace(/'/g,"\\'")}','${c.phone}','${(c.email||'').replace(/'/g,"\\'")}','${fmtDate(c.created_at)}')">${c.full_name}</strong></td>
+            <td><strong style="cursor:pointer;color:#4D2115;text-decoration:underline dotted" onclick="openClientHistory(${c.id},'${c.full_name.replace(/'/g,"\\'")}','${c.phone}','${(c.email||'').replace(/'/g,"\\'")}','${fmtDate(c.created_at)}')">${c.full_name}</strong></td>
             <td><a href="tel:${c.phone}">${c.phone}</a></td>
             <td>${activeSub ? activeSub.subscription_types?.name : (pendingSub ? '<span class="badge badge-orange">ממתין לאישור</span>' : '<span class="badge badge-red">אין מנוי</span>')}</td>
             <td style="text-align:center;font-weight:700">${activeSub ? activeSub.classes_remaining : '—'}</td>
@@ -820,7 +820,7 @@
 
     document.getElementById('past-clients-table').innerHTML = pastClients.length
       ? pastClients.map(({ c, lastSub }) => `<tr>
-          <td><strong style="cursor:pointer;color:#78855F;text-decoration:underline dotted" onclick="openClientHistory(${c.id},'${c.full_name.replace(/'/g,"\\'")}','${c.phone}','${(c.email||'').replace(/'/g,"\\'")}','${fmtDate(c.created_at)}')">${c.full_name}</strong></td>
+          <td><strong style="cursor:pointer;color:#4D2115;text-decoration:underline dotted" onclick="openClientHistory(${c.id},'${c.full_name.replace(/'/g,"\\'")}','${c.phone}','${(c.email||'').replace(/'/g,"\\'")}','${fmtDate(c.created_at)}')">${c.full_name}</strong></td>
           <td><a href="tel:${c.phone}">${c.phone}</a></td>
           <td>${lastSub ? lastSub.subscription_types?.name : '—'}</td>
           <td>${lastSub ? fmtDate(lastSub.expiry_date) : '—'}</td>

@@ -161,6 +161,21 @@
     loadClasses();
   }
 
+  function calLinks(c) {
+    const d = c.class_date.replace(/-/g, '');
+    const t = (c.class_time || '090000').replace(/:/g, '').slice(0, 6).padEnd(6, '0');
+    const endH = String(parseInt(t.slice(0, 2)) + 1).padStart(2, '0');
+    const start = `${d}T${t}`;
+    const end = `${d}T${endH}${t.slice(2)}`;
+    const title = `לירן יוגה — ${c.title}`;
+    const gcal = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${start}/${end}`;
+    const ics = `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nBEGIN:VEVENT\r\nDTSTART:${start}\r\nDTEND:${end}\r\nSUMMARY:${title}\r\nEND:VEVENT\r\nEND:VCALENDAR`;
+    return `<div style="display:flex;gap:0.4rem;margin-top:0.45rem">
+      <a href="${gcal}" target="_blank" style="font-size:0.72rem;color:#78855F;text-decoration:none;border:1px solid #C2C9A8;border-radius:5px;padding:0.2rem 0.5rem;white-space:nowrap">+ Google</a>
+      <a href="data:text/calendar;charset=utf8,${encodeURIComponent(ics)}" download="class.ics" style="font-size:0.72rem;color:#78855F;text-decoration:none;border:1px solid #C2C9A8;border-radius:5px;padding:0.2rem 0.5rem;white-space:nowrap">+ Apple</a>
+    </div>`;
+  }
+
   async function loadClasses() {
     const today = new Date().toISOString().split('T')[0];
     const nextWeek = new Date();
@@ -211,6 +226,7 @@
             <div class="class-title">${c.title}</div>
             <div class="class-meta">${fmtDay(c.class_date)} · ${c.class_time?.slice(0,5)}</div>
             <div class="class-spots">${spotsText}</div>
+            ${isRegistered ? calLinks(c) : ''}
           </div>
           ${isRegistered
             ? canCancel
