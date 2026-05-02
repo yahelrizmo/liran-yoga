@@ -226,7 +226,7 @@
             <div class="class-title">${c.title}</div>
             <div class="class-meta">${fmtDay(c.class_date)} · ${c.class_time?.slice(0,5)}</div>
             <div class="class-spots">${spotsText}</div>
-            ${isRegistered ? calLinks(c) : ''}
+            ${calLinks(c)}
           </div>
           ${isRegistered
             ? canCancel
