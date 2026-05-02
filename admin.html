@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="לירן יוגה">
-  <meta name="theme-color" content="#6b4f2a">
+  <meta name="theme-color" content="#78855F">
   <link rel="apple-touch-icon" href="icon-192.png">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -22,7 +22,7 @@
   </script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Segoe UI', Arial, sans-serif; background: #e8f4ef; color: #2d2a24; display: flex; height: 100vh; overflow: hidden; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #EEE7DD; color: #4D2115; display: flex; height: 100vh; overflow: hidden; }
 
     .sidebar {
       width: 300px;
@@ -52,10 +52,10 @@
 
     .app-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 
-    nav { background: white; border-bottom: 2px solid #b8d5c2; display: flex; flex-shrink: 0; }
-    nav button { padding: 0.85rem 1.3rem; border: none; background: none; cursor: pointer; font-size: 0.88rem; color: #6a8a7a; border-bottom: 3px solid transparent; display: flex; align-items: center; gap: 0.4rem; }
-    nav button.active { color: #2d2a24; border-bottom-color: #2d5a44; font-weight: 600; }
-    nav button:hover { background: #e8f4ef; }
+    nav { background: white; border-bottom: 2px solid #C2C9A8; display: flex; flex-shrink: 0; }
+    nav button { padding: 0.85rem 1.3rem; border: none; background: none; cursor: pointer; font-size: 0.88rem; color: #7A8570; border-bottom: 3px solid transparent; display: flex; align-items: center; gap: 0.4rem; }
+    nav button.active { color: #4D2115; border-bottom-color: #78855F; font-weight: 600; }
+    nav button:hover { background: #E8EAE0; }
     nav button svg { width: 16px; height: 16px; stroke-width: 1.8; }
     .nav-badge { background: #e53e3e; color: white; font-size: 0.65rem; font-weight: 700; border-radius: 50%; min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; padding: 0 3px; }
     .hc-badge { position: absolute; top: 8px; left: 8px; background: #e53e3e; color: white; font-size: 0.65rem; font-weight: 700; border-radius: 50%; min-width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; padding: 0 3px; }
@@ -65,85 +65,85 @@
     .section { display: none; }
     .section.active { display: block; }
 
-    .card { background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,0.08); border: 1px solid #b8d5c2; }
-    h2 { font-size: 1.15rem; margin-bottom: 1rem; color: #2d2a24; }
+    .card { background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,0.08); border: 1px solid #C2C9A8; }
+    h2 { font-size: 1.15rem; margin-bottom: 1rem; color: #4D2115; }
 
     .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 1rem; }
-    label { display: block; font-size: 0.85rem; color: #5a7a6a; margin-bottom: 0.25rem; }
-    input, select, textarea { width: 100%; padding: 0.6rem 0.8rem; border: 1px solid #b8d5c2; border-radius: 8px; font-size: 0.95rem; box-sizing: border-box; }
-    input:focus, select:focus { outline: none; border-color: #2d5a44; }
+    label { display: block; font-size: 0.85rem; color: #7A8570; margin-bottom: 0.25rem; }
+    input, select, textarea { width: 100%; padding: 0.6rem 0.8rem; border: 1px solid #C2C9A8; border-radius: 8px; font-size: 0.95rem; box-sizing: border-box; }
+    input:focus, select:focus { outline: none; border-color: #78855F; }
     input[type="date"], input[type="time"] { -webkit-appearance: none; appearance: none; width: 100%; min-height: 2.75rem; }
     .form-grid > div { min-width: 0; overflow: hidden; }
-    a { color: #2d5a44; text-decoration: none; }
-    a:hover { color: #1e3d2e; text-decoration: underline; }
+    a { color: #78855F; text-decoration: none; }
+    a:hover { color: #606A4C; text-decoration: underline; }
 
     .btn { padding: 0.6rem 1.2rem; border: none; border-radius: 8px; cursor: pointer; font-size: 0.95rem; font-weight: 600; }
-    .btn-primary { background: #2d2a24; color: white; }
-    .btn-primary:hover { background: #1a1814; }
+    .btn-primary { background: #4D2115; color: white; }
+    .btn-primary:hover { background: #2E1208; }
     .btn-danger { background: #e53e3e; color: white; }
     .btn-sm { padding: 0.3rem 0.7rem; font-size: 0.8rem; }
 
     table { width: 100%; border-collapse: collapse; }
-    th { background: #e8f4ef; padding: 0.75rem; text-align: right; font-size: 0.85rem; color: #2d5a44; border-bottom: 2px solid #b8d5c2; }
-    td { padding: 0.75rem; border-bottom: 1px solid #d4eade; font-size: 0.9rem; }
-    tr:hover td { background: #e8f4ef; }
+    th { background: #E8EAE0; padding: 0.75rem; text-align: right; font-size: 0.85rem; color: #78855F; border-bottom: 2px solid #C2C9A8; }
+    td { padding: 0.75rem; border-bottom: 1px solid #D4D9BF; font-size: 0.9rem; }
+    tr:hover td { background: #E8EAE0; }
 
     .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
-    .badge-green { background: #c6f6d5; color: #276749; }
+    .badge-green { background: #E0E8CC; color: #4D5A35; }
     .badge-orange { background: #feebc8; color: #c05621; }
     .badge-red { background: #fed7d7; color: #c53030; }
 
     .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
-    .stat { background: white; border-radius: 12px; padding: 1rem; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border: 1px solid #b8d5c2; }
-    .stat-number { font-size: 2rem; font-weight: 900; color: #2d5a44; }
-    .stat-label { font-size: 0.8rem; color: #6a8a7a; margin-top: 0.25rem; }
+    .stat { background: white; border-radius: 12px; padding: 1rem; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border: 1px solid #C2C9A8; }
+    .stat-number { font-size: 2rem; font-weight: 900; color: #78855F; }
+    .stat-label { font-size: 0.8rem; color: #7A8570; margin-top: 0.25rem; }
 
     .msg { padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-weight: 600; }
-    .msg-success { background: #c6f6d5; color: #276749; }
+    .msg-success { background: #E0E8CC; color: #4D5A35; }
     .msg-error { background: #fed7d7; color: #c53030; }
 
-    .empty { text-align: center; color: #6a8a7a; padding: 2rem; }
+    .empty { text-align: center; color: #7A8570; padding: 2rem; }
 
     /* ── PIN SCREEN ──────────────────────────────────────────── */
     #pin-screen {
       position: fixed; inset: 0; z-index: 9999;
-      background: #e8f4ef;
+      background: #EEE7DD;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       gap: 1.5rem;
     }
     #pin-screen.hidden { display: none; }
     .pin-logo { text-align: center; }
-    .pin-logo h1 { font-size: 2rem; font-weight: 700; color: #2d2a24; }
-    .pin-logo p { color: #6a8a7a; font-size: 0.9rem; margin-top: 0.3rem; }
+    .pin-logo h1 { font-size: 2rem; font-weight: 700; color: #4D2115; }
+    .pin-logo p { color: #7A8570; font-size: 0.9rem; margin-top: 0.3rem; }
     .pin-dots { display: flex; gap: 0.75rem; justify-content: center; }
-    .pin-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #2d5a44; background: transparent; transition: background 0.15s; }
-    .pin-dot.filled { background: #2d5a44; }
+    .pin-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #78855F; background: transparent; transition: background 0.15s; }
+    .pin-dot.filled { background: #78855F; }
     .pin-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; width: 240px; }
     .pin-key {
       padding: 1rem; border: none; border-radius: 12px;
-      background: white; font-size: 1.4rem; font-weight: 700; color: #2d2a24;
+      background: white; font-size: 1.4rem; font-weight: 700; color: #4D2115;
       box-shadow: 0 1px 3px rgba(0,0,0,0.12); cursor: pointer;
       transition: background 0.15s;
     }
-    .pin-key:active { background: #b8d5c2; }
+    .pin-key:active { background: #C2C9A8; }
     .pin-key.wide { grid-column: span 2; }
     .pin-error { color: #c53030; font-size: 0.85rem; min-height: 1.2em; text-align: center; }
 
     /* ── LINK ROW ────────────────────────────────────────────── */
     .link-row {
       display: flex; align-items: center; gap: 0.6rem;
-      background: #e8f4ef; border: 1px solid #b8d5c2; border-radius: 10px;
-      padding: 0.65rem 1rem; margin-bottom: 1rem; font-size: 0.85rem; color: #2d2a24;
+      background: #E8EAE0; border: 1px solid #C2C9A8; border-radius: 10px;
+      padding: 0.65rem 1rem; margin-bottom: 1rem; font-size: 0.85rem; color: #4D2115;
     }
-    .link-row svg { width: 15px; height: 15px; flex-shrink: 0; stroke: #2d5a44; }
+    .link-row svg { width: 15px; height: 15px; flex-shrink: 0; stroke: #78855F; }
     .link-row span { flex: 1; font-weight: 600; }
     .btn-copy-link {
       padding: 0.35rem 0.9rem; border: none; border-radius: 7px;
-      background: #2d5a44; color: white; font-size: 0.82rem; font-weight: 700;
+      background: #78855F; color: white; font-size: 0.82rem; font-weight: 700;
       cursor: pointer; transition: background 0.2s; display: flex; align-items: center; gap: 0.35rem;
     }
     .btn-copy-link svg { width: 13px; height: 13px; stroke: white; }
-    .btn-copy-link:hover { background: #1e3d2e; }
+    .btn-copy-link:hover { background: #606A4C; }
 
     /* ── MODAL ───────────────────────────────────────────────── */
     .modal-backdrop {
@@ -156,33 +156,33 @@
       background: white; border-radius: 16px; padding: 1.75rem;
       width: 90%; max-width: 460px; box-shadow: 0 8px 40px rgba(0,0,0,0.2);
     }
-    .modal h3 { color: #2d2a24; margin-bottom: 1.25rem; font-size: 1.05rem; }
+    .modal h3 { color: #4D2115; margin-bottom: 1.25rem; font-size: 1.05rem; }
     .modal-actions { display: flex; gap: 0.75rem; margin-top: 1.25rem; }
 
     /* ── HOME ────────────────────────────────────────────────── */
     #section-home.active { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; min-height: calc(100vh - 2px); padding: 2rem 1rem; }
-    .home-greeting { font-size: 2rem; font-weight: 700; color: #2d2a24; margin-bottom: 0.3rem; }
-    .home-date { font-size: 0.88rem; color: #6a8a7a; margin-bottom: 1.5rem; }
+    .home-greeting { font-size: 2rem; font-weight: 700; color: #4D2115; margin-bottom: 0.3rem; }
+    .home-date { font-size: 0.88rem; color: #7A8570; margin-bottom: 1.5rem; }
     #section-home .stats { margin-bottom: 2rem; }
     .home-nav { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.85rem; width: 100%; max-width: 340px; margin-bottom: 2rem; }
     .home-card {
       position: relative; background: white; border-radius: 14px; padding: 1.1rem 0.75rem;
-      text-align: center; cursor: pointer; border: 2px solid #b8d5c2;
+      text-align: center; cursor: pointer; border: 2px solid #C2C9A8;
       transition: border-color 0.2s, background 0.2s;
     }
-    .home-card:hover { border-color: #2d5a44; background: #e8f4ef; }
+    .home-card:hover { border-color: #78855F; background: #E8EAE0; }
     .home-card .hc-icon { margin-bottom: 0.4rem; }
-    .home-card .hc-icon svg { width: 26px; height: 26px; stroke: #2d5a44; }
-    .home-card .hc-label { font-size: 0.82rem; font-weight: 700; color: #2d2a24; }
+    .home-card .hc-icon svg { width: 26px; height: 26px; stroke: #78855F; }
+    .home-card .hc-label { font-size: 0.82rem; font-weight: 700; color: #4D2115; }
     .home-links { display: flex; flex-direction: column; gap: 0.6rem; width: 100%; max-width: 420px; margin-bottom: 1rem; }
-    .btn-backup { width: 100%; max-width: 420px; padding: 0.75rem; border: 2px solid #b8d5c2; border-radius: 12px; background: white; color: #6a8a7a; font-size: 0.88rem; font-weight: 600; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: border-color 0.2s, color 0.2s; }
-    .btn-backup:hover { border-color: #2d5a44; color: #2d2a24; }
+    .btn-backup { width: 100%; max-width: 420px; padding: 0.75rem; border: 2px solid #C2C9A8; border-radius: 12px; background: white; color: #7A8570; font-size: 0.88rem; font-weight: 600; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: border-color 0.2s, color 0.2s; }
+    .btn-backup:hover { border-color: #78855F; color: #4D2115; }
     .btn-backup svg { width: 16px; height: 16px; }
 
     /* ── ALERTS ──────────────────────────────────────────────── */
     .alerts-list { display: flex; flex-direction: column; gap: 0.75rem; }
     .alert-bubble {
-      background: white; border-radius: 14px; border: 2px solid #b8d5c2;
+      background: white; border-radius: 14px; border: 2px solid #C2C9A8;
       padding: 1rem 1.2rem;
     }
     .alert-bubble.urgent { border-color: #fc8181; }
@@ -190,58 +190,58 @@
     .alert-bubble.info { border-color: #76e4f7; }
     .alert-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; }
     .alert-icon { font-size: 1.3rem; }
-    .alert-title { font-weight: 700; font-size: 0.9rem; color: #2d2a24; }
-    .alert-body { font-size: 0.85rem; color: #6a8a7a; margin-bottom: 0.75rem; line-height: 1.5; }
+    .alert-title { font-weight: 700; font-size: 0.9rem; color: #4D2115; }
+    .alert-body { font-size: 0.85rem; color: #7A8570; margin-bottom: 0.75rem; line-height: 1.5; }
     .alert-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
     .btn-alert { padding: 0.35rem 0.8rem; border: none; border-radius: 7px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
-    .btn-alert-copy { background: #e2e8f0; color: #2d2a24; }
+    .btn-alert-copy { background: #e2e8f0; color: #4D2115; }
     .btn-alert-wa { background: #25d366; color: white; }
-    .alerts-empty { text-align: center; color: #6a8a7a; padding: 3rem 1rem; font-size: 0.95rem; line-height: 1.8; }
-    .alert-filter { padding: 0.35rem 0.9rem; border: 2px solid #b8d5c2; border-radius: 20px; background: white; font-size: 0.82rem; font-weight: 600; color: #6a8a7a; cursor: pointer; }
-    .alert-filter.active { border-color: #2d5a44; background: #e8f4ef; color: #2d2a24; }
+    .alerts-empty { text-align: center; color: #7A8570; padding: 3rem 1rem; font-size: 0.95rem; line-height: 1.8; }
+    .alert-filter { padding: 0.35rem 0.9rem; border: 2px solid #C2C9A8; border-radius: 20px; background: white; font-size: 0.82rem; font-weight: 600; color: #7A8570; cursor: pointer; }
+    .alert-filter.active { border-color: #78855F; background: #E8EAE0; color: #4D2115; }
 
-    .search-input { width: 100%; padding: 0.6rem 0.9rem; border: 1px solid #b8d5c2; border-radius: 8px; font-size: 0.9rem; margin-bottom: 1rem; font-family: inherit; background: white; }
-    .search-input:focus { outline: none; border-color: #2d5a44; }
+    .search-input { width: 100%; padding: 0.6rem 0.9rem; border: 1px solid #C2C9A8; border-radius: 8px; font-size: 0.9rem; margin-bottom: 1rem; font-family: inherit; background: white; }
+    .search-input:focus { outline: none; border-color: #78855F; }
     #section-home .stats { grid-template-columns: repeat(2, 1fr); }
     #section-home .stats .stat:last-child { grid-column: span 2; max-width: 200px; margin: 0 auto; width: 100%; }
 
     /* ── CLASS GROUPS ───────────────────────────────────────── */
-    .class-group { background: white; border-radius: 12px; border: 1px solid #b8d5c2; margin-bottom: 0.75rem; overflow: hidden; }
+    .class-group { background: white; border-radius: 12px; border: 1px solid #C2C9A8; margin-bottom: 0.75rem; overflow: hidden; }
     .class-group-header { padding: 1rem 1.2rem; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; transition: background 0.2s; }
-    .class-group-header:hover { background: #e8f4ef; }
-    .class-group-title { font-weight: 700; font-size: 0.95rem; color: #2d2a24; }
-    .class-group-meta { font-size: 0.82rem; color: #6a8a7a; margin-top: 0.2rem; }
-    .class-group-count { font-size: 0.9rem; font-weight: 700; color: #2d5a44; margin-right: auto; white-space: nowrap; }
+    .class-group-header:hover { background: #E8EAE0; }
+    .class-group-title { font-weight: 700; font-size: 0.95rem; color: #4D2115; }
+    .class-group-meta { font-size: 0.82rem; color: #7A8570; margin-top: 0.2rem; }
+    .class-group-count { font-size: 0.9rem; font-weight: 700; color: #78855F; margin-right: auto; white-space: nowrap; }
     .class-group-count.full { color: #e53e3e; }
-    .class-group-body { border-top: 1px solid #b8d5c2; display: none; }
+    .class-group-body { border-top: 1px solid #C2C9A8; display: none; }
     .class-group-body.open { display: block; }
     .class-group-body table { margin: 0; }
-    .class-group-body th { background: #e8f4ef; }
+    .class-group-body th { background: #E8EAE0; }
 
     /* ── FORMS GRID ─────────────────────────────────────────── */
     .forms-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
     .forms-grid-2 .card { margin-bottom: 0; }
 
     /* ── ACCORDION ───────────────────────────────────────────── */
-    .accordion { background: white; border-radius: 12px; border: 1px solid #b8d5c2; margin-bottom: 0.75rem; overflow: hidden; }
+    .accordion { background: white; border-radius: 12px; border: 1px solid #C2C9A8; margin-bottom: 0.75rem; overflow: hidden; }
     .accordion-header { padding: 1rem 1.2rem; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: background 0.2s; }
-    .accordion-header:hover { background: #e8f4ef; }
-    .accordion-header-title { font-weight: 700; font-size: 0.95rem; color: #2d2a24; display: flex; align-items: center; gap: 0.5rem; }
-    .accordion-header-title svg { width: 18px; height: 18px; stroke: #2d5a44; }
-    .accordion-body { border-top: 1px solid #b8d5c2; display: none; padding: 1.5rem; }
+    .accordion-header:hover { background: #E8EAE0; }
+    .accordion-header-title { font-weight: 700; font-size: 0.95rem; color: #4D2115; display: flex; align-items: center; gap: 0.5rem; }
+    .accordion-header-title svg { width: 18px; height: 18px; stroke: #78855F; }
+    .accordion-body { border-top: 1px solid #C2C9A8; display: none; padding: 1.5rem; }
     .accordion-body.open { display: block; }
     .accordion-chevron { transition: transform 0.2s; flex-shrink: 0; }
 
     /* ── SUMMARY CHART ───────────────────────────────────────── */
     .chart-bar-row { margin-bottom: 0.75rem; }
-    .chart-bar-label { display: flex; justify-content: space-between; font-size: 0.82rem; margin-bottom: 0.25rem; color: #2d2a24; }
-    .chart-bar-track { background: #e8f4ef; border-radius: 4px; height: 10px; overflow: hidden; }
+    .chart-bar-label { display: flex; justify-content: space-between; font-size: 0.82rem; margin-bottom: 0.25rem; color: #4D2115; }
+    .chart-bar-track { background: #E8EAE0; border-radius: 4px; height: 10px; overflow: hidden; }
     .chart-bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
 
     /* settings gear in nav */
-    .nav-settings-btn { margin-right: auto; border-bottom: none !important; color: #8a9a8a !important; }
-    .nav-settings-btn:hover { color: #2d2a24 !important; }
-    .nav-settings-btn.active { color: #2d2a24 !important; border-bottom: none !important; }
+    .nav-settings-btn { margin-right: auto; border-bottom: none !important; color: #7A8570 !important; }
+    .nav-settings-btn:hover { color: #4D2115 !important; }
+    .nav-settings-btn.active { color: #4D2115 !important; border-bottom: none !important; }
 
     /* ── MOBILE ──────────────────────────────────────────────── */
     @media (max-width: 720px) {
@@ -266,13 +266,13 @@
 <div class="modal-backdrop hidden" id="history-modal" onclick="closeHistoryModal(event)">
   <div class="modal" style="max-width:640px;max-height:85vh;overflow-y:auto" onclick="event.stopPropagation()">
     <h3 id="history-client-name" style="font-size:1.15rem"></h3>
-    <div id="history-client-meta" style="font-size:0.83rem;color:#8a7a6a;margin-bottom:1.25rem"></div>
+    <div id="history-client-meta" style="font-size:0.83rem;color:#7A6860;margin-bottom:1.25rem"></div>
     <div style="margin-bottom:1.5rem">
-      <div style="font-weight:700;color:#2d2a24;font-size:0.9rem;margin-bottom:0.6rem;border-bottom:2px solid #b8d5c2;padding-bottom:0.3rem">מנויים</div>
+      <div style="font-weight:700;color:#4D2115;font-size:0.9rem;margin-bottom:0.6rem;border-bottom:2px solid #C2C9A8;padding-bottom:0.3rem">מנויים</div>
       <div id="history-subs"></div>
     </div>
     <div>
-      <div style="font-weight:700;color:#2d2a24;font-size:0.9rem;margin-bottom:0.6rem;border-bottom:2px solid #b8d5c2;padding-bottom:0.3rem">הרשמות לשיעורים</div>
+      <div style="font-weight:700;color:#4D2115;font-size:0.9rem;margin-bottom:0.6rem;border-bottom:2px solid #C2C9A8;padding-bottom:0.3rem">הרשמות לשיעורים</div>
       <div id="history-regs"></div>
     </div>
     <div class="modal-actions" style="margin-top:1.5rem">
@@ -394,7 +394,7 @@
     <div class="accordion">
       <div class="accordion-header" onclick="toggleAccordion('acc-add-client')">
         <div class="accordion-header-title"><i data-lucide="user-plus"></i> הוספת לקוח חדש</div>
-        <i data-lucide="chevron-down" class="accordion-chevron" id="chev-acc-add-client" style="width:18px;height:18px;stroke:#8a7a6a"></i>
+        <i data-lucide="chevron-down" class="accordion-chevron" id="chev-acc-add-client" style="width:18px;height:18px;stroke:#7A6860"></i>
       </div>
       <div class="accordion-body" id="acc-add-client">
         <div class="form-grid">
@@ -411,7 +411,7 @@
     <div class="accordion">
       <div class="accordion-header" onclick="toggleAccordion('acc-add-sub')">
         <div class="accordion-header-title"><i data-lucide="credit-card"></i> שיוך מנוי ללקוח</div>
-        <i data-lucide="chevron-down" class="accordion-chevron" id="chev-acc-add-sub" style="width:18px;height:18px;stroke:#8a7a6a"></i>
+        <i data-lucide="chevron-down" class="accordion-chevron" id="chev-acc-add-sub" style="width:18px;height:18px;stroke:#7A6860"></i>
       </div>
       <div class="accordion-body" id="acc-add-sub">
         <div class="form-grid">
@@ -466,7 +466,7 @@
     <div class="accordion">
       <div class="accordion-header" onclick="toggleAccordion('acc-new-class')">
         <div class="accordion-header-title"><i data-lucide="plus-circle"></i> יצירת שיעור חדש</div>
-        <i data-lucide="chevron-down" class="accordion-chevron" id="chev-acc-new-class" style="width:18px;height:18px;stroke:#8a7a6a"></i>
+        <i data-lucide="chevron-down" class="accordion-chevron" id="chev-acc-new-class" style="width:18px;height:18px;stroke:#7A6860"></i>
       </div>
       <div class="accordion-body" id="acc-new-class">
         <div class="form-grid">
@@ -485,7 +485,7 @@
             </select>
           </div>
         </div>
-        <div id="recurrence-preview" style="display:none;margin-top:0.75rem;font-size:0.82rem;color:#2d5a44;background:#e8f4ef;border:1px solid #b8d5c2;border-radius:8px;padding:0.6rem 1rem;line-height:1.8"></div>
+        <div id="recurrence-preview" style="display:none;margin-top:0.75rem;font-size:0.82rem;color:#78855F;background:#E8EAE0;border:1px solid #C2C9A8;border-radius:8px;padding:0.6rem 1rem;line-height:1.8"></div>
         <button class="btn btn-primary" style="margin-top:1rem" onclick="addClass()">צור שיעור</button>
       </div>
     </div>
@@ -494,7 +494,7 @@
     <div class="accordion">
       <div class="accordion-header" onclick="toggleAccordion('acc-reg-class')">
         <div class="accordion-header-title"><i data-lucide="user-check"></i> רישום לקוח לשיעור</div>
-        <i data-lucide="chevron-down" class="accordion-chevron" id="chev-acc-reg-class" style="width:18px;height:18px;stroke:#8a7a6a"></i>
+        <i data-lucide="chevron-down" class="accordion-chevron" id="chev-acc-reg-class" style="width:18px;height:18px;stroke:#7A6860"></i>
       </div>
       <div class="accordion-body" id="acc-reg-class">
         <div class="form-grid">
@@ -503,7 +503,7 @@
           <div><label>מנוי לשימוש *</label><select id="reg-subscription"></select></div>
         </div>
         <button class="btn btn-primary" style="margin-top:1rem" onclick="addRegistration()">רשום לשיעור</button>
-        <p style="font-size:0.8rem;color:#6a8a7a;margin-top:0.75rem;padding:0.5rem 0.75rem;background:#e8f4ef;border-radius:8px;border:1px solid #b8d5c2">ניכוי תרגול ממנוי מתבצע בסיום שיעור דרך כפתור "סיים שיעור"</p>
+        <p style="font-size:0.8rem;color:#7A8570;margin-top:0.75rem;padding:0.5rem 0.75rem;background:#E8EAE0;border-radius:8px;border:1px solid #C2C9A8">ניכוי תרגול ממנוי מתבצע בסיום שיעור דרך כפתור "סיים שיעור"</p>
       </div>
     </div>
 
@@ -520,7 +520,7 @@
     <div class="accordion">
       <div class="accordion-header" onclick="toggleAccordion('acc-sub-types')">
         <div class="accordion-header-title"><i data-lucide="credit-card"></i> הגדרות מנוי</div>
-        <i data-lucide="chevron-down" class="accordion-chevron" id="chev-acc-sub-types" style="width:18px;height:18px;stroke:#8a7a6a"></i>
+        <i data-lucide="chevron-down" class="accordion-chevron" id="chev-acc-sub-types" style="width:18px;height:18px;stroke:#7A6860"></i>
       </div>
       <div class="accordion-body" id="acc-sub-types">
         <div style="margin-bottom:1.5rem">
@@ -545,7 +545,7 @@
     <div class="accordion">
       <div class="accordion-header" onclick="toggleAccordion('acc-summary')">
         <div class="accordion-header-title"><i data-lucide="bar-chart-2"></i> סיכום חודשי</div>
-        <i data-lucide="chevron-down" class="accordion-chevron" id="chev-acc-summary" style="width:18px;height:18px;stroke:#8a7a6a"></i>
+        <i data-lucide="chevron-down" class="accordion-chevron" id="chev-acc-summary" style="width:18px;height:18px;stroke:#7A6860"></i>
       </div>
       <div class="accordion-body" id="acc-summary">
         <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;margin-bottom:1.5rem">
@@ -554,19 +554,19 @@
           <button class="btn btn-primary" onclick="loadSummary()">טען נתונים</button>
         </div>
         <div id="summary-content" style="display:none">
-          <div style="font-size:1.05rem;font-weight:700;color:#2d2a24;margin-bottom:1rem" id="summary-month-label"></div>
+          <div style="font-size:1.05rem;font-weight:700;color:#4D2115;margin-bottom:1rem" id="summary-month-label"></div>
           <div class="stats" style="margin-bottom:1.5rem">
             <div class="stat"><div class="stat-number" id="sum-revenue">—</div><div class="stat-label">הכנסות</div></div>
             <div class="stat"><div class="stat-number" id="sum-subs">—</div><div class="stat-label">מנויים נרכשו</div></div>
             <div class="stat"><div class="stat-number" id="sum-classes">—</div><div class="stat-label">שיעורים</div></div>
             <div class="stat"><div class="stat-number" id="sum-clients">—</div><div class="stat-label">לקוחות חדשים</div></div>
           </div>
-          <div style="font-weight:700;font-size:0.82rem;color:#2d2a24;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:0.75rem;padding-bottom:0.4rem;border-bottom:2px solid #2d2a24">פירוט הכנסות לפי סוג מנוי</div>
+          <div style="font-weight:700;font-size:0.82rem;color:#4D2115;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:0.75rem;padding-bottom:0.4rem;border-bottom:2px solid #4D2115">פירוט הכנסות לפי סוג מנוי</div>
           <table style="margin-bottom:1.5rem">
             <thead><tr><th>סוג מנוי</th><th>כמות</th><th>מחיר ליחידה</th><th>סה"כ</th></tr></thead>
             <tbody id="summary-table-body"></tbody>
           </table>
-          <div style="font-weight:700;font-size:0.82rem;color:#2d2a24;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:0.75rem;padding-bottom:0.4rem;border-bottom:2px solid #2d2a24">התפלגות הכנסות</div>
+          <div style="font-weight:700;font-size:0.82rem;color:#4D2115;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:0.75rem;padding-bottom:0.4rem;border-bottom:2px solid #4D2115">התפלגות הכנסות</div>
           <div id="summary-chart" style="margin-bottom:1.5rem"></div>
           <button class="btn btn-primary" style="width:100%;display:flex;align-items:center;justify-content:center;gap:0.5rem" onclick="downloadSummaryPDF()">
             <i data-lucide="download"></i> הורד סיכום PDF
@@ -726,7 +726,7 @@
 
   function renderAlerts(alerts) {
     if (!alerts.length) {
-      document.getElementById('alerts-list').innerHTML = `<div class="alerts-empty"><i data-lucide="check-circle" style="width:32px;height:32px;stroke:#3a7d54;display:block;margin:0 auto 0.75rem"></i>אין התראות בקטגוריה זו</div>`;
+      document.getElementById('alerts-list').innerHTML = `<div class="alerts-empty"><i data-lucide="check-circle" style="width:32px;height:32px;stroke:#78855F;display:block;margin:0 auto 0.75rem"></i>אין התראות בקטגוריה זו</div>`;
       lucide.createIcons(); return;
     }
     document.getElementById('alerts-list').innerHTML = alerts.map(a => `
@@ -802,7 +802,7 @@
       ? activeClients.map(({ c, activeSub }) => {
           const pendingSub = !activeSub ? (subsByClient[c.id] || []).find(s => !s.is_active) : null;
           return `<tr>
-            <td><strong style="cursor:pointer;color:#2d5a44;text-decoration:underline dotted" onclick="openClientHistory(${c.id},'${c.full_name.replace(/'/g,"\\'")}','${c.phone}','${(c.email||'').replace(/'/g,"\\'")}','${fmtDate(c.created_at)}')">${c.full_name}</strong></td>
+            <td><strong style="cursor:pointer;color:#78855F;text-decoration:underline dotted" onclick="openClientHistory(${c.id},'${c.full_name.replace(/'/g,"\\'")}','${c.phone}','${(c.email||'').replace(/'/g,"\\'")}','${fmtDate(c.created_at)}')">${c.full_name}</strong></td>
             <td><a href="tel:${c.phone}">${c.phone}</a></td>
             <td>${activeSub ? activeSub.subscription_types?.name : (pendingSub ? '<span class="badge badge-orange">ממתין לאישור</span>' : '<span class="badge badge-red">אין מנוי</span>')}</td>
             <td style="text-align:center;font-weight:700">${activeSub ? activeSub.classes_remaining : '—'}</td>
@@ -810,7 +810,7 @@
             <td>${activeSub ? statusBadge(activeSub.expiry_date, activeSub.classes_remaining, activeSub.is_active) : ''}</td>
             <td>
               ${activeSub ? `<button class="btn btn-sm" style="background:#e2e8f0;margin-left:0.25rem" onclick="adjustClasses(${activeSub.id},${activeSub.classes_remaining},1)">+1</button><button class="btn btn-sm" style="background:#e2e8f0;margin-left:0.25rem" onclick="adjustClasses(${activeSub.id},${activeSub.classes_remaining},-1)">-1</button>` : ''}
-              ${pendingSub ? `<button class="btn btn-sm" style="background:#2d6a4f;color:white;margin-left:0.25rem" onclick="activateSubscription(${pendingSub.id})">הפעל</button>` : ''}
+              ${pendingSub ? `<button class="btn btn-sm" style="background:#78855F;color:white;margin-left:0.25rem" onclick="activateSubscription(${pendingSub.id})">הפעל</button>` : ''}
               <button class="btn btn-sm" style="background:#e2e8f0;margin-left:0.3rem" onclick="openEditModal(${c.id},'${c.full_name.replace(/'/g,"\\'")}','${c.phone}','${(c.email||'').replace(/'/g,"\\'")}','${(c.notes||'').replace(/'/g,"\\'")}')">עריכה</button>
               <button class="btn btn-danger btn-sm" onclick="deleteClient(${c.id})">מחק</button>
             </td>
@@ -820,7 +820,7 @@
 
     document.getElementById('past-clients-table').innerHTML = pastClients.length
       ? pastClients.map(({ c, lastSub }) => `<tr>
-          <td><strong style="cursor:pointer;color:#2d5a44;text-decoration:underline dotted" onclick="openClientHistory(${c.id},'${c.full_name.replace(/'/g,"\\'")}','${c.phone}','${(c.email||'').replace(/'/g,"\\'")}','${fmtDate(c.created_at)}')">${c.full_name}</strong></td>
+          <td><strong style="cursor:pointer;color:#78855F;text-decoration:underline dotted" onclick="openClientHistory(${c.id},'${c.full_name.replace(/'/g,"\\'")}','${c.phone}','${(c.email||'').replace(/'/g,"\\'")}','${fmtDate(c.created_at)}')">${c.full_name}</strong></td>
           <td><a href="tel:${c.phone}">${c.phone}</a></td>
           <td>${lastSub ? lastSub.subscription_types?.name : '—'}</td>
           <td>${lastSub ? fmtDate(lastSub.expiry_date) : '—'}</td>
@@ -1009,7 +1009,7 @@
       <td><div style="display:flex;gap:0.4rem;align-items:center;flex-wrap:wrap">
         ${c.completed
           ? '<span class="badge badge-green">הסתיים ✓</span>'
-          : `<button class="btn btn-sm" style="background:#2d6a4f;color:white" onclick="endClass(${c.id})">סיים שיעור</button>`
+          : `<button class="btn btn-sm" style="background:#78855F;color:white" onclick="endClass(${c.id})">סיים שיעור</button>`
         }
         <button class="btn btn-sm" style="background:#e8f0fe;color:#1a56db;display:inline-flex;align-items:center;gap:0.3rem" onclick="downloadICS(${JSON.stringify(c).replace(/"/g,'&quot;')})"><i data-lucide="calendar" style="width:13px;height:13px"></i> אפל</button>
         <button class="btn btn-sm" style="background:#e8f0fe;color:#1a56db;display:inline-flex;align-items:center;gap:0.3rem" onclick="openGoogleCal(${JSON.stringify(c).replace(/"/g,'&quot;')})"><i data-lucide="calendar" style="width:13px;height:13px"></i> גוגל</button>
@@ -1021,8 +1021,8 @@
       : '<tr><td colspan="6" class="empty">אין שיעורים קרובים</td></tr>';
 
     const completedRows = completed.length
-      ? `<tr onclick="toggleCompleted('classes')" style="cursor:pointer;background:#e8f4ef">
-          <td colspan="6" id="completed-classes-label" style="padding:0.65rem 0.75rem;font-size:0.85rem;color:#2d5a44;font-weight:600;user-select:none">▸ שיעורים שהסתיימו (${completed.length})</td>
+      ? `<tr onclick="toggleCompleted('classes')" style="cursor:pointer;background:#E8EAE0">
+          <td colspan="6" id="completed-classes-label" style="padding:0.65rem 0.75rem;font-size:0.85rem;color:#78855F;font-weight:600;user-select:none">▸ שיעורים שהסתיימו (${completed.length})</td>
         </tr>
         ${completed.map(c => `<tr class="completed-classes-row" style="display:none;opacity:0.55">${renderCells(c)}</tr>`).join('')}`
       : '';
@@ -1206,7 +1206,7 @@
             <div class="class-group-meta">${fmtDateWithDay(c.class_date)} · ${c.class_time?.slice(0,5)}</div>
           </div>
           <div class="class-group-count${isFull ? ' full' : ''}">${count} / ${c.max_capacity} רשומים</div>
-          <i data-lucide="chevron-down" id="chev-${c.id}" style="width:18px;height:18px;stroke:#8a7a6a;transition:transform 0.2s;flex-shrink:0"></i>
+          <i data-lucide="chevron-down" id="chev-${c.id}" style="width:18px;height:18px;stroke:#7A6860;transition:transform 0.2s;flex-shrink:0"></i>
         </div>
         <div class="class-group-body" id="cgb-${c.id}"></div>
       </div>`;
@@ -1220,8 +1220,8 @@
       : '<div class="empty">אין שיעורים פעילים</div>';
 
     const completedHTML = completed.length
-      ? `<div onclick="toggleCompleted('registrations')" style="cursor:pointer;background:#e8f4ef;border-radius:10px;padding:0.65rem 1rem;margin-bottom:0.5rem;border:1px solid #b8d5c2;margin-top:0.5rem">
-          <span id="completed-registrations-label" style="font-size:0.85rem;color:#2d5a44;font-weight:600;user-select:none">▸ הרשמות לשיעורים שהסתיימו (${completed.length})</span>
+      ? `<div onclick="toggleCompleted('registrations')" style="cursor:pointer;background:#E8EAE0;border-radius:10px;padding:0.65rem 1rem;margin-bottom:0.5rem;border:1px solid #C2C9A8;margin-top:0.5rem">
+          <span id="completed-registrations-label" style="font-size:0.85rem;color:#78855F;font-weight:600;user-select:none">▸ הרשמות לשיעורים שהסתיימו (${completed.length})</span>
         </div>
         <div id="completed-registrations-rows" style="display:none">
           ${completed.map(renderGroup).join('')}
@@ -1330,7 +1330,7 @@
       const btn = document.getElementById(btnId);
       const orig = btn.textContent;
       btn.textContent = '✓';
-      btn.style.background = '#2d6a4f';
+      btn.style.background = '#78855F';
       setTimeout(() => { btn.textContent = orig; btn.style.background = ''; }, 2500);
     });
   }
@@ -1374,8 +1374,8 @@
     XLSX.writeFile(wb, `גיבוי-לירן-יוגה-${dateStr}.xlsx`);
 
     btn.innerHTML = '<i data-lucide="check"></i> גיבוי הורד בהצלחה';
-    btn.style.borderColor = '#3a7d54';
-    btn.style.color = '#3a7d54';
+    btn.style.borderColor = '#78855F';
+    btn.style.color = '#78855F';
     lucide.createIcons();
     setTimeout(() => {
       btn.innerHTML = '<i data-lucide="download"></i> הורדת גיבוי של כל המידע';
@@ -1448,22 +1448,22 @@
     const rows = Object.entries(byType).map(([name, d]) => `<tr>
       <td>${name}</td>
       <td>${d.count}</td>
-      <td class="td-num" style="color:#2d5a44;font-weight:700">₪${d.price.toLocaleString('he-IL')}</td>
-      <td class="td-num" style="color:#2d5a44;font-weight:700">₪${d.total.toLocaleString('he-IL')}</td>
+      <td class="td-num" style="color:#78855F;font-weight:700">₪${d.price.toLocaleString('he-IL')}</td>
+      <td class="td-num" style="color:#78855F;font-weight:700">₪${d.total.toLocaleString('he-IL')}</td>
     </tr>`).join('');
     document.getElementById('summary-table-body').innerHTML = rows + `
-      <tr style="background:#e8f4ef;font-weight:700;border-top:2px solid #b8d5c2">
-        <td colspan="3" style="color:#2d5a44">סה"כ הכנסות</td>
-        <td style="color:#2d5a44;font-weight:700">₪${revenue.toLocaleString('he-IL')}</td>
+      <tr style="background:#E8EAE0;font-weight:700;border-top:2px solid #C2C9A8">
+        <td colspan="3" style="color:#78855F">סה"כ הכנסות</td>
+        <td style="color:#78855F;font-weight:700">₪${revenue.toLocaleString('he-IL')}</td>
       </tr>`;
 
-    const colors = ['#2d5a44','#5a8a6a','#8ab5a0','#b8d5c2'];
+    const colors = ['#78855F','#5a8a6a','#8ab5a0','#C2C9A8'];
     document.getElementById('summary-chart').innerHTML = Object.entries(byType)
       .sort((a,b) => b[1].total - a[1].total)
       .map(([name, d], i) => {
         const pct = revenue > 0 ? (d.total / revenue * 100).toFixed(1) : 0;
         return `<div class="chart-bar-row">
-          <div class="chart-bar-label"><span>${name}</span><span style="font-weight:700;color:#2d5a44">₪${d.total.toLocaleString('he-IL')} (${pct}%)</span></div>
+          <div class="chart-bar-label"><span>${name}</span><span style="font-weight:700;color:#78855F">₪${d.total.toLocaleString('he-IL')} (${pct}%)</span></div>
           <div class="chart-bar-track"><div class="chart-bar-fill" style="width:${pct}%;background:${colors[i % colors.length]}"></div></div>
         </div>`;
       }).join('');
@@ -1485,34 +1485,34 @@
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: #d6e8df; font-family: 'Heebo', sans-serif; padding: 3rem 1rem; }
+body { background: #EEE7DD; font-family: 'Heebo', sans-serif; padding: 3rem 1rem; }
 .page { background: white; width: 210mm; min-height: 297mm; margin: 0 auto; padding: 14mm 16mm 22mm; box-shadow: 0 8px 40px rgba(0,0,0,0.18); position: relative; }
-.header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 7mm; border-bottom: 2px solid #2d2a24; margin-bottom: 7mm; }
+.header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 7mm; border-bottom: 2px solid #4D2115; margin-bottom: 7mm; }
 .header-right { display: flex; align-items: center; gap: 12px; }
-.header-title { font-size: 1.3rem; font-weight: 900; color: #2d2a24; }
-.header-sub { font-size: 0.78rem; color: #5a7a6a; margin-top: 2px; }
-.report-label { font-size: 0.7rem; color: #7a9a8a; text-transform: uppercase; letter-spacing: 1px; }
-.report-month { font-size: 1.1rem; font-weight: 700; color: #2d2a24; margin-top: 2px; }
-.report-date { font-size: 0.73rem; color: #7a9a8a; margin-top: 1px; }
+.header-title { font-size: 1.3rem; font-weight: 900; color: #4D2115; }
+.header-sub { font-size: 0.78rem; color: #7A8570; margin-top: 2px; }
+.report-label { font-size: 0.7rem; color: #7A8570; text-transform: uppercase; letter-spacing: 1px; }
+.report-month { font-size: 1.1rem; font-weight: 700; color: #4D2115; margin-top: 2px; }
+.report-date { font-size: 0.73rem; color: #7A8570; margin-top: 1px; }
 .stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 4mm; margin-bottom: 7mm; }
-.stat-box { background: #e8f4ef; border: 1px solid #b8d5c2; border-radius: 6px; padding: 4mm; text-align: center; }
-.stat-box .num { font-size: 1.6rem; font-weight: 900; color: #2d2a24; line-height: 1; }
-.stat-box .label { font-size: 0.7rem; color: #5a7a6a; margin-top: 2px; }
-.section-title { font-size: 0.75rem; font-weight: 700; color: #2d2a24; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 3mm; padding-bottom: 1.5mm; border-bottom: 2px solid #2d2a24; }
+.stat-box { background: #E8EAE0; border: 1px solid #C2C9A8; border-radius: 6px; padding: 4mm; text-align: center; }
+.stat-box .num { font-size: 1.6rem; font-weight: 900; color: #4D2115; line-height: 1; }
+.stat-box .label { font-size: 0.7rem; color: #7A8570; margin-top: 2px; }
+.section-title { font-size: 0.75rem; font-weight: 700; color: #4D2115; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 3mm; padding-bottom: 1.5mm; border-bottom: 2px solid #4D2115; }
 .section { margin-bottom: 7mm; }
 table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-thead tr { background: #e8f4ef; }
-th { padding: 2.5mm 3mm; text-align: right; color: #2d2a24; font-weight: 700; font-size: 0.74rem; border-bottom: 1.5px solid #b8d5c2; }
-td { padding: 2.5mm 3mm; color: #2d2a24; border-bottom: 1px solid #e2efe8; }
-.td-num { font-weight: 700; color: #2d5a44; }
-.total-row td { background: #e8f4ef; font-weight: 700; border-top: 1.5px solid #b8d5c2; color: #2d5a44; }
-.footer { position: absolute; bottom: 10mm; left: 16mm; right: 16mm; display: flex; justify-content: space-between; font-size: 0.67rem; color: #9ab5aa; border-top: 1px solid #b8d5c2; padding-top: 3mm; }
-.action-bar { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: white; border-bottom: 2px solid #b8d5c2; display: flex; flex-direction: column; align-items: stretch; gap: 0.6rem; padding: 1rem 1.2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.12); font-family: 'Heebo', sans-serif; }
+thead tr { background: #E8EAE0; }
+th { padding: 2.5mm 3mm; text-align: right; color: #4D2115; font-weight: 700; font-size: 0.74rem; border-bottom: 1.5px solid #C2C9A8; }
+td { padding: 2.5mm 3mm; color: #4D2115; border-bottom: 1px solid #e2efe8; }
+.td-num { font-weight: 700; color: #78855F; }
+.total-row td { background: #E8EAE0; font-weight: 700; border-top: 1.5px solid #C2C9A8; color: #78855F; }
+.footer { position: absolute; bottom: 10mm; left: 16mm; right: 16mm; display: flex; justify-content: space-between; font-size: 0.67rem; color: #9ab5aa; border-top: 1px solid #C2C9A8; padding-top: 3mm; }
+.action-bar { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: white; border-bottom: 2px solid #C2C9A8; display: flex; flex-direction: column; align-items: stretch; gap: 0.6rem; padding: 1rem 1.2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.12); font-family: 'Heebo', sans-serif; }
 .action-btns { display: flex; gap: 0.6rem; }
 .action-bar button { flex: 1; padding: 1.2rem 0; border: none; border-radius: 12px; font-family: 'Heebo', sans-serif; font-size: 1.4rem; font-weight: 700; cursor: pointer; -webkit-appearance: none; }
-.btn-print { background: #2d2a24; color: white; }
-.btn-close { background: #e8f4ef; color: #2d5a44; border: 2px solid #b8d5c2; }
-.action-bar .hint { font-size: 0.75rem; color: #8a9a8a; text-align: center; }
+.btn-print { background: #4D2115; color: white; }
+.btn-close { background: #E8EAE0; color: #78855F; border: 2px solid #C2C9A8; }
+.action-bar .hint { font-size: 0.75rem; color: #7A8570; text-align: center; }
 @media (min-width: 600px) { .action-bar { flex-direction: row; align-items: center; justify-content: space-between; } .action-btns { flex: 1; } }
 @media print { .action-bar { display: none; } body { background: white; padding: 0; } .page { box-shadow: none; margin-top: 0; } }
 </style></head><body>
@@ -1575,7 +1575,7 @@ td { padding: 2.5mm 3mm; color: #2d2a24; border-bottom: 1px solid #e2efe8; }
       <td>${t.validity_days} ימים</td>
       <td><span class="badge ${t.is_active ? 'badge-green' : 'badge-red'}">${t.is_active ? 'פעיל' : 'לא פעיל'}</span></td>
       <td><div style="display:flex;gap:0.4rem">
-        <button class="btn btn-sm" style="background:#e2e8f0;color:#2d2a24" onclick="toggleSubType(${t.id}, ${t.is_active})">${t.is_active ? 'השבת' : 'הפעל'}</button>
+        <button class="btn btn-sm" style="background:#e2e8f0;color:#4D2115" onclick="toggleSubType(${t.id}, ${t.is_active})">${t.is_active ? 'השבת' : 'הפעל'}</button>
         <button class="btn btn-danger btn-sm" onclick="deleteSubType(${t.id})">מחק</button>
       </div></td>
     </tr>`).join('') || '<tr><td colspan="6" class="empty">אין סוגי מנויים</td></tr>';

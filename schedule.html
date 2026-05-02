@@ -15,7 +15,7 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html { height: 100%; }
-    body { font-family: 'Heebo', sans-serif; color: #2d2a24; min-height: 100%; position: relative; }
+    body { font-family: 'Heebo', sans-serif; color: #4D2115; min-height: 100%; position: relative; }
 
     .bg { position: absolute; top: 0; left: 0; right: 0; z-index: 0; height: 100%; min-height: 100vh; }
     .bg img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
@@ -27,42 +27,42 @@
     .logo h1 { font-size: 2.2rem; font-weight: 700; letter-spacing: 2px; text-shadow: 0 2px 14px rgba(0,0,0,0.6); }
     .logo p { font-size: 0.95rem; font-weight: 300; opacity: 0.88; margin-top: 0.3rem; text-shadow: 0 1px 8px rgba(0,0,0,0.5); }
 
-    .card { background: rgba(255,250,244,0.96); backdrop-filter: blur(8px); border-radius: 20px; padding: 2rem 1.8rem; width: 100%; max-width: 540px; box-shadow: 0 8px 40px rgba(0,0,0,0.25); }
+    .card { background: rgba(238,231,221,0.96); backdrop-filter: blur(8px); border-radius: 20px; padding: 2rem 1.8rem; width: 100%; max-width: 540px; box-shadow: 0 8px 40px rgba(0,0,0,0.25); }
 
-    .card-title { font-size: 1rem; font-weight: 700; color: #2d5a44; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #ede8e0; }
+    .card-title { font-size: 1rem; font-weight: 700; color: #78855F; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #ede8e0; }
 
     input { width: 100%; padding: 0.8rem 1rem; border: 2px solid #ede8e0; border-radius: 10px; font-size: 1rem; font-family: 'Heebo', sans-serif; background: white; transition: border-color 0.2s; margin-bottom: 0.75rem; }
-    input:focus { outline: none; border-color: #2d5a44; }
+    input:focus { outline: none; border-color: #78855F; }
 
     .btn { width: 100%; padding: 0.9rem; border: none; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; font-family: 'Heebo', sans-serif; transition: background 0.2s; }
-    .btn-main { background: #2d5a44; color: white; }
-    .btn-main:hover { background: #1e3d2e; }
-    .btn-register { background: #3a7d54; color: white; width: auto; padding: 0.5rem 1.2rem; font-size: 0.9rem; border-radius: 8px; border: none; cursor: pointer; font-family: 'Heebo', sans-serif; font-weight: 700; }
+    .btn-main { background: #78855F; color: white; }
+    .btn-main:hover { background: #606A4C; }
+    .btn-register { background: #78855F; color: white; width: auto; padding: 0.5rem 1.2rem; font-size: 0.9rem; border-radius: 8px; border: none; cursor: pointer; font-family: 'Heebo', sans-serif; font-weight: 700; }
     .btn-register:disabled { background: #a0c4b0; cursor: not-allowed; }
-    .btn-registered { background: #e8f5ee; color: #3a7d54; border: 2px solid #3a7d54; width: auto; padding: 0.5rem 1.2rem; font-size: 0.9rem; border-radius: 8px; cursor: default; font-family: 'Heebo', sans-serif; font-weight: 700; }
+    .btn-registered { background: #e8f5ee; color: #78855F; border: 2px solid #78855F; width: auto; padding: 0.5rem 1.2rem; font-size: 0.9rem; border-radius: 8px; cursor: default; font-family: 'Heebo', sans-serif; font-weight: 700; }
     .btn-cancel { background: white; color: #c53030; border: 2px solid #e57373; width: auto; padding: 0.5rem 1.2rem; font-size: 0.85rem; border-radius: 8px; cursor: pointer; font-family: 'Heebo', sans-serif; font-weight: 700; }
     .btn-cancel:hover { background: #fff5f5; }
 
     .subscription-badge { background: #fdf0e0; border: 1px solid #e8c97a; border-radius: 10px; padding: 0.75rem 1rem; margin-bottom: 1.2rem; font-size: 0.9rem; }
-    .subscription-badge strong { color: #2d5a44; }
-    .subscription-badge .remaining { font-size: 1.3rem; font-weight: 700; color: #2d5a44; }
+    .subscription-badge strong { color: #78855F; }
+    .subscription-badge .remaining { font-size: 1.3rem; font-weight: 700; color: #78855F; }
 
     .class-card { background: white; border-radius: 12px; border: 1px solid #ede8e0; padding: 1rem 1.2rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
     .class-info {}
-    .class-title { font-weight: 700; font-size: 1rem; color: #2d2a24; }
-    .class-meta { font-size: 0.82rem; color: #8a7a6a; margin-top: 0.2rem; }
-    .class-spots { font-size: 0.78rem; color: #2d5a44; margin-top: 0.15rem; }
+    .class-title { font-weight: 700; font-size: 1rem; color: #4D2115; }
+    .class-meta { font-size: 0.82rem; color: #7A6860; margin-top: 0.2rem; }
+    .class-spots { font-size: 0.78rem; color: #78855F; margin-top: 0.15rem; }
 
-    .no-classes { text-align: center; padding: 2rem 0; color: #8a7a6a; font-size: 0.95rem; line-height: 1.8; }
+    .no-classes { text-align: center; padding: 2rem 0; color: #7A6860; font-size: 0.95rem; line-height: 1.8; }
 
     .msg { padding: 0.7rem 1rem; border-radius: 8px; margin-bottom: 0.75rem; font-weight: 600; font-size: 0.88rem; }
     .msg-error { background: #fed7d7; color: #c53030; }
-    .msg-success { background: #c6f6d5; color: #276749; }
+    .msg-success { background: #E0E8CC; color: #4D5A35; }
 
     .success-box { text-align: center; padding: 1.5rem 0; }
     .success-box .icon { font-size: 3rem; margin-bottom: 0.5rem; }
-    .success-box h2 { font-size: 1.3rem; font-weight: 700; color: #2d5a44; }
-    .success-box p { color: #8a7a6a; margin-top: 0.5rem; line-height: 1.7; font-size: 0.9rem; }
+    .success-box h2 { font-size: 1.3rem; font-weight: 700; color: #78855F; }
+    .success-box p { color: #7A6860; margin-top: 0.5rem; line-height: 1.7; font-size: 0.9rem; }
 
     #step-phone, #step-classes { }
     .hidden { display: none; }

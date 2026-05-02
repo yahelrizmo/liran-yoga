@@ -15,7 +15,7 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html { height: 100%; }
-    body { font-family: 'Heebo', sans-serif; color: #2d2a24; min-height: 100%; position: relative; }
+    body { font-family: 'Heebo', sans-serif; color: #4D2115; min-height: 100%; position: relative; }
 
     .bg { position: absolute; top: 0; left: 0; right: 0; z-index: 0; height: 100%; min-height: 100vh; }
     .bg img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
@@ -27,43 +27,43 @@
     .logo h1 { font-size: 2.6rem; font-weight: 700; letter-spacing: 2px; text-shadow: 0 2px 14px rgba(0,0,0,0.6); }
     .logo p { font-size: 1rem; font-weight: 300; opacity: 0.88; margin-top: 0.4rem; text-shadow: 0 1px 8px rgba(0,0,0,0.5); }
 
-    .card { background: rgba(255,250,244,0.96); backdrop-filter: blur(8px); border-radius: 20px; padding: 2rem 1.8rem; width: 100%; max-width: 560px; box-shadow: 0 8px 40px rgba(0,0,0,0.25); }
+    .card { background: rgba(238,231,221,0.96); backdrop-filter: blur(8px); border-radius: 20px; padding: 2rem 1.8rem; width: 100%; max-width: 560px; box-shadow: 0 8px 40px rgba(0,0,0,0.25); }
 
     /* mode toggle */
     .mode-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1.5rem; }
-    .mode-btn { padding: 0.75rem; border: 2px solid #ede8e0; border-radius: 12px; background: white; font-family: 'Heebo', sans-serif; font-size: 0.9rem; font-weight: 700; color: #8a7a6a; cursor: pointer; transition: all 0.2s; }
-    .mode-btn.active { border-color: #2d5a44; background: #2d5a44; color: white; }
+    .mode-btn { padding: 0.75rem; border: 2px solid #ede8e0; border-radius: 12px; background: white; font-family: 'Heebo', sans-serif; font-size: 0.9rem; font-weight: 700; color: #7A6860; cursor: pointer; transition: all 0.2s; }
+    .mode-btn.active { border-color: #78855F; background: #78855F; color: white; }
 
-    .step-title { font-size: 1rem; font-weight: 700; color: #2d5a44; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #ede8e0; }
+    .step-title { font-size: 1rem; font-weight: 700; color: #78855F; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #ede8e0; }
 
     .plans { display: grid; gap: 0.6rem; margin-bottom: 1.5rem; }
     .plan { border: 2px solid #ede8e0; border-radius: 12px; padding: 0.85rem 1.1rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: white; transition: border-color 0.2s, background 0.2s; }
-    .plan:hover { border-color: #2d5a44; }
-    .plan.selected { border-color: #2d5a44; background: #e8f4ef; }
+    .plan:hover { border-color: #78855F; }
+    .plan.selected { border-color: #78855F; background: #E8EAE0; }
     .plan-name { font-weight: 600; font-size: 0.95rem; }
-    .plan-meta { font-size: 0.78rem; color: #8a7a6a; margin-top: 0.15rem; }
-    .plan-price { font-size: 1.35rem; font-weight: 700; color: #2d5a44; white-space: nowrap; margin-right: 0.75rem; }
+    .plan-meta { font-size: 0.78rem; color: #7A6860; margin-top: 0.15rem; }
+    .plan-price { font-size: 1.35rem; font-weight: 700; color: #78855F; white-space: nowrap; margin-right: 0.75rem; }
 
     .form-group { margin-bottom: 0.9rem; }
-    label { display: block; font-size: 0.82rem; color: #8a7a6a; margin-bottom: 0.25rem; font-weight: 600; }
+    label { display: block; font-size: 0.82rem; color: #7A6860; margin-bottom: 0.25rem; font-weight: 600; }
     input[type=text], input[type=tel], input[type=email] { width: 100%; padding: 0.7rem 1rem; border: 2px solid #ede8e0; border-radius: 10px; font-size: 1rem; font-family: 'Heebo', sans-serif; background: white; transition: border-color 0.2s; }
-    input:focus { outline: none; border-color: #2d5a44; }
+    input:focus { outline: none; border-color: #78855F; }
 
     .btn { width: 100%; padding: 0.95rem; border: none; border-radius: 12px; font-size: 1.05rem; font-weight: 700; cursor: pointer; font-family: 'Heebo', sans-serif; transition: background 0.2s; margin-top: 1.2rem; }
-    .btn-main { background: #2d5a44; color: white; }
-    .btn-main:hover { background: #1e3d2e; }
+    .btn-main { background: #78855F; color: white; }
+    .btn-main:hover { background: #606A4C; }
     .btn-main:disabled { background: #7ab09a; cursor: not-allowed; }
-    .btn-green { background: #2d5a44; color: white; }
-    .btn-green:hover { background: #1e3d2e; }
+    .btn-green { background: #78855F; color: white; }
+    .btn-green:hover { background: #606A4C; }
 
-    .health-box { margin-top: 1.2rem; background: #f9f5ef; border-radius: 12px; padding: 1rem 1.1rem; border: 2px solid #ede8e0; margin-bottom: 0; }
-    .health-label { display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer; font-size: 0.88rem; color: #2d2a24; font-weight: 400; }
-    .health-label input[type=checkbox] { width: 20px; height: 20px; flex-shrink: 0; margin-top: 0.1rem; accent-color: #2d5a44; cursor: pointer; }
+    .health-box { margin-top: 1.2rem; background: #EEE7DD; border-radius: 12px; padding: 1rem 1.1rem; border: 2px solid #ede8e0; margin-bottom: 0; }
+    .health-label { display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer; font-size: 0.88rem; color: #4D2115; font-weight: 400; }
+    .health-label input[type=checkbox] { width: 20px; height: 20px; flex-shrink: 0; margin-top: 0.1rem; accent-color: #78855F; cursor: pointer; }
 
     /* existing client result boxes */
-    .found-box { background: #f0f7f3; border: 2px solid #3a7d54; border-radius: 12px; padding: 1rem 1.2rem; margin-bottom: 1.2rem; }
-    .found-box .found-name { font-size: 1.1rem; font-weight: 700; color: #3a7d54; }
-    .found-box .found-sub { font-size: 0.85rem; color: #2d6a4f; margin-top: 0.25rem; }
+    .found-box { background: #EEE7DD; border: 2px solid #78855F; border-radius: 12px; padding: 1rem 1.2rem; margin-bottom: 1.2rem; }
+    .found-box .found-name { font-size: 1.1rem; font-weight: 700; color: #78855F; }
+    .found-box .found-sub { font-size: 0.85rem; color: #78855F; margin-top: 0.25rem; }
     .block-box { background: #fff5f0; border: 2px solid #e07050; border-radius: 12px; padding: 1rem 1.2rem; text-align: center; }
     .block-box p { color: #7a3a25; font-size: 0.9rem; line-height: 1.7; }
     .block-box strong { font-size: 1rem; display: block; margin-bottom: 0.4rem; }
@@ -72,16 +72,16 @@
     .payment-section { display: none; }
     .payment-section.show { display: block; }
     .pay-box { background: white; border-radius: 14px; border: 2px solid #ede8e0; padding: 1.5rem; text-align: center; margin-bottom: 1rem; }
-    .pay-box h3 { color: #2d5a44; font-size: 1.1rem; margin-bottom: 0.3rem; }
-    .pay-amount { font-size: 3rem; font-weight: 700; color: #2d5a44; margin: 0.5rem 0; }
-    .pay-note { font-size: 0.83rem; color: #8a7a6a; line-height: 1.7; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #ede8e0; }
+    .pay-box h3 { color: #78855F; font-size: 1.1rem; margin-bottom: 0.3rem; }
+    .pay-amount { font-size: 3rem; font-weight: 700; color: #78855F; margin: 0.5rem 0; }
+    .pay-note { font-size: 0.83rem; color: #7A6860; line-height: 1.7; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #ede8e0; }
 
     /* success */
     .success-section { display: none; text-align: center; padding: 1rem 0; }
     .success-section.show { display: block; }
     .success-icon { font-size: 3.5rem; margin-bottom: 0.75rem; }
-    .success-section h2 { font-size: 1.5rem; font-weight: 700; color: #2d5a44; margin-bottom: 0.5rem; }
-    .success-section p { color: #8a7a6a; line-height: 1.8; font-size: 0.95rem; }
+    .success-section h2 { font-size: 1.5rem; font-weight: 700; color: #78855F; margin-bottom: 0.5rem; }
+    .success-section p { color: #7A6860; line-height: 1.8; font-size: 0.95rem; }
 
     .msg { padding: 0.7rem 1rem; border-radius: 8px; margin-bottom: 0.75rem; font-weight: 600; font-size: 0.88rem; }
     .msg-error { background: #fed7d7; color: #c53030; }
@@ -121,7 +121,7 @@
         <div class="form-group health-box">
           <label class="health-label">
             <input type="checkbox" id="health-check-new">
-            <span>אני מצהיר/ה כי אני בריא/ה ואין לי מניעה רפואית לעסוק בפעילות גופנית. אני מודע/ת לכך שהתרגול נעשה על אחריותי המלאה.<br><span style="color:#8a7a6a;font-size:0.82rem">לא בטוח/ה? תמיד אפשר <a href="https://wa.me/972532462667" target="_blank" style="color:#2d5a44;font-weight:600;text-decoration:underline">להתייעץ עם לירן</a> לפני ההרשמה.</span></span>
+            <span>אני מצהיר/ה כי אני בריא/ה ואין לי מניעה רפואית לעסוק בפעילות גופנית. אני מודע/ת לכך שהתרגול נעשה על אחריותי המלאה.<br><span style="color:#7A6860;font-size:0.82rem">לא בטוח/ה? תמיד אפשר <a href="https://wa.me/972532462667" target="_blank" style="color:#78855F;font-weight:600;text-decoration:underline">להתייעץ עם לירן</a> לפני ההרשמה.</span></span>
           </label>
         </div>
         <button class="btn btn-main" id="submit-new-btn" onclick="submitNew()">המשך לתשלום</button>
@@ -147,10 +147,10 @@
         <h3>תשלום דרך Bit</h3>
         <div class="pay-amount">₪<span id="pay-amount"></span></div>
         <a href="https://www.bitpay.co.il/app/me/AA88B37B-CCD9-809C-A819-CA949304346C4DA8" target="_blank" class="btn btn-main" style="display:block;text-decoration:none;margin-top:0.75rem">פתחו את Bit לתשלום</a>
-        <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #ede8e0;font-size:0.82rem;color:#8a7a6a">
+        <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #ede8e0;font-size:0.82rem;color:#7A6860">
           אין Bit? העבירו למספר:
           <div style="display:flex;align-items:center;justify-content:center;gap:0.75rem;margin-top:0.4rem;flex-wrap:wrap">
-            <span style="font-size:1.2rem;font-weight:700;color:#2d2a24">053-246-2667</span>
+            <span style="font-size:1.2rem;font-weight:700;color:#4D2115">053-246-2667</span>
             <button id="copy-bit-btn" onclick="copyBitPhone()" class="btn btn-main" style="width:auto;padding:0.4rem 0.9rem;font-size:0.82rem;margin-top:0">העתק</button>
           </div>
         </div>
@@ -273,10 +273,10 @@
         <div class="block-box">
           <strong>שלום ${client.full_name} 👋</strong>
           <p>יש לך מנוי פעיל:<br>
-          <strong style="color:#2d5a44">${sub.subscription_types?.name}</strong><br>
+          <strong style="color:#78855F">${sub.subscription_types?.name}</strong><br>
           נותרו ${sub.classes_remaining} תרגולים · תוקף עד ${expiry}</p>
           <p style="margin-top:0.75rem;font-size:0.82rem">לא ניתן לחדש מנוי כל עוד יש מנוי פעיל.<br>
-          לשאלות — <a href="https://wa.me/972532462667" target="_blank" style="color:#2d5a44;font-weight:600;text-decoration:underline">פנה/י ללירן</a></p>
+          לשאלות — <a href="https://wa.me/972532462667" target="_blank" style="color:#78855F;font-weight:600;text-decoration:underline">פנה/י ללירן</a></p>
         </div>`;
     } else {
       pendingClientId = client.id;
@@ -291,7 +291,7 @@
         <div class="form-group health-box">
           <label class="health-label">
             <input type="checkbox" id="health-check-existing">
-            <span>אני מצהיר/ה כי אני בריא/ה ואין לי מניעה רפואית לעסוק בפעילות גופנית. אני מודע/ת לכך שהתרגול נעשה על אחריותי המלאה.<br><span style="color:#8a7a6a;font-size:0.82rem">לא בטוח/ה? תמיד אפשר <a href="https://wa.me/972532462667" target="_blank" style="color:#2d5a44;font-weight:600;text-decoration:underline">להתייעץ עם לירן</a> לפני ההרשמה.</span></span>
+            <span>אני מצהיר/ה כי אני בריא/ה ואין לי מניעה רפואית לעסוק בפעילות גופנית. אני מודע/ת לכך שהתרגול נעשה על אחריותי המלאה.<br><span style="color:#7A6860;font-size:0.82rem">לא בטוח/ה? תמיד אפשר <a href="https://wa.me/972532462667" target="_blank" style="color:#78855F;font-weight:600;text-decoration:underline">להתייעץ עם לירן</a> לפני ההרשמה.</span></span>
           </label>
         </div>
         <button class="btn btn-main" onclick="submitExisting()">המשך לתשלום</button>`;
@@ -324,7 +324,7 @@
     navigator.clipboard.writeText('0532462667').then(() => {
       const btn = document.getElementById('copy-bit-btn');
       btn.textContent = '✓ הועתק';
-      btn.style.background = '#3a7d54';
+      btn.style.background = '#78855F';
       setTimeout(() => { btn.textContent = 'העתק'; btn.style.background = ''; }, 2500);
     });
   }
