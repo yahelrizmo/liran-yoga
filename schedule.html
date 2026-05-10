@@ -213,12 +213,9 @@
 
     const now = new Date();
     const futureClasses = classes.filter(c => new Date(`${c.class_date}T${c.class_time}`) > now);
-    if (!futureClasses.length) {
-      document.getElementById('classes-list').innerHTML =
-        '<div class="no-classes">אין שיעורים זמינים כרגע.<br>עקבו אחרי הקבוצה לעדכונים.</div>';
-      return;
-    }
-    document.getElementById('classes-list').innerHTML = futureClasses.map(c => {
+    const pastClasses = classes.filter(c => new Date(`${c.class_date}T${c.class_time}`) <= now);
+
+    const renderCard = (c, isPast) => {
       const spots = c.max_capacity - (counts[c.id] || 0);
       const isRegistered = registered.has(c.id);
       const isFull = spots <= 0 && !isRegistered;
@@ -227,23 +224,35 @@
       const canCancel = isRegistered && hoursUntil > 24;
       const spotsText = isFull ? 'השיעור מלא' : isRegistered ? `רשומ/ה · ${spots} מקומות פנויים` : `${spots} מקומות פנויים`;
       return `
-        <div class="class-card">
+        <div class="class-card"${isPast ? ' style="opacity:0.6"' : ''}>
           <div class="class-info">
             <div class="class-title">${c.title}</div>
             <div class="class-meta">${fmtDay(c.class_date)} · ${c.class_time?.slice(0,5)}</div>
-            <div class="class-spots">${spotsText}</div>
-            ${isRegistered ? calLinks(c) : ''}
+            ${!isPast ? `<div class="class-spots">${spotsText}</div>` : '<div class="class-spots" style="color:#7A6860">השיעור עבר</div>'}
+            ${isRegistered && !isPast ? calLinks(c) : ''}
           </div>
-          ${isRegistered
-            ? canCancel
-              ? `<button class="btn-cancel" onclick="cancelClass(${c.id}, this)">ביטול</button>`
-              : `<button class="btn-registered" title="ביטול אפשרי עד 24 שעות לפני בלבד">רשומ/ה ✓</button>`
-            : isFull
-              ? `<button class="btn-register" disabled>מלא</button>`
-              : `<button class="btn-register" onclick="registerClass(${c.id}, this)">הירשמו</button>`
+          ${isPast
+            ? ''
+            : isRegistered
+              ? canCancel
+                ? `<button class="btn-cancel" onclick="cancelClass(${c.id}, this)">ביטול</button>`
+                : `<button class="btn-registered" title="ביטול אפשרי עד 24 שעות לפני בלבד">רשומ/ה ✓</button>`
+              : isFull
+                ? `<button class="btn-register" disabled>מלא</button>`
+                : `<button class="btn-register" onclick="registerClass(${c.id}, this)">הירשמו</button>`
           }
         </div>`;
-    }).join('');
+    };
+
+    const futureHTML = futureClasses.length
+      ? futureClasses.map(c => renderCard(c, false)).join('')
+      : '<div class="no-classes">אין שיעורים זמינים כרגע.<br>עקבו אחרי הקבוצה לעדכונים.</div>';
+
+    const pastHTML = pastClasses.length
+      ? `<div style="font-size:0.8rem;color:#7A6860;margin:1rem 0 0.4rem;text-align:center">שיעורים שעברו</div>${pastClasses.map(c => renderCard(c, true)).join('')}`
+      : '';
+
+    document.getElementById('classes-list').innerHTML = futureHTML + pastHTML;
   }
 
   async function registerClass(classId, btn) {
