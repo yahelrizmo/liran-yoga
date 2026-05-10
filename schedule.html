@@ -212,7 +212,13 @@
     allRegs?.forEach(r => { counts[r.class_id] = (counts[r.class_id] || 0) + 1; });
 
     const now = new Date();
-    document.getElementById('classes-list').innerHTML = classes.map(c => {
+    const futureClasses = classes.filter(c => new Date(`${c.class_date}T${c.class_time}`) > now);
+    if (!futureClasses.length) {
+      document.getElementById('classes-list').innerHTML =
+        '<div class="no-classes">אין שיעורים זמינים כרגע.<br>עקבו אחרי הקבוצה לעדכונים.</div>';
+      return;
+    }
+    document.getElementById('classes-list').innerHTML = futureClasses.map(c => {
       const spots = c.max_capacity - (counts[c.id] || 0);
       const isRegistered = registered.has(c.id);
       const isFull = spots <= 0 && !isRegistered;
@@ -243,6 +249,21 @@
   async function registerClass(classId, btn) {
     btn.disabled = true;
     btn.textContent = '...';
+
+    const today = new Date().toISOString().split('T')[0];
+    const { data: freshSub } = await db.from('subscriptions')
+      .select('id')
+      .eq('id', activeSub.id)
+      .eq('is_active', true)
+      .gt('classes_remaining', 0)
+      .gte('expiry_date', today)
+      .maybeSingle();
+
+    if (!freshSub) {
+      btn.disabled = false;
+      btn.textContent = 'הירשמו';
+      return showMsg('המנוי שלך פג תוקף. פנו ללירן לחידוש.');
+    }
 
     const { error } = await db.from('class_registrations').insert({
       client_id: currentClient.id,
