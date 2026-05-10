@@ -128,6 +128,26 @@
     setTimeout(() => document.getElementById('msg-area').innerHTML = '', 4000);
   }
 
+  async function renderSubBadge(client) {
+    const now = new Date();
+    const { data: regs } = await db.from('class_registrations')
+      .select('*, classes(class_date, class_time)')
+      .eq('client_id', (client || currentClient).id)
+      .eq('subscription_id', activeSub.id);
+    const upcoming = (regs || []).filter(r => new Date(`${r.classes.class_date}T${r.classes.class_time}`) > now).length;
+    const attended = (regs || []).filter(r => new Date(`${r.classes.class_date}T${r.classes.class_time}`) <= now).length;
+    const c = client || currentClient;
+    document.getElementById('sub-badge').innerHTML = `
+      <div>שלום <strong>${c.full_name}</strong></div>
+      <div style="margin-top:0.4rem">מנוי: <strong>${activeSub.subscription_types?.name}</strong> · תוקף עד ${new Date(activeSub.expiry_date).toLocaleDateString('he-IL')}</div>
+      <div style="display:flex;gap:1.2rem;margin-top:0.5rem;flex-wrap:wrap">
+        <div><span class="remaining">${activeSub.classes_remaining}</span> <span style="font-size:0.8rem">נותרו למימוש</span></div>
+        ${upcoming ? `<div><span class="remaining">${upcoming}</span> <span style="font-size:0.8rem">רשומ/ה לשיעורים</span></div>` : ''}
+        ${attended ? `<div><span class="remaining" style="color:#7A6860">${attended}</span> <span style="font-size:0.8rem">מומשו</span></div>` : ''}
+      </div>
+    `;
+  }
+
   async function findClient() {
     const phone = document.getElementById('phone-input').value.trim();
     if (!phone) return showMsg('נא להכניס מספר טלפון');
@@ -140,7 +160,6 @@
       .select('*, subscription_types(name)')
       .eq('client_id', client.id)
       .eq('is_active', true)
-      .gt('classes_remaining', 0)
       .gte('expiry_date', today)
       .order('expiry_date')
       .limit(1);
@@ -149,12 +168,7 @@
 
     currentClient = client;
     activeSub = subs[0];
-
-    document.getElementById('sub-badge').innerHTML = `
-      <div>שלום <strong>${client.full_name}</strong> 👋</div>
-      <div style="margin-top:0.4rem">מנוי: <strong>${activeSub.subscription_types?.name}</strong></div>
-      <div style="margin-top:0.2rem">נותרו: <span class="remaining">${activeSub.classes_remaining}</span> תרגולים · תוקף עד ${new Date(activeSub.expiry_date).toLocaleDateString('he-IL')}</div>
-    `;
+    await renderSubBadge(client);
 
     document.getElementById('step-phone').classList.add('hidden');
     document.getElementById('step-classes').classList.remove('hidden');
@@ -222,7 +236,8 @@
       const classDateTime = new Date(`${c.class_date}T${c.class_time}`);
       const hoursUntil = (classDateTime - now) / 3600000;
       const canCancel = isRegistered && hoursUntil > 24;
-      const spotsText = isFull ? 'השיעור מלא' : isRegistered ? `רשומ/ה · ${spots} מקומות פנויים` : `${spots} מקומות פנויים`;
+      const spotsLabel = isFull ? 'השיעור מלא' : spots === 1 ? 'מקום אחרון' : spots === 2 ? 'נותרו שני מקומות פנויים' : 'נותרו מקומות פנויים';
+      const spotsText = isRegistered ? `רשומ/ה · ${spotsLabel}` : spotsLabel;
       return `
         <div class="class-card"${isPast ? ' style="opacity:0.6"' : ''}>
           <div class="class-info">
@@ -287,8 +302,10 @@
       return showMsg('שגיאה, נסו שוב');
     }
 
+    activeSub = { ...activeSub, classes_remaining: activeSub.classes_remaining - 1 };
     showMsg('✓ נרשמת בהצלחה!', 'success');
     loadClasses();
+    renderSubBadge();
   }
 
   async function cancelClass(classId, btn) {
@@ -303,8 +320,10 @@
       btn.textContent = 'ביטול ✕';
       return showMsg('שגיאה, נסו שוב');
     }
+    activeSub = { ...activeSub, classes_remaining: activeSub.classes_remaining + 1 };
     showMsg('✓ ההרשמה בוטלה', 'success');
     loadClasses();
+    renderSubBadge();
   }
 
   document.getElementById('phone-input').addEventListener('keydown', e => {
