@@ -1194,10 +1194,13 @@
 
   // ── REGISTRATIONS ─────────────────────────────────────────
   async function loadClassesSelect() {
-    const { data } = await db.from('classes').select('*').order('class_date').order('class_time');
-    document.getElementById('reg-class').innerHTML = data?.map(c =>
+    const today = new Date().toISOString().split('T')[0];
+    const { data } = await db.from('classes').select('*').gte('class_date', today).eq('completed', false).order('class_date').order('class_time');
+    const now = new Date();
+    const future = (data || []).filter(c => new Date(`${c.class_date}T${c.class_time}`) > now);
+    document.getElementById('reg-class').innerHTML = future.map(c =>
       `<option value="${c.id}">${c.title} — ${fmtDateWithDay(c.class_date)} ${c.class_time?.slice(0,5)}</option>`
-    ).join('') || '<option>אין שיעורים</option>';
+    ).join('') || '<option>אין שיעורים זמינים</option>';
   }
 
   async function loadClientSubs() {
