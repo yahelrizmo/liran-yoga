@@ -134,8 +134,8 @@
       .select('*, classes(class_date, class_time)')
       .eq('client_id', (client || currentClient).id)
       .eq('subscription_id', activeSub.id);
-    const upcoming = (regs || []).filter(r => new Date(`${r.classes.class_date}T${r.classes.class_time}`) > now).length;
-    const attended = (regs || []).filter(r => new Date(`${r.classes.class_date}T${r.classes.class_time}`) <= now).length;
+    const upcoming = (regs || []).filter(r => r.classes && new Date(`${r.classes.class_date}T${r.classes.class_time}`) > now).length;
+    const attended = (regs || []).filter(r => r.classes && new Date(`${r.classes.class_date}T${r.classes.class_time}`) <= now).length;
     const c = client || currentClient;
     document.getElementById('sub-badge').innerHTML = `
       <div>שלום <strong>${c.full_name}</strong></div>
