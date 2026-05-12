@@ -250,7 +250,11 @@
     const btn = document.getElementById('search-btn');
     btn.disabled = true; btn.textContent = 'מחפש...';
 
-    const { data: client } = await db.from('clients').select('*').eq('phone', phone).maybeSingle();
+    const normalized = phone.replace(/[-\s]/g, '');
+    const { data: allClients } = await db.from('clients').select('*');
+    const client = (allClients || []).find(c =>
+      c.phone === phone || c.phone?.replace(/[-\s]/g, '') === normalized
+    ) || null;
     btn.disabled = false; btn.textContent = 'חיפוש';
 
     if (!client) {
