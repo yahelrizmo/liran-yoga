@@ -152,7 +152,9 @@
     const phone = document.getElementById('phone-input').value.trim();
     if (!phone) return showMsg('נא להכניס מספר טלפון');
 
-    const { data: client } = await db.from('clients').select('*').eq('phone', phone).maybeSingle();
+    const normalized = phone.replace(/[-\s]/g, '');
+    const { data: allClients } = await db.from('clients').select('*');
+    const client = (allClients || []).find(c => c.phone === phone || c.phone?.replace(/[-\s]/g, '') === normalized) || null;
     if (!client) return showMsg('מספר הטלפון לא נמצא במערכת. פנו ללירן.');
 
     const today = new Date().toISOString().split('T')[0];

@@ -1024,6 +1024,10 @@
   function loadSubscriptions() { loadClients(); }
 
   async function activateSubscription(id) {
+    const { data: sub } = await db.from('subscriptions').select('client_id').eq('id', id).single();
+    if (sub?.client_id) {
+      await db.from('subscriptions').update({ is_active: false }).eq('client_id', sub.client_id).eq('is_active', true);
+    }
     await db.from('subscriptions').update({ is_active: true }).eq('id', id);
     showMsg('✓ מנוי הופעל בהצלחה');
     loadClients();
