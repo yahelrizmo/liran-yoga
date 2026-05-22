@@ -1011,13 +1011,22 @@
     const { data: t } = await db.from('subscription_types').select('*').eq('id', typeId).single();
     const expiry = new Date(startDate);
     expiry.setDate(expiry.getDate() + t.validity_days);
-    const { error } = await db.from('subscriptions').insert({
-      client_id: clientId, subscription_type_id: typeId,
+    const { data: existingActive } = await db.from('subscriptions')
+      .select('id').eq('client_id', +clientId).eq('is_active', true)
+      .gt('classes_remaining', 0).gte('expiry_date', todayStr());
+    const { data: newSubs, error } = await db.from('subscriptions').insert({
+      client_id: +clientId, subscription_type_id: typeId,
       classes_remaining: t.classes_count, start_date: startDate,
       expiry_date: expiry.toISOString().split('T')[0]
-    });
+    }).select('id');
     if (error) return showMsg('שגיאה: ' + error.message, 'error');
-    showMsg('✓ מנוי שויך בהצלחה');
+    if (!existingActive?.length) {
+      await db.from('subscriptions').update({ is_active: false }).eq('client_id', +clientId).eq('is_active', true);
+      await db.from('subscriptions').update({ is_active: true }).eq('id', newSubs[0].id);
+      showMsg('✓ מנוי שויך והופעל בהצלחה');
+    } else {
+      showMsg('✓ מנוי שויך — לחצי "הפעל" לאחר אישור תשלום');
+    }
     loadSubscriptions();
   }
 
@@ -1132,14 +1141,17 @@
       showMsg('✓ שיעור סומן כהסתיים (אין רשומים)');
       return loadClasses();
     }
+    let deducted = 0;
     for (const reg of regs) {
+      if (!reg.subscription_id) continue;
       const { data: sub } = await db.from('subscriptions').select('classes_remaining').eq('id', reg.subscription_id).single();
       if (sub && sub.classes_remaining > 0) {
         await db.from('subscriptions').update({ classes_remaining: sub.classes_remaining - 1 }).eq('id', reg.subscription_id);
+        deducted++;
       }
     }
     await db.from('classes').update({ completed: true }).eq('id', classId);
-    showMsg(`✓ שיעור הסתיים — נוכה תרגול מ-${regs.length} משתתפים`);
+    showMsg(`✓ שיעור הסתיים — נוכה תרגול מ-${deducted} משתתפים`);
     loadClasses();
   }
 
@@ -1194,6 +1206,13 @@
     if (!confirm('למחוק שיעור זה?')) return;
     await db.from('classes').delete().eq('id', id);
     loadClasses();
+  }
+
+  async function reserveSpot(classId) {
+    const { error } = await db.from('class_registrations').insert({ class_id: classId });
+    if (error) return showMsg('שגיאה: ' + error.message, 'error');
+    showMsg('✓ מקום שמור בהצלחה');
+    loadRegistrations(classId);
   }
 
   // ── REGISTRATIONS ─────────────────────────────────────────
@@ -1261,6 +1280,7 @@
             <div class="class-group-meta">${fmtDateWithDay(c.class_date)} · ${c.class_time?.slice(0,5)}</div>
             <div style="display:flex;gap:0.4rem;margin-top:0.5rem;flex-wrap:wrap" onclick="event.stopPropagation()">
               ${c.completed ? '' : `<button class="btn btn-sm" style="background:#78855F;color:white" onclick="endClass(${c.id})">סיים שיעור</button>`}
+              ${c.completed ? '' : `<button class="btn btn-sm" style="background:#C2C9A8;color:#4D2115" onclick="reserveSpot(${c.id})">🔒 שריין מקום</button>`}
               <button class="btn btn-sm" style="background:#e2e8f0;color:#4D2115" onclick="openEditClassModal(${JSON.stringify(c).replace(/"/g,'&quot;')})">עריכה</button>
               <button class="btn btn-sm" style="background:#e8f0fe;color:#1a56db;display:inline-flex;align-items:center;gap:0.3rem" onclick="downloadICS(${JSON.stringify(c).replace(/"/g,'&quot;')})"><i data-lucide="calendar" style="width:13px;height:13px"></i> אפל</button>
               <button class="btn btn-sm" style="background:#e8f0fe;color:#1a56db;display:inline-flex;align-items:center;gap:0.3rem" onclick="openGoogleCal(${JSON.stringify(c).replace(/"/g,'&quot;')})"><i data-lucide="calendar" style="width:13px;height:13px"></i> גוגל</button>
@@ -1332,11 +1352,18 @@
     body.innerHTML = regs?.length
       ? `<table>
           <thead><tr><th>לקוח</th><th>טלפון</th><th>מנוי</th><th></th></tr></thead>
-          <tbody>${regs.map(r => `<tr>
+          <tbody>${regs.map(r => r.client_id
+            ? `<tr>
             <td><strong>${r.clients?.full_name}</strong></td>
             <td><a href="tel:${r.clients?.phone}">${r.clients?.phone}</a></td>
             <td>${r.subscriptions?.subscription_types?.name || '—'}</td>
             <td><button class="btn btn-danger btn-sm" onclick="removeRegistration(${r.id}, ${classId})">הסר</button></td>
+          </tr>`
+            : `<tr style="background:#f0f4e8">
+            <td><strong style="color:#78855F">🔒 מקום שמור</strong></td>
+            <td>—</td>
+            <td style="color:#7A8570">ללא מנוי</td>
+            <td><button class="btn btn-sm" style="background:#e2e8f0;color:#4D2115" onclick="removeRegistration(${r.id}, ${classId})">בטל שריון</button></td>
           </tr>`).join('')}</tbody>
         </table>`
       : '<div class="empty" style="padding:1rem">אין רשומים לשיעור זה</div>';
