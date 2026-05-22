@@ -318,6 +318,19 @@
   </div>
 </div>
 
+<!-- MERGE CLIENTS MODAL -->
+<div class="modal-backdrop hidden" id="merge-modal" onclick="closeMergeModal(event)">
+  <div class="modal" style="max-width:520px;max-height:85vh;overflow-y:auto" onclick="event.stopPropagation()">
+    <h3>מיזוג לקוחות כפולים</h3>
+    <div id="merge-clients-detail" style="margin-bottom:1.25rem"></div>
+    <div class="modal-actions" style="flex-wrap:wrap;gap:0.5rem">
+      <button class="btn btn-primary" id="merge-keep-a-btn"></button>
+      <button class="btn btn-primary" id="merge-keep-b-btn"></button>
+      <button class="btn" style="background:#e2e8f0" onclick="closeMergeModal()">ביטול</button>
+    </div>
+  </div>
+</div>
+
 <!-- PIN SCREEN -->
 <div id="pin-screen">
   <div class="pin-logo">
@@ -398,6 +411,7 @@
         <button class="alert-filter" onclick="filterAlerts('urgent', this)">הרשמות חדשות</button>
         <button class="alert-filter" onclick="filterAlerts('expiring', this)">פקיעת מנוי</button>
         <button class="alert-filter" onclick="filterAlerts('last', this)">שיעור אחרון</button>
+        <button class="alert-filter" onclick="filterAlerts('duplicate', this)">לקוחות כפולים</button>
       </div>
       <div id="alerts-list" class="alerts-list"><div class="alerts-empty">טוען...</div></div>
     </div>
@@ -681,13 +695,14 @@
     const in7 = new Date(); in7.setDate(in7.getDate() + 7);
     const in7str = in7.toISOString().split('T')[0];
 
-    const [pendingSubs, expiring, lastClass] = await Promise.all([
+    const [pendingSubs, expiring, lastClass, allClientsRes] = await Promise.all([
       db.from('subscriptions').select('*, clients(full_name, phone), subscription_types(name)').eq('is_active', false).order('start_date', { ascending: false }),
       db.from('subscriptions').select('*, clients(full_name, phone), subscription_types(name)').eq('is_active', true).gte('expiry_date', today).lte('expiry_date', in7str),
       db.from('subscriptions').select('*, clients(full_name, phone), subscription_types(name)').eq('is_active', true).eq('classes_remaining', 1).gte('expiry_date', today),
+      db.from('clients').select('id, full_name, phone, created_at').order('created_at'),
     ]);
 
-    const alerts = [];
+    pendingMergeClients = [];
 
     pendingSubs.data?.forEach(s => allAlerts.push({
       type: 'urgent', icon: 'user-plus', category: 'urgent',
@@ -710,6 +725,26 @@
       phone: s.clients?.phone
     }));
 
+    // Detect duplicate clients by normalized phone
+    const phoneGroups = {};
+    allClientsRes.data?.forEach(c => {
+      const key = (c.phone || '').replace(/[-\s]/g, '');
+      if (!phoneGroups[key]) phoneGroups[key] = [];
+      phoneGroups[key].push(c);
+    });
+    Object.values(phoneGroups).forEach(group => {
+      if (group.length < 2) return;
+      const mergeIdx = pendingMergeClients.length;
+      pendingMergeClients.push(group.slice(0, 2));
+      allAlerts.push({
+        type: 'warn', icon: 'users', category: 'duplicate',
+        title: 'לקוחות כפולים — אותו מספר טלפון',
+        body: group.map(c => c.full_name).join(' · ') + ` — ${group[0].phone}`,
+        phone: group[0].phone,
+        isDuplicate: true, mergeIdx
+      });
+    });
+
     renderAlerts(allAlerts);
   }
 
@@ -723,6 +758,7 @@
 
   let allAlerts = [];
   let alertFilter = 'all';
+  let pendingMergeClients = [];
 
   function filterAlerts(type, btn) {
     if (btn) {
@@ -734,6 +770,86 @@
     let filtered = alertFilter === 'all' ? allAlerts : allAlerts.filter(a => a.category === alertFilter);
     if (q) filtered = filtered.filter(a => (a.body + ' ' + a.title).toLowerCase().includes(q));
     renderAlerts(filtered);
+  }
+
+  function closeMergeModal(e) {
+    if (e && e.target !== document.getElementById('merge-modal')) return;
+    document.getElementById('merge-modal').classList.add('hidden');
+  }
+
+  async function initiateClientMerge(idx) {
+    const [c1, c2] = pendingMergeClients[idx];
+    const today = todayStr();
+    const [r1, r2, regs1, regs2] = await Promise.all([
+      db.from('subscriptions').select('*, subscription_types(name)').eq('client_id', c1.id).order('start_date', { ascending: false }),
+      db.from('subscriptions').select('*, subscription_types(name)').eq('client_id', c2.id).order('start_date', { ascending: false }),
+      db.from('class_registrations').select('id', { count: 'exact', head: true }).eq('client_id', c1.id),
+      db.from('class_registrations').select('id', { count: 'exact', head: true }).eq('client_id', c2.id),
+    ]);
+    const subs1 = r1.data || [], subs2 = r2.data || [];
+    const active1 = subs1.find(s => s.is_active && s.expiry_date >= today && s.classes_remaining > 0);
+    const active2 = subs2.find(s => s.is_active && s.expiry_date >= today && s.classes_remaining > 0);
+    const renderClient = (c, subs, active, regCount) => `
+      <div style="background:#E8EAE0;border-radius:10px;padding:0.9rem;flex:1;min-width:0">
+        <div style="font-weight:700;font-size:0.95rem;margin-bottom:0.4rem">${c.full_name}</div>
+        <div style="font-size:0.8rem;color:#7A8570">טל׳: ${c.phone}<br>מנויים: ${subs.length} · שיעורים: ${regCount || 0}</div>
+        ${active ? `<div style="font-size:0.8rem;color:#4D5A35;margin-top:0.3rem">✓ מנוי פעיל: ${active.subscription_types?.name} (${active.classes_remaining} נותרו)</div>` : '<div style="font-size:0.8rem;color:#c53030;margin-top:0.3rem">אין מנוי פעיל</div>'}
+      </div>`;
+    document.getElementById('merge-clients-detail').innerHTML = `
+      <div style="display:flex;gap:0.75rem;margin-bottom:1rem;flex-wrap:wrap">
+        ${renderClient(c1, subs1, active1, regs1.count)}
+        ${renderClient(c2, subs2, active2, regs2.count)}
+      </div>
+      ${(active1 && active2) ? '<div style="background:#fed7d7;border-radius:8px;padding:0.6rem 0.9rem;font-size:0.83rem;color:#c53030;margin-bottom:0.75rem">⚠️ שני הלקוחות עם מנוי פעיל — המנוי של הלקוח שנמחק יושבת אוטומטית</div>' : ''}
+      <p style="font-size:0.82rem;color:#7A8570">כל ההיסטוריה תועבר ללקוח הנשמר. הלקוח השני יימחק לצמיתות.</p>`;
+    document.getElementById('merge-keep-a-btn').textContent = `שמרי את ${c1.full_name}`;
+    document.getElementById('merge-keep-a-btn').onclick = () => executeMerge(c1.id, c2.id);
+    document.getElementById('merge-keep-b-btn').textContent = `שמרי את ${c2.full_name}`;
+    document.getElementById('merge-keep-b-btn').onclick = () => executeMerge(c2.id, c1.id);
+    document.getElementById('merge-modal').classList.remove('hidden');
+  }
+
+  async function executeMerge(keepId, removeId) {
+    if (!confirm('בטוחה? הפעולה אינה ניתנת לביטול.')) return;
+    closeMergeModal({ target: document.getElementById('merge-modal') });
+
+    const today = todayStr();
+    // Track removeId's active subs before moving
+    const { data: removeActive } = await db.from('subscriptions')
+      .select('id').eq('client_id', removeId).eq('is_active', true);
+    // Check if keepId already has an active sub
+    const { data: keepActive } = await db.from('subscriptions')
+      .select('id').eq('client_id', keepId).eq('is_active', true)
+      .gt('classes_remaining', 0).gte('expiry_date', today).limit(1);
+
+    // Move all subscriptions from removeId → keepId
+    await db.from('subscriptions').update({ client_id: keepId }).eq('client_id', removeId);
+
+    // If keepId had an active sub, deactivate the ones moved from removeId
+    if (keepActive?.length) {
+      for (const s of (removeActive || [])) {
+        await db.from('subscriptions').update({ is_active: false }).eq('id', s.id);
+      }
+    }
+
+    // Move class registrations, skipping classes already registered (unique constraint)
+    const { data: keepRegs } = await db.from('class_registrations').select('class_id').eq('client_id', keepId);
+    const { data: removeRegs } = await db.from('class_registrations').select('id, class_id').eq('client_id', removeId);
+    const keepClassIds = new Set(keepRegs?.map(r => r.class_id));
+    for (const reg of (removeRegs || [])) {
+      if (keepClassIds.has(reg.class_id)) {
+        await db.from('class_registrations').delete().eq('id', reg.id);
+      } else {
+        await db.from('class_registrations').update({ client_id: keepId }).eq('id', reg.id);
+      }
+    }
+
+    // Delete removed client
+    await db.from('clients').delete().eq('id', removeId);
+
+    showMsg('✓ מיזוג הושלם — כל ההיסטוריה הועברה בהצלחה');
+    loadAlerts();
+    loadClients();
   }
 
   function liveSearch(inputId, tableBodyId) {
@@ -754,7 +870,10 @@
         <div class="alert-body">${a.body}</div>
         <div class="alert-actions">
           <button class="btn-alert btn-alert-copy" onclick="copyAlertPhone('${a.phone}', this)"><i data-lucide="copy" style="width:13px;height:13px;vertical-align:middle"></i> ${a.phone}</button>
-          <a class="btn-alert btn-alert-wa" href="https://wa.me/972${a.phone?.replace(/^0/, '').replace(/-/g, '')}" target="_blank"><i data-lucide="message-circle" style="width:13px;height:13px;vertical-align:middle"></i> WhatsApp</a>
+          ${a.isDuplicate
+            ? `<button class="btn-alert" style="background:#78855F;color:white" onclick="initiateClientMerge(${a.mergeIdx})"><i data-lucide="git-merge" style="width:13px;height:13px;vertical-align:middle"></i> מזג לקוחות</button>`
+            : `<a class="btn-alert btn-alert-wa" href="https://wa.me/972${a.phone?.replace(/^0/, '').replace(/-/g, '')}" target="_blank"><i data-lucide="message-circle" style="width:13px;height:13px;vertical-align:middle"></i> WhatsApp</a>`
+          }
         </div>
       </div>`).join('');
     lucide.createIcons();

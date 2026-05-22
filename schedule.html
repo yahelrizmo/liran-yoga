@@ -153,22 +153,25 @@
 
     const normalized = phone.replace(/[-\s]/g, '');
     const { data: allClients } = await db.from('clients').select('*');
-    const client = (allClients || []).find(c => c.phone === phone || c.phone?.replace(/[-\s]/g, '') === normalized) || null;
-    if (!client) return showMsg('מספר הטלפון לא נמצא במערכת. פנו ללירן.');
+    const matches = (allClients || []).filter(c => c.phone === phone || c.phone?.replace(/[-\s]/g, '') === normalized);
+    if (!matches.length) return showMsg('מספר הטלפון לא נמצא במערכת. פנו ללירן.');
 
     const today = new Date().toISOString().split('T')[0];
-    const { data: subs } = await db.from('subscriptions')
-      .select('*, subscription_types(name)')
-      .eq('client_id', client.id)
-      .eq('is_active', true)
-      .gte('expiry_date', today)
-      .order('expiry_date')
-      .limit(1);
 
-    if (!subs?.length) return showMsg('אין לך מנוי פעיל. פנו ללירן לחידוש.');
+    // When duplicate clients share a phone, find the one with an active subscription
+    let client = null, chosenSubs = null;
+    for (const m of matches) {
+      const { data: subs } = await db.from('subscriptions')
+        .select('*, subscription_types(name)')
+        .eq('client_id', m.id).eq('is_active', true)
+        .gte('expiry_date', today).order('expiry_date').limit(1);
+      if (subs?.length) { client = m; chosenSubs = subs; break; }
+    }
+
+    if (!chosenSubs?.length) return showMsg('אין לך מנוי פעיל. פנו ללירן לחידוש.');
 
     currentClient = client;
-    activeSub = subs[0];
+    activeSub = chosenSubs[0];
     await renderSubBadge(client);
 
     document.getElementById('step-phone').classList.add('hidden');
