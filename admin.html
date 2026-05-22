@@ -1011,23 +1011,18 @@
     const { data: t } = await db.from('subscription_types').select('*').eq('id', typeId).single();
     const expiry = new Date(startDate);
     expiry.setDate(expiry.getDate() + t.validity_days);
-    const { data: existingActive } = await db.from('subscriptions')
-      .select('id').eq('client_id', +clientId).eq('is_active', true)
-      .gt('classes_remaining', 0).gte('expiry_date', todayStr());
-    const { data: newSubs, error } = await db.from('subscriptions').insert({
+    const clientName = document.getElementById('sub-client').selectedOptions[0]?.text.split(' — ')[0] || '';
+    const { error } = await db.from('subscriptions').insert({
       client_id: +clientId, subscription_type_id: typeId,
       classes_remaining: t.classes_count, start_date: startDate,
       expiry_date: expiry.toISOString().split('T')[0]
-    }).select('id');
+    });
     if (error) return showMsg('שגיאה: ' + error.message, 'error');
-    if (!existingActive?.length) {
-      await db.from('subscriptions').update({ is_active: false }).eq('client_id', +clientId).eq('is_active', true);
-      await db.from('subscriptions').update({ is_active: true }).eq('id', newSubs[0].id);
-      showMsg('✓ מנוי שויך והופעל בהצלחה');
-    } else {
-      showMsg('✓ מנוי שויך — לחצי "הפעל" לאחר אישור תשלום');
-    }
-    loadSubscriptions();
+    await loadClients();
+    document.getElementById('clients-search').value = clientName;
+    switchClientsTab('active', document.getElementById('tab-active-clients'));
+    filterClientsTable();
+    showMsg('✓ מנוי שויך — מצאי "הפעל" בשורה של הלקוחה ולחצי עליו');
   }
 
   function loadSubscriptions() { loadClients(); }
@@ -1209,9 +1204,14 @@
   }
 
   async function reserveSpot(classId) {
-    const { error } = await db.from('class_registrations').insert({ class_id: classId });
+    const raw = prompt('כמה מקומות לשריין?', '1');
+    if (raw === null) return;
+    const count = parseInt(raw);
+    if (!count || count < 1) return showMsg('מספר לא תקין', 'error');
+    const rows = Array.from({ length: count }, () => ({ class_id: classId }));
+    const { error } = await db.from('class_registrations').insert(rows);
     if (error) return showMsg('שגיאה: ' + error.message, 'error');
-    showMsg('✓ מקום שמור בהצלחה');
+    showMsg(count === 1 ? '✓ מקום אחד שמור בהצלחה' : `✓ ${count} מקומות שמורים בהצלחה`);
     loadRegistrations(classId);
   }
 

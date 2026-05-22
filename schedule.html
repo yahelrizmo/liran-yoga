@@ -132,9 +132,8 @@
     const now = new Date();
     const { data: regs } = await db.from('class_registrations')
       .select('*, classes(class_date, class_time)')
-      .eq('client_id', (client || currentClient).id)
-      .eq('subscription_id', activeSub.id);
-    const upcoming = (regs || []).filter(r => r.classes && new Date(`${r.classes.class_date}T${r.classes.class_time}`) > now).length;
+      .eq('client_id', (client || currentClient).id);
+    const upcoming = (regs || []).filter(r => r.classes && r.subscription_id === activeSub.id && new Date(`${r.classes.class_date}T${r.classes.class_time}`) > now).length;
     const attended = (regs || []).filter(r => r.classes && new Date(`${r.classes.class_date}T${r.classes.class_time}`) <= now).length;
     const c = client || currentClient;
     document.getElementById('sub-badge').innerHTML = `
