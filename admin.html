@@ -293,10 +293,11 @@
   .r-thanks-sub{font-size:.68rem;color:#9ab5aa;margin-top:1.5mm}
   .r-footer{background:#E8EAE0;padding:5mm 6mm;text-align:center;font-size:.65rem;color:#7A8570}
   @media print {
+    @page { margin: 0; }
     body > *:not(#receipt-overlay) { display:none !important; }
-    #receipt-overlay { display:block !important; position:static !important; background:none !important; padding:0 !important; }
+    #receipt-overlay { display:block !important; position:static !important; background:white !important; padding:0 !important; }
     #receipt-overlay-actions { display:none !important; }
-    #receipt-page { box-shadow:none !important; width:148mm !important; }
+    #receipt-page { box-shadow:none !important; width:100% !important; max-width:100% !important; }
   }
   </style>
 </head>
