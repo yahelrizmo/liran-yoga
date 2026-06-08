@@ -258,6 +258,15 @@
       .card { padding: 1rem; }
       h2 { font-size: 1rem; }
     }
+  #receipt-overlay { display:none; position:fixed; inset:0; background:#EEE7DD; z-index:9999; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:1rem; }
+  #receipt-overlay-actions { display:flex; justify-content:center; gap:0.75rem; flex-wrap:wrap; margin-bottom:1rem; }
+  #receipt-page { background:white; width:min(148mm,100%); margin:0 auto; box-shadow:0 8px 40px rgba(0,0,0,.15); }
+  @media print {
+    body > *:not(#receipt-overlay) { display:none !important; }
+    #receipt-overlay { display:block !important; position:static !important; background:none !important; padding:0 !important; }
+    #receipt-overlay-actions { display:none !important; }
+    #receipt-page { box-shadow:none !important; width:148mm !important; }
+  }
   </style>
 </head>
 <body>
@@ -316,6 +325,16 @@
       <button class="btn" style="background:#e2e8f0" onclick="closeEditClassModal()">ביטול</button>
     </div>
   </div>
+</div>
+
+<!-- RECEIPT OVERLAY -->
+<div id="receipt-overlay">
+  <div id="receipt-overlay-actions">
+    <button onclick="window.print()" class="btn btn-primary">הדפס / שמור PDF</button>
+    <a id="receipt-wa-btn" href="#" target="_blank" class="btn" style="background:#25D366;color:white;text-decoration:none">שלח ב-WhatsApp</a>
+    <button onclick="document.getElementById('receipt-overlay').style.display='none'" class="btn" style="background:#e2e8f0">סגור</button>
+  </div>
+  <div id="receipt-page"></div>
 </div>
 
 <!-- EDIT SUBSCRIPTION MODAL -->
@@ -1005,7 +1024,7 @@
             <td>${activeSub ? activeSub.subscription_types?.name : (pendingSub ? '<span class="badge badge-orange">ממתין לאישור</span>' : '<span class="badge badge-red">אין מנוי</span>')}</td>
             <td style="text-align:center;font-weight:700">${activeSub ? activeSub.classes_remaining : '—'}</td>
             <td>${activeSub ? fmtDate(activeSub.expiry_date) : '—'}</td>
-            <td>${activeSub ? `<div>${statusBadge(activeSub.expiry_date, activeSub.classes_remaining, activeSub.is_active)}</div><button class="btn btn-sm" style="background:#d4e0c4;margin-top:0.35rem" onclick="openEditSubModal(${activeSub.id},${activeSub.classes_remaining},'${activeSub.expiry_date}')">עריכת מנוי</button>` : ''}</td>
+            <td>${activeSub ? statusBadge(activeSub.expiry_date, activeSub.classes_remaining, activeSub.is_active) : ''}</td>
             <td>
               ${pendingSub ? `<button class="btn btn-sm" style="background:#78855F;color:white;margin-left:0.25rem" onclick="activateSubscription(${pendingSub.id})">הפעל</button>` : ''}
               <button class="btn btn-sm" style="background:#e2e8f0;margin-left:0.3rem" onclick="openEditModal(${c.id},'${c.full_name.replace(/'/g,"\\'")}','${c.phone}','${(c.email||'').replace(/'/g,"\\'")}','${(c.notes||'').replace(/'/g,"\\'")}')">עריכה</button>
@@ -1941,93 +1960,84 @@ td { padding: 2.5mm 3mm; color: #4D2115; border-bottom: 1px solid #e2efe8; }
     return JSON.parse(localStorage.getItem('receiptSettings') || '{}');
   }
 
-  function buildReceiptHTML(d) {
+  function buildReceiptInnerHTML(d) {
     const fmt = iso => iso ? iso.split('-').reverse().join('/') : '—';
     const receiptNum = String(d.subId || 0).padStart(4, '0');
-    const today = new Date().toLocaleDateString('he-IL');
-    return `<!DOCTYPE html><html lang="he" dir="rtl"><head><meta charset="UTF-8">
-<title>קבלה #${receiptNum}</title>
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:#EEE7DD;font-family:'Heebo',sans-serif;padding:2rem 1rem}
-.page{background:white;width:148mm;margin:0 auto;box-shadow:0 8px 40px rgba(0,0,0,.15);display:flex;flex-direction:column}
-.top-bar{background:#4D2115;padding:4mm 6mm;display:flex;align-items:center;justify-content:space-between}
-.brand-name{font-size:.85rem;font-weight:700;color:#EEE7DD;letter-spacing:1px}
-.brand-sub{font-size:.6rem;color:#C2C9A8;margin-top:1px}
-.rec-num{font-size:.8rem;font-weight:700;color:#EEE7DD;text-align:left}
-.rec-num-label{font-size:.58rem;color:#C2C9A8;text-transform:uppercase;letter-spacing:.8px;margin-bottom:1px}
-.body{padding:6mm 6mm 7mm;flex:1}
-.biz-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6mm}
-.biz-name{font-size:1.25rem;font-weight:900;color:#4D2115}
-.biz-details{font-size:.7rem;color:#7A8570;margin-top:3px;line-height:1.7}
-.date-block{text-align:left}
-.date-label{font-size:.6rem;color:#7A8570;text-transform:uppercase;letter-spacing:.8px}
-.date-val{font-size:.82rem;font-weight:600;color:#4D2115;margin-top:2px}
-.section-label{font-size:.62rem;font-weight:700;color:#78855F;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:3mm}
-.card{background:#F9F7F4;border-radius:8px;padding:4mm 5mm;margin-bottom:4mm}
-.client-name{font-size:1rem;font-weight:700;color:#4D2115}
-.client-phone{font-size:.78rem;color:#7A8570;margin-top:1.5px}
-.detail-row{display:flex;justify-content:space-between;align-items:baseline;padding:1.5mm 0}
-.detail-row+.detail-row{border-top:1px solid #EEE7DD}
-.detail-key{font-size:.76rem;color:#7A8570}
-.detail-val{font-size:.8rem;font-weight:600;color:#4D2115}
-.total-card{background:#E8EAE0;border:1.5px solid #C2C9A8;border-radius:8px;padding:4mm 5mm;display:flex;justify-content:space-between;align-items:center;margin-bottom:4mm}
-.total-label{font-size:.82rem;font-weight:700;color:#4D2115}
-.total-amount{font-size:1.5rem;font-weight:900;color:#78855F}
-.pay-row{display:flex;align-items:center;gap:7px;margin-bottom:6mm}
-.pay-icon{width:30px;height:30px;background:#4D2115;border-radius:7px;display:flex;align-items:center;justify-content:center;color:white;font-size:.65rem;font-weight:700;flex-shrink:0}
-.pay-text{font-size:.8rem;color:#4D2115;font-weight:600}
-.pay-sub{font-size:.68rem;color:#7A8570}
-.thanks{text-align:center;margin-bottom:2mm}
-.thanks-text{font-size:.88rem;font-weight:700;color:#78855F}
-.thanks-sub{font-size:.68rem;color:#9ab5aa;margin-top:1.5mm}
-.footer{background:#E8EAE0;padding:5mm 6mm;text-align:center;font-size:.65rem;color:#7A8570}
-.no-print{text-align:center;margin-top:1.5rem;font-family:'Heebo',sans-serif;font-size:.85rem;color:#7A8570}
-.wa-btn{display:inline-block;background:#25D366;color:white;padding:.6rem 1.2rem;border-radius:8px;text-decoration:none;font-family:'Heebo',sans-serif;font-weight:700;font-size:.9rem;margin:.5rem}
-@media print{body{background:white;padding:0}.page{box-shadow:none}.no-print{display:none}}
-</style></head><body>
-<div class="page">
-  <div class="top-bar">
-    <div><div class="brand-name">Olive</div><div class="brand-sub">פחות ניהול. יותר ממה שאוהבים.</div></div>
-    <div><div class="rec-num-label">קבלה</div><div class="rec-num">#${receiptNum}</div></div>
-  </div>
-  <div class="body">
-    <div class="biz-row">
-      <div>
-        <div class="biz-name">${d.businessName}</div>
-        <div class="biz-details">${d.businessType}${d.businessId ? ' · ' + d.businessId : ''}${d.businessAddress ? '<br>' + d.businessAddress : ''}</div>
-      </div>
-      <div class="date-block"><div class="date-label">תאריך רכישה</div><div class="date-val">${fmt(d.startDate)}</div></div>
-    </div>
-    <div class="section-label">לקוח/ה</div>
-    <div class="card" style="margin-bottom:5mm">
-      <div class="client-name">${d.clientName}</div>
-      <div class="client-phone">${d.clientPhone}</div>
-    </div>
-    <div class="section-label">פרטי מנוי</div>
-    <div class="card">
-      <div class="detail-row"><span class="detail-key">סוג מנוי</span><span class="detail-val">${d.subTypeName}</span></div>
-      <div class="detail-row"><span class="detail-key">תאריך התחלה</span><span class="detail-val">${fmt(d.startDate)}</span></div>
-      <div class="detail-row"><span class="detail-key">תאריך סיום</span><span class="detail-val">${fmt(d.expiryDate)}</span></div>
-      <div class="detail-row"><span class="detail-key">מספר תרגולים</span><span class="detail-val">${d.classes}</span></div>
-    </div>
-    <div style="height:4mm"></div>
-    <div class="total-card"><div class="total-label">סה״כ שולם</div><div class="total-amount">₪${d.price}</div></div>
-    <div class="pay-row">
-      <div class="pay-icon">Bit</div>
-      <div><div class="pay-text">שולם באמצעות Bit</div><div class="pay-sub">תשלום התקבל ואושר ✓</div></div>
-    </div>
-    <div class="thanks"><div class="thanks-text">תודה רבה על הרכישה!</div><div class="thanks-sub">קבלה זו מהווה אישור תשלום</div></div>
-  </div>
-  <div class="footer">© ${new Date().getFullYear()} Olive · כל הזכויות שמורות</div>
+    return `<style>
+.r-top{background:#4D2115;padding:4mm 6mm;display:flex;align-items:center;justify-content:space-between}
+.r-brand-name{font-size:.85rem;font-weight:700;color:#EEE7DD;letter-spacing:1px}
+.r-brand-sub{font-size:.6rem;color:#C2C9A8;margin-top:1px}
+.r-num{font-size:.8rem;font-weight:700;color:#EEE7DD;text-align:left}
+.r-num-label{font-size:.58rem;color:#C2C9A8;text-transform:uppercase;letter-spacing:.8px;margin-bottom:1px}
+.r-body{padding:6mm 6mm 7mm;font-family:'Heebo',sans-serif}
+.r-biz-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6mm}
+.r-biz-name{font-size:1.2rem;font-weight:900;color:#4D2115}
+.r-biz-details{font-size:.7rem;color:#7A8570;margin-top:3px;line-height:1.7}
+.r-date-block{text-align:left}
+.r-date-label{font-size:.6rem;color:#7A8570;text-transform:uppercase;letter-spacing:.8px}
+.r-date-val{font-size:.82rem;font-weight:600;color:#4D2115;margin-top:2px}
+.r-section-label{font-size:.62rem;font-weight:700;color:#78855F;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:3mm}
+.r-card{background:#F9F7F4;border-radius:8px;padding:4mm 5mm;margin-bottom:4mm}
+.r-client-name{font-size:1rem;font-weight:700;color:#4D2115}
+.r-client-phone{font-size:.78rem;color:#7A8570;margin-top:1.5px}
+.r-detail-row{display:flex;justify-content:space-between;align-items:baseline;padding:1.5mm 0}
+.r-detail-row+.r-detail-row{border-top:1px solid #EEE7DD}
+.r-detail-key{font-size:.76rem;color:#7A8570}
+.r-detail-val{font-size:.8rem;font-weight:600;color:#4D2115}
+.r-total-card{background:#E8EAE0;border:1.5px solid #C2C9A8;border-radius:8px;padding:4mm 5mm;display:flex;justify-content:space-between;align-items:center;margin-bottom:4mm}
+.r-total-label{font-size:.82rem;font-weight:700;color:#4D2115}
+.r-total-amount{font-size:1.5rem;font-weight:900;color:#78855F}
+.r-pay-row{display:flex;align-items:center;gap:7px;margin-bottom:6mm}
+.r-pay-icon{width:30px;height:30px;background:#4D2115;border-radius:7px;display:flex;align-items:center;justify-content:center;color:white;font-size:.65rem;font-weight:700;flex-shrink:0}
+.r-pay-text{font-size:.8rem;color:#4D2115;font-weight:600}
+.r-pay-sub{font-size:.68rem;color:#7A8570}
+.r-thanks{text-align:center;margin-bottom:2mm}
+.r-thanks-text{font-size:.88rem;font-weight:700;color:#78855F}
+.r-thanks-sub{font-size:.68rem;color:#9ab5aa;margin-top:1.5mm}
+.r-footer{background:#E8EAE0;padding:5mm 6mm;text-align:center;font-size:.65rem;color:#7A8570}
+</style>
+<div class="r-top">
+  <div><div class="r-brand-name">Olive</div><div class="r-brand-sub">פחות ניהול. יותר ממה שאוהבים.</div></div>
+  <div><div class="r-num-label">קבלה</div><div class="r-num">#${receiptNum}</div></div>
 </div>
-<div class="no-print">
-  ${d.waUrl ? `<a class="wa-btn" href="${d.waUrl}" target="_blank">📤 שלחי ב-WhatsApp</a><br>` : ''}
-  <span>הדפסה / שמירה כ-PDF: Command+P</span>
+<div class="r-body">
+  <div class="r-biz-row">
+    <div>
+      <div class="r-biz-name">${d.businessName}</div>
+      <div class="r-biz-details">${d.businessType || ''}${d.businessId ? ' · ' + d.businessId : ''}${d.businessAddress ? '<br>' + d.businessAddress : ''}</div>
+    </div>
+    <div class="r-date-block"><div class="r-date-label">תאריך רכישה</div><div class="r-date-val">${fmt(d.startDate)}</div></div>
+  </div>
+  <div class="r-section-label">לקוח/ה</div>
+  <div class="r-card" style="margin-bottom:5mm">
+    <div class="r-client-name">${d.clientName}</div>
+    <div class="r-client-phone">${d.clientPhone}</div>
+  </div>
+  <div class="r-section-label">פרטי מנוי</div>
+  <div class="r-card">
+    <div class="r-detail-row"><span class="r-detail-key">סוג מנוי</span><span class="r-detail-val">${d.subTypeName}</span></div>
+    <div class="r-detail-row"><span class="r-detail-key">תאריך התחלה</span><span class="r-detail-val">${fmt(d.startDate)}</span></div>
+    <div class="r-detail-row"><span class="r-detail-key">תאריך סיום</span><span class="r-detail-val">${fmt(d.expiryDate)}</span></div>
+    <div class="r-detail-row"><span class="r-detail-key">מספר תרגולים</span><span class="r-detail-val">${d.classes}</span></div>
+  </div>
+  <div style="height:4mm"></div>
+  <div class="r-total-card"><div class="r-total-label">סה״כ שולם</div><div class="r-total-amount">₪${d.price}</div></div>
+  <div class="r-pay-row">
+    <div class="r-pay-icon">Bit</div>
+    <div><div class="r-pay-text">שולם באמצעות Bit</div><div class="r-pay-sub">תשלום התקבל ואושר ✓</div></div>
+  </div>
+  <div class="r-thanks"><div class="r-thanks-text">תודה רבה על הרכישה!</div><div class="r-thanks-sub">קבלה זו מהווה אישור תשלום</div></div>
 </div>
-<script>window.onload=()=>window.print()<\/script>
-</body></html>`;
+<div class="r-footer">© ${new Date().getFullYear()} Olive · כל הזכויות שמורות</div>`;
+  }
+
+  function showReceiptOverlay(innerHtml, waUrl) {
+    document.getElementById('receipt-page').innerHTML = innerHtml;
+    const waBtn = document.getElementById('receipt-wa-btn');
+    if (waUrl) { waBtn.href = waUrl; waBtn.style.display = ''; }
+    else { waBtn.style.display = 'none'; }
+    document.getElementById('receipt-overlay').style.display = 'block';
+    document.getElementById('receipt-overlay').scrollTop = 0;
   }
 
   function buildWhatsAppMsg(d) {
@@ -2038,24 +2048,20 @@ body{background:#EEE7DD;font-family:'Heebo',sans-serif;padding:2rem 1rem}
 
   function previewReceipt() {
     const settings = getReceiptSettings();
-    const w = window.open('', '_blank');
-    if (!w) return showMsg('אפשרי חסם חלונות קופצים — אפשרי בהגדרות הדפדפן', 'error');
-    w.document.write(buildReceiptHTML({
-      businessName: CONFIG.businessName,
-      businessType: settings.businessType || 'עוסק פטור',
-      businessId:   settings.businessId || 'XXXXXXXXX',
+    showReceiptOverlay(buildReceiptInnerHTML({
+      businessName:    CONFIG.businessName,
+      businessType:    settings.businessType || 'עוסק פטור',
+      businessId:      settings.businessId || 'XXXXXXXXX',
       businessAddress: settings.businessAddress || 'כתובת העסק',
-      clientName:   'דנה כהן (דוגמה)',
-      clientPhone:  '054-1234567',
-      subTypeName:  'מנוי חודשי — 8 תרגולים',
-      price:        480,
-      startDate:    new Date().toISOString().split('T')[0],
-      expiryDate:   new Date(Date.now()+30*24*60*60*1000).toISOString().split('T')[0],
-      classes:      8,
-      subId:        42,
-      waUrl:        null,
-    }));
-    w.document.close();
+      clientName:      'דנה כהן (דוגמה)',
+      clientPhone:     '054-1234567',
+      subTypeName:     'מנוי חודשי — 8 תרגולים',
+      price:           480,
+      startDate:       new Date().toISOString().split('T')[0],
+      expiryDate:      new Date(Date.now()+30*24*60*60*1000).toISOString().split('T')[0],
+      classes:         8,
+      subId:           42,
+    }), null);
   }
 
   function generateReceipt(subId) {
@@ -2063,7 +2069,6 @@ body{background:#EEE7DD;font-family:'Heebo',sans-serif;padding:2rem 1rem}
     const client = _historyClient;
     if (!s || !client) return showMsg('שגיאה: נתונים חסרים', 'error');
     const settings = getReceiptSettings();
-    if (!settings.businessId) return showMsg('נא למלא פרטי קבלה בהגדרות קודם', 'error');
     const d = {
       businessName:    CONFIG.businessName,
       businessType:    settings.businessType || '',
@@ -2080,11 +2085,8 @@ body{background:#EEE7DD;font-family:'Heebo',sans-serif;padding:2rem 1rem}
     };
     const phone = client.phone.replace(/\D/g, '');
     const waPhone = phone.startsWith('0') ? '972' + phone.slice(1) : phone;
-    d.waUrl = `https://wa.me/${waPhone}?text=${encodeURIComponent(buildWhatsAppMsg(d))}`;
-    const w = window.open('', '_blank');
-    if (!w) return showMsg('אפשרי חסם חלונות קופצים — אפשרי בהגדרות הדפדפן', 'error');
-    w.document.write(buildReceiptHTML(d));
-    w.document.close();
+    const waUrl = `https://wa.me/${waPhone}?text=${encodeURIComponent(buildWhatsAppMsg(d))}`;
+    showReceiptOverlay(buildReceiptInnerHTML(d), waUrl);
   }
 
   // Initial load
