@@ -292,12 +292,13 @@
   .r-thanks-text{font-size:.88rem;font-weight:700;color:#78855F}
   .r-thanks-sub{font-size:.68rem;color:#9ab5aa;margin-top:1.5mm}
   .r-footer{background:#E8EAE0;padding:5mm 6mm;text-align:center;font-size:.65rem;color:#7A8570}
-  @page { margin: 10mm; }
+  @page { margin: 0; }
   @media print {
+    html, body { width:100% !important; margin:0 !important; padding:0 !important; }
     body > *:not(#receipt-overlay) { display:none !important; }
-    #receipt-overlay { display:block !important; position:static !important; background:white !important; padding:0 !important; margin:0 !important; width:100% !important; direction:ltr !important; text-align:center !important; }
+    #receipt-overlay { display:block !important; position:fixed !important; inset:0 !important; background:white !important; padding:0 !important; overflow:visible !important; }
     #receipt-overlay-actions { display:none !important; }
-    #receipt-page { box-shadow:none !important; width:100% !important; max-width:100% !important; margin:0 auto !important; direction:rtl !important; }
+    #receipt-page { width:100% !important; max-width:none !important; box-shadow:none !important; margin:0 !important; }
   }
   </style>
 </head>
