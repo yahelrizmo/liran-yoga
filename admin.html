@@ -318,6 +318,28 @@
   </div>
 </div>
 
+<!-- EDIT SUBSCRIPTION MODAL -->
+<div class="modal-backdrop hidden" id="edit-sub-modal" onclick="closeEditSubModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3>עריכת מנוי</h3>
+    <input type="hidden" id="edit-sub-id">
+    <div class="form-grid">
+      <div>
+        <label>שיעורים נותרים</label>
+        <input type="number" id="edit-sub-classes" min="0">
+      </div>
+      <div>
+        <label>תאריך פקיעה</label>
+        <input type="date" id="edit-sub-expiry">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="saveEditSub()">שמור</button>
+      <button class="btn" style="background:#e2e8f0" onclick="closeEditSubModal()">ביטול</button>
+    </div>
+  </div>
+</div>
+
 <!-- MERGE CLIENTS MODAL -->
 <div class="modal-backdrop hidden" id="merge-modal" onclick="closeMergeModal(event)">
   <div class="modal" style="max-width:520px;max-height:85vh;overflow-y:auto" onclick="event.stopPropagation()">
@@ -947,7 +969,7 @@
             <td>${activeSub ? fmtDate(activeSub.expiry_date) : '—'}</td>
             <td>${activeSub ? statusBadge(activeSub.expiry_date, activeSub.classes_remaining, activeSub.is_active) : ''}</td>
             <td>
-              ${activeSub ? `<button class="btn btn-sm" style="background:#e2e8f0;margin-left:0.25rem" onclick="adjustClasses(${activeSub.id},${activeSub.classes_remaining},1)">+1</button><button class="btn btn-sm" style="background:#e2e8f0;margin-left:0.25rem" onclick="adjustClasses(${activeSub.id},${activeSub.classes_remaining},-1)">-1</button>` : ''}
+              ${activeSub ? `<button class="btn btn-sm" style="background:#e2e8f0;margin-left:0.25rem" onclick="adjustClasses(${activeSub.id},${activeSub.classes_remaining},1)">+1</button><button class="btn btn-sm" style="background:#e2e8f0;margin-left:0.25rem" onclick="adjustClasses(${activeSub.id},${activeSub.classes_remaining},-1)">-1</button><button class="btn btn-sm" style="background:#d4e0c4;margin-left:0.25rem" onclick="openEditSubModal(${activeSub.id},${activeSub.classes_remaining},'${activeSub.expiry_date}')">עריכת מנוי</button>` : ''}
               ${pendingSub ? `<button class="btn btn-sm" style="background:#78855F;color:white;margin-left:0.25rem" onclick="activateSubscription(${pendingSub.id})">הפעל</button>` : ''}
               <button class="btn btn-sm" style="background:#e2e8f0;margin-left:0.3rem" onclick="openEditModal(${c.id},'${c.full_name.replace(/'/g,"\\'")}','${c.phone}','${(c.email||'').replace(/'/g,"\\'")}','${(c.notes||'').replace(/'/g,"\\'")}')">עריכה</button>
               <button class="btn btn-danger btn-sm" onclick="deleteClient(${c.id})">מחק</button>
@@ -1166,6 +1188,31 @@
     const val = current + delta;
     if (val < 0) return showMsg('לא ניתן לרדת מתחת לאפס', 'error');
     await db.from('subscriptions').update({ classes_remaining: val }).eq('id', id);
+    loadClients();
+  }
+
+  function openEditSubModal(id, classes, expiry) {
+    document.getElementById('edit-sub-id').value = id;
+    document.getElementById('edit-sub-classes').value = classes;
+    document.getElementById('edit-sub-expiry').value = expiry;
+    document.getElementById('edit-sub-modal').classList.remove('hidden');
+  }
+
+  function closeEditSubModal(e) {
+    if (e && e.target !== document.getElementById('edit-sub-modal')) return;
+    document.getElementById('edit-sub-modal').classList.add('hidden');
+  }
+
+  async function saveEditSub() {
+    const id = document.getElementById('edit-sub-id').value;
+    const classes = parseInt(document.getElementById('edit-sub-classes').value);
+    const expiry = document.getElementById('edit-sub-expiry').value;
+    if (isNaN(classes) || classes < 0) return showMsg('מספר שיעורים לא תקין', 'error');
+    if (!expiry) return showMsg('נא להזין תאריך פקיעה', 'error');
+    const { error } = await db.from('subscriptions').update({ classes_remaining: classes, expiry_date: expiry }).eq('id', id);
+    if (error) return showMsg('שגיאה בשמירה', 'error');
+    document.getElementById('edit-sub-modal').classList.add('hidden');
+    showMsg('המנוי עודכן בהצלחה');
     loadClients();
   }
 
