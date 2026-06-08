@@ -363,7 +363,7 @@
 <!-- RECEIPT OVERLAY -->
 <div id="receipt-overlay">
   <div id="receipt-overlay-actions">
-    <button onclick="window.print()" class="btn btn-primary">הדפס / שמור PDF</button>
+    <button onclick="printReceiptNewWindow()" class="btn btn-primary">הדפס / שמור PDF</button>
     <a id="receipt-wa-btn" href="#" target="_blank" class="btn" style="background:#25D366;color:white;text-decoration:none">שלח ב-WhatsApp</a>
     <button onclick="document.getElementById('receipt-overlay').style.display='none'" class="btn" style="background:#e2e8f0">סגור</button>
   </div>
@@ -2029,6 +2029,52 @@ td { padding: 2.5mm 3mm; color: #4D2115; border-bottom: 1px solid #e2efe8; }
   <div class="r-thanks"><div class="r-thanks-text">תודה רבה על הרכישה!</div><div class="r-thanks-sub">קבלה זו מהווה אישור תשלום</div></div>
 </div>
 <div class="r-footer">© ${new Date().getFullYear()} Olive · כל הזכויות שמורות</div>`;
+  }
+
+  function printReceiptNewWindow() {
+    const content = document.getElementById('receipt-page').innerHTML;
+    const w = window.open('', '_blank');
+    if (!w) return;
+    w.document.write(`<!DOCTYPE html><html lang="he" dir="rtl"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Heebo',sans-serif;background:white}
+@page{margin:8mm}
+.r-top{background:#4D2115;padding:4mm 6mm;display:flex;align-items:center;justify-content:space-between}
+.r-brand-name{font-size:.85rem;font-weight:700;color:#EEE7DD;letter-spacing:1px}
+.r-brand-sub{font-size:.6rem;color:#C2C9A8;margin-top:1px}
+.r-num{font-size:.8rem;font-weight:700;color:#EEE7DD;text-align:left}
+.r-num-label{font-size:.58rem;color:#C2C9A8;text-transform:uppercase;letter-spacing:.8px;margin-bottom:1px}
+.r-body{padding:6mm 6mm 7mm}
+.r-biz-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6mm}
+.r-biz-name{font-size:1.2rem;font-weight:900;color:#4D2115}
+.r-biz-details{font-size:.7rem;color:#7A8570;margin-top:3px;line-height:1.7}
+.r-date-block{text-align:left}
+.r-date-label{font-size:.6rem;color:#7A8570;text-transform:uppercase;letter-spacing:.8px}
+.r-date-val{font-size:.82rem;font-weight:600;color:#4D2115;margin-top:2px}
+.r-section-label{font-size:.62rem;font-weight:700;color:#78855F;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:3mm}
+.r-card{background:#F9F7F4;border-radius:8px;padding:4mm 5mm;margin-bottom:4mm}
+.r-client-name{font-size:1rem;font-weight:700;color:#4D2115}
+.r-client-phone{font-size:.78rem;color:#7A8570;margin-top:1.5px}
+.r-detail-row{display:flex;justify-content:space-between;align-items:baseline;padding:1.5mm 0}
+.r-detail-row+.r-detail-row{border-top:1px solid #EEE7DD}
+.r-detail-key{font-size:.76rem;color:#7A8570}
+.r-detail-val{font-size:.8rem;font-weight:600;color:#4D2115}
+.r-total-card{background:#E8EAE0;border:1.5px solid #C2C9A8;border-radius:8px;padding:4mm 5mm;display:flex;justify-content:space-between;align-items:center;margin-bottom:4mm}
+.r-total-label{font-size:.82rem;font-weight:700;color:#4D2115}
+.r-total-amount{font-size:1.5rem;font-weight:900;color:#78855F}
+.r-pay-row{display:flex;align-items:center;gap:7px;margin-bottom:6mm}
+.r-pay-icon{width:30px;height:30px;background:#4D2115;border-radius:7px;display:flex;align-items:center;justify-content:center;color:white;font-size:.65rem;font-weight:700;flex-shrink:0}
+.r-pay-text{font-size:.8rem;color:#4D2115;font-weight:600}
+.r-pay-sub{font-size:.68rem;color:#7A8570}
+.r-thanks{text-align:center;margin-bottom:2mm}
+.r-thanks-text{font-size:.88rem;font-weight:700;color:#78855F}
+.r-thanks-sub{font-size:.68rem;color:#9ab5aa;margin-top:1.5mm}
+.r-footer{background:#E8EAE0;padding:5mm 6mm;text-align:center;font-size:.65rem;color:#7A8570}
+</style></head><body>${content}<script>window.onload=()=>{window.print()}<\/script></body></html>`);
+    w.document.close();
   }
 
   function showReceiptOverlay(innerHtml, waUrl) {
