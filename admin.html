@@ -967,9 +967,9 @@
             <td>${activeSub ? activeSub.subscription_types?.name : (pendingSub ? '<span class="badge badge-orange">ממתין לאישור</span>' : '<span class="badge badge-red">אין מנוי</span>')}</td>
             <td style="text-align:center;font-weight:700">${activeSub ? activeSub.classes_remaining : '—'}</td>
             <td>${activeSub ? fmtDate(activeSub.expiry_date) : '—'}</td>
-            <td>${activeSub ? statusBadge(activeSub.expiry_date, activeSub.classes_remaining, activeSub.is_active) : ''}</td>
+            <td>${activeSub ? `<div>${statusBadge(activeSub.expiry_date, activeSub.classes_remaining, activeSub.is_active)}</div><button class="btn btn-sm" style="background:#d4e0c4;margin-top:0.35rem" onclick="openEditSubModal(${activeSub.id},${activeSub.classes_remaining},'${activeSub.expiry_date}')">עריכת מנוי</button>` : ''}</td>
             <td>
-              ${activeSub ? `<button class="btn btn-sm" style="background:#e2e8f0;margin-left:0.25rem" onclick="adjustClasses(${activeSub.id},${activeSub.classes_remaining},1)">+1</button><button class="btn btn-sm" style="background:#e2e8f0;margin-left:0.25rem" onclick="adjustClasses(${activeSub.id},${activeSub.classes_remaining},-1)">-1</button><button class="btn btn-sm" style="background:#d4e0c4;margin-left:0.25rem" onclick="openEditSubModal(${activeSub.id},${activeSub.classes_remaining},'${activeSub.expiry_date}')">עריכת מנוי</button>` : ''}
+              ${activeSub ? `<button class="btn btn-sm" style="background:#e2e8f0;margin-left:0.25rem" onclick="adjustClasses(${activeSub.id},${activeSub.classes_remaining},1)">+1</button><button class="btn btn-sm" style="background:#e2e8f0;margin-left:0.25rem" onclick="adjustClasses(${activeSub.id},${activeSub.classes_remaining},-1)">-1</button>` : ''}
               ${pendingSub ? `<button class="btn btn-sm" style="background:#78855F;color:white;margin-left:0.25rem" onclick="activateSubscription(${pendingSub.id})">הפעל</button>` : ''}
               <button class="btn btn-sm" style="background:#e2e8f0;margin-left:0.3rem" onclick="openEditModal(${c.id},'${c.full_name.replace(/'/g,"\\'")}','${c.phone}','${(c.email||'').replace(/'/g,"\\'")}','${(c.notes||'').replace(/'/g,"\\'")}')">עריכה</button>
               <button class="btn btn-danger btn-sm" onclick="deleteClient(${c.id})">מחק</button>
