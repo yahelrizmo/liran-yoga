@@ -596,6 +596,44 @@
       </div>
     </div>
 
+    <!-- הגדרות קבלה -->
+    <div class="accordion">
+      <div class="accordion-header" onclick="toggleAccordion('acc-receipt-settings')">
+        <div class="accordion-header-title"><i data-lucide="receipt"></i> הגדרות קבלה</div>
+        <i data-lucide="chevron-down" class="accordion-chevron" id="chev-acc-receipt-settings" style="width:18px;height:18px;stroke:#7A6860"></i>
+      </div>
+      <div class="accordion-body" id="acc-receipt-settings">
+        <div class="form-grid">
+          <div>
+            <label>סוג עוסק</label>
+            <select id="receipt-business-type">
+              <option value="עוסק פטור">עוסק פטור</option>
+              <option value="עוסק מורשה">עוסק מורשה</option>
+              <option value="עוסק זעיר">עוסק זעיר</option>
+              <option value="חברה בע״מ">חברה בע״מ</option>
+            </select>
+          </div>
+          <div>
+            <label>ת.ז. / מספר עוסק</label>
+            <input type="text" id="receipt-business-id" placeholder="123456789">
+          </div>
+          <div style="grid-column:1/-1">
+            <label>כתובת עסקית</label>
+            <input type="text" id="receipt-business-address" placeholder="רחוב, עיר">
+          </div>
+          <div style="grid-column:1/-1">
+            <label>תבנית הודעה ל-WhatsApp</label>
+            <textarea id="receipt-msg-template" rows="3" style="width:100%;padding:0.6rem;border:1px solid #C2C9A8;border-radius:8px;font-family:inherit;font-size:0.9rem;resize:vertical">שלום {שם}, מצורפת קבלה על תשלום מנוי {סוג מנוי}. תודה רבה! 🙏</textarea>
+            <div style="font-size:0.78rem;color:#7A8570;margin-top:0.3rem">תגיות: {שם}, {סוג מנוי}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:0.75rem;margin-top:1rem;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="saveReceiptSettings()">שמור הגדרות</button>
+          <button class="btn" style="background:#e2e8f0" onclick="previewReceipt()">תצוגה מקדימה</button>
+        </div>
+      </div>
+    </div>
+
     <!-- לשונית 2: סיכום חודשי -->
     <div class="accordion">
       <div class="accordion-header" onclick="toggleAccordion('acc-summary')">
@@ -969,7 +1007,6 @@
             <td>${activeSub ? fmtDate(activeSub.expiry_date) : '—'}</td>
             <td>${activeSub ? `<div>${statusBadge(activeSub.expiry_date, activeSub.classes_remaining, activeSub.is_active)}</div><button class="btn btn-sm" style="background:#d4e0c4;margin-top:0.35rem" onclick="openEditSubModal(${activeSub.id},${activeSub.classes_remaining},'${activeSub.expiry_date}')">עריכת מנוי</button>` : ''}</td>
             <td>
-              ${activeSub ? `<button class="btn btn-sm" style="background:#e2e8f0;margin-left:0.25rem" onclick="adjustClasses(${activeSub.id},${activeSub.classes_remaining},1)">+1</button><button class="btn btn-sm" style="background:#e2e8f0;margin-left:0.25rem" onclick="adjustClasses(${activeSub.id},${activeSub.classes_remaining},-1)">-1</button>` : ''}
               ${pendingSub ? `<button class="btn btn-sm" style="background:#78855F;color:white;margin-left:0.25rem" onclick="activateSubscription(${pendingSub.id})">הפעל</button>` : ''}
               <button class="btn btn-sm" style="background:#e2e8f0;margin-left:0.3rem" onclick="openEditModal(${c.id},'${c.full_name.replace(/'/g,"\\'")}','${c.phone}','${(c.email||'').replace(/'/g,"\\'")}','${(c.notes||'').replace(/'/g,"\\'")}')">עריכה</button>
               <button class="btn btn-danger btn-sm" onclick="deleteClient(${c.id})">מחק</button>
@@ -1083,7 +1120,11 @@
     loadClients();
   }
 
+  let _historyClient = null;
+  let _historySubsData = {};
+
   async function openClientHistory(id, name, phone, email, joined) {
+    _historyClient = { id, name, phone, email, joined };
     document.getElementById('history-client-name').textContent = name;
     document.getElementById('history-client-meta').innerHTML =
       `טלפון: <strong>${phone}</strong>${email ? ` · אימייל: <strong>${email}</strong>` : ''} · הצטרף/ה: ${joined}`;
@@ -1092,18 +1133,32 @@
     document.getElementById('history-modal').classList.remove('hidden');
 
     const [subsRes, regsRes] = await Promise.all([
-      db.from('subscriptions').select('*, subscription_types(name)').eq('client_id', id).order('start_date', { ascending: false }),
+      db.from('subscriptions').select('*, subscription_types(name, price, classes_count)').eq('client_id', id).order('start_date', { ascending: false }),
       db.from('class_registrations').select('*, classes(title, class_date, class_time)').eq('client_id', id).order('registered_at', { ascending: false })
     ]);
 
     const subs = subsRes.data || [];
+    _historySubsData = {};
+    subs.forEach(s => _historySubsData[s.id] = s);
+
     document.getElementById('history-subs').innerHTML = subs.length
-      ? `<table><thead><tr><th>סוג מנוי</th><th>התחלה</th><th>סיום</th><th>שנותרו</th><th>סטטוס</th></tr></thead><tbody>${
+      ? `<table><thead><tr><th>סוג מנוי</th><th>התחלה</th><th>סיום</th><th>שנותרו</th><th>סטטוס</th><th></th></tr></thead><tbody>${
         subs.map(s => {
           const expired = s.expiry_date < todayStr();
           const status = !s.is_active ? 'ממתין לאישור' : expired ? 'פג תוקף' : s.classes_remaining <= 0 ? 'נוצל' : 'פעיל';
           const cls = status === 'פעיל' ? 'badge-green' : status === 'ממתין לאישור' ? 'badge-orange' : 'badge-red';
-          return `<tr><td>${s.subscription_types?.name||'—'}</td><td>${fmtDate(s.start_date)}</td><td>${fmtDate(s.expiry_date)}</td><td>${s.classes_remaining}</td><td><span class="badge ${cls}">${status}</span></td></tr>`;
+          const isActive = status === 'פעיל';
+          return `<tr>
+            <td>${s.subscription_types?.name||'—'}</td>
+            <td>${fmtDate(s.start_date)}</td>
+            <td>${fmtDate(s.expiry_date)}</td>
+            <td>${s.classes_remaining}</td>
+            <td><span class="badge ${cls}">${status}</span></td>
+            <td style="white-space:nowrap">
+              ${isActive ? `<button class="btn btn-sm" style="background:#d4e0c4;margin-left:0.25rem" onclick="openEditSubModal(${s.id},${s.classes_remaining},'${s.expiry_date}')">עריכת מנוי</button>` : ''}
+              <button class="btn btn-sm" style="background:#e2e8f0;margin-left:0.25rem" onclick="generateReceipt(${s.id})">הפק קבלה</button>
+            </td>
+          </tr>`;
         }).join('')
       }</tbody></table>`
       : '<div class="empty" style="padding:0.75rem 0">אין מנויים</div>';
@@ -1214,6 +1269,9 @@
     document.getElementById('edit-sub-modal').classList.add('hidden');
     showMsg('המנוי עודכן בהצלחה');
     loadClients();
+    if (_historyClient && !document.getElementById('history-modal').classList.contains('hidden')) {
+      openClientHistory(_historyClient.id, _historyClient.name, _historyClient.phone, _historyClient.email, _historyClient.joined);
+    }
   }
 
   // ── CLASSES ───────────────────────────────────────────────
@@ -1860,10 +1918,180 @@ td { padding: 2.5mm 3mm; color: #4D2115; border-bottom: 1px solid #e2efe8; }
     loadSettings();
   }
 
+  // ── RECEIPT ───────────────────────────────────────────────
+  function saveReceiptSettings() {
+    localStorage.setItem('receiptSettings', JSON.stringify({
+      businessType: document.getElementById('receipt-business-type').value,
+      businessId:   document.getElementById('receipt-business-id').value,
+      businessAddress: document.getElementById('receipt-business-address').value,
+      msgTemplate:  document.getElementById('receipt-msg-template').value,
+    }));
+    showMsg('הגדרות קבלה נשמרו');
+  }
+
+  function loadReceiptSettings() {
+    const s = JSON.parse(localStorage.getItem('receiptSettings') || '{}');
+    if (s.businessType) document.getElementById('receipt-business-type').value = s.businessType;
+    if (s.businessId)   document.getElementById('receipt-business-id').value   = s.businessId;
+    if (s.businessAddress) document.getElementById('receipt-business-address').value = s.businessAddress;
+    if (s.msgTemplate)  document.getElementById('receipt-msg-template').value  = s.msgTemplate;
+  }
+
+  function getReceiptSettings() {
+    return JSON.parse(localStorage.getItem('receiptSettings') || '{}');
+  }
+
+  function buildReceiptHTML(d) {
+    const fmt = iso => iso ? iso.split('-').reverse().join('/') : '—';
+    const receiptNum = String(d.subId || 0).padStart(4, '0');
+    const today = new Date().toLocaleDateString('he-IL');
+    return `<!DOCTYPE html><html lang="he" dir="rtl"><head><meta charset="UTF-8">
+<title>קבלה #${receiptNum}</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#EEE7DD;font-family:'Heebo',sans-serif;padding:2rem 1rem}
+.page{background:white;width:148mm;margin:0 auto;box-shadow:0 8px 40px rgba(0,0,0,.15);display:flex;flex-direction:column}
+.top-bar{background:#4D2115;padding:4mm 6mm;display:flex;align-items:center;justify-content:space-between}
+.brand-name{font-size:.85rem;font-weight:700;color:#EEE7DD;letter-spacing:1px}
+.brand-sub{font-size:.6rem;color:#C2C9A8;margin-top:1px}
+.rec-num{font-size:.8rem;font-weight:700;color:#EEE7DD;text-align:left}
+.rec-num-label{font-size:.58rem;color:#C2C9A8;text-transform:uppercase;letter-spacing:.8px;margin-bottom:1px}
+.body{padding:6mm 6mm 7mm;flex:1}
+.biz-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6mm}
+.biz-name{font-size:1.25rem;font-weight:900;color:#4D2115}
+.biz-details{font-size:.7rem;color:#7A8570;margin-top:3px;line-height:1.7}
+.date-block{text-align:left}
+.date-label{font-size:.6rem;color:#7A8570;text-transform:uppercase;letter-spacing:.8px}
+.date-val{font-size:.82rem;font-weight:600;color:#4D2115;margin-top:2px}
+.section-label{font-size:.62rem;font-weight:700;color:#78855F;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:3mm}
+.card{background:#F9F7F4;border-radius:8px;padding:4mm 5mm;margin-bottom:4mm}
+.client-name{font-size:1rem;font-weight:700;color:#4D2115}
+.client-phone{font-size:.78rem;color:#7A8570;margin-top:1.5px}
+.detail-row{display:flex;justify-content:space-between;align-items:baseline;padding:1.5mm 0}
+.detail-row+.detail-row{border-top:1px solid #EEE7DD}
+.detail-key{font-size:.76rem;color:#7A8570}
+.detail-val{font-size:.8rem;font-weight:600;color:#4D2115}
+.total-card{background:#E8EAE0;border:1.5px solid #C2C9A8;border-radius:8px;padding:4mm 5mm;display:flex;justify-content:space-between;align-items:center;margin-bottom:4mm}
+.total-label{font-size:.82rem;font-weight:700;color:#4D2115}
+.total-amount{font-size:1.5rem;font-weight:900;color:#78855F}
+.pay-row{display:flex;align-items:center;gap:7px;margin-bottom:6mm}
+.pay-icon{width:30px;height:30px;background:#4D2115;border-radius:7px;display:flex;align-items:center;justify-content:center;color:white;font-size:.65rem;font-weight:700;flex-shrink:0}
+.pay-text{font-size:.8rem;color:#4D2115;font-weight:600}
+.pay-sub{font-size:.68rem;color:#7A8570}
+.thanks{text-align:center;margin-bottom:2mm}
+.thanks-text{font-size:.88rem;font-weight:700;color:#78855F}
+.thanks-sub{font-size:.68rem;color:#9ab5aa;margin-top:1.5mm}
+.footer{background:#E8EAE0;padding:5mm 6mm;text-align:center;font-size:.65rem;color:#7A8570}
+.no-print{text-align:center;margin-top:1.5rem;font-family:'Heebo',sans-serif;font-size:.85rem;color:#7A8570}
+.wa-btn{display:inline-block;background:#25D366;color:white;padding:.6rem 1.2rem;border-radius:8px;text-decoration:none;font-family:'Heebo',sans-serif;font-weight:700;font-size:.9rem;margin:.5rem}
+@media print{body{background:white;padding:0}.page{box-shadow:none}.no-print{display:none}}
+</style></head><body>
+<div class="page">
+  <div class="top-bar">
+    <div><div class="brand-name">Olive</div><div class="brand-sub">פחות ניהול. יותר ממה שאוהבים.</div></div>
+    <div><div class="rec-num-label">קבלה</div><div class="rec-num">#${receiptNum}</div></div>
+  </div>
+  <div class="body">
+    <div class="biz-row">
+      <div>
+        <div class="biz-name">${d.businessName}</div>
+        <div class="biz-details">${d.businessType}${d.businessId ? ' · ' + d.businessId : ''}${d.businessAddress ? '<br>' + d.businessAddress : ''}</div>
+      </div>
+      <div class="date-block"><div class="date-label">תאריך רכישה</div><div class="date-val">${fmt(d.startDate)}</div></div>
+    </div>
+    <div class="section-label">לקוח/ה</div>
+    <div class="card" style="margin-bottom:5mm">
+      <div class="client-name">${d.clientName}</div>
+      <div class="client-phone">${d.clientPhone}</div>
+    </div>
+    <div class="section-label">פרטי מנוי</div>
+    <div class="card">
+      <div class="detail-row"><span class="detail-key">סוג מנוי</span><span class="detail-val">${d.subTypeName}</span></div>
+      <div class="detail-row"><span class="detail-key">תאריך התחלה</span><span class="detail-val">${fmt(d.startDate)}</span></div>
+      <div class="detail-row"><span class="detail-key">תאריך סיום</span><span class="detail-val">${fmt(d.expiryDate)}</span></div>
+      <div class="detail-row"><span class="detail-key">מספר תרגולים</span><span class="detail-val">${d.classes}</span></div>
+    </div>
+    <div style="height:4mm"></div>
+    <div class="total-card"><div class="total-label">סה״כ שולם</div><div class="total-amount">₪${d.price}</div></div>
+    <div class="pay-row">
+      <div class="pay-icon">Bit</div>
+      <div><div class="pay-text">שולם באמצעות Bit</div><div class="pay-sub">תשלום התקבל ואושר ✓</div></div>
+    </div>
+    <div class="thanks"><div class="thanks-text">תודה רבה על הרכישה!</div><div class="thanks-sub">קבלה זו מהווה אישור תשלום</div></div>
+  </div>
+  <div class="footer">© ${new Date().getFullYear()} Olive · כל הזכויות שמורות</div>
+</div>
+<div class="no-print">
+  ${d.waUrl ? `<a class="wa-btn" href="${d.waUrl}" target="_blank">📤 שלחי ב-WhatsApp</a><br>` : ''}
+  <span>הדפסה / שמירה כ-PDF: Command+P</span>
+</div>
+<script>window.onload=()=>window.print()<\/script>
+</body></html>`;
+  }
+
+  function buildWhatsAppMsg(d) {
+    const settings = getReceiptSettings();
+    const template = settings.msgTemplate || 'שלום {שם}, מצורפת קבלה על תשלום מנוי {סוג מנוי}. תודה רבה! 🙏';
+    return template.replace('{שם}', d.clientName).replace('{סוג מנוי}', d.subTypeName);
+  }
+
+  function previewReceipt() {
+    const settings = getReceiptSettings();
+    const w = window.open('', '_blank');
+    if (!w) return showMsg('אפשרי חסם חלונות קופצים — אפשרי בהגדרות הדפדפן', 'error');
+    w.document.write(buildReceiptHTML({
+      businessName: CONFIG.businessName,
+      businessType: settings.businessType || 'עוסק פטור',
+      businessId:   settings.businessId || 'XXXXXXXXX',
+      businessAddress: settings.businessAddress || 'כתובת העסק',
+      clientName:   'דנה כהן (דוגמה)',
+      clientPhone:  '054-1234567',
+      subTypeName:  'מנוי חודשי — 8 תרגולים',
+      price:        480,
+      startDate:    new Date().toISOString().split('T')[0],
+      expiryDate:   new Date(Date.now()+30*24*60*60*1000).toISOString().split('T')[0],
+      classes:      8,
+      subId:        42,
+      waUrl:        null,
+    }));
+    w.document.close();
+  }
+
+  function generateReceipt(subId) {
+    const s = _historySubsData[subId];
+    const client = _historyClient;
+    if (!s || !client) return showMsg('שגיאה: נתונים חסרים', 'error');
+    const settings = getReceiptSettings();
+    if (!settings.businessId) return showMsg('נא למלא פרטי קבלה בהגדרות קודם', 'error');
+    const d = {
+      businessName:    CONFIG.businessName,
+      businessType:    settings.businessType || '',
+      businessId:      settings.businessId || '',
+      businessAddress: settings.businessAddress || '',
+      clientName:      client.name,
+      clientPhone:     client.phone,
+      subTypeName:     s.subscription_types?.name || '',
+      price:           s.subscription_types?.price || 0,
+      startDate:       s.start_date,
+      expiryDate:      s.expiry_date,
+      classes:         s.subscription_types?.classes_count || s.classes_remaining,
+      subId:           s.id,
+    };
+    const phone = client.phone.replace(/\D/g, '');
+    const waPhone = phone.startsWith('0') ? '972' + phone.slice(1) : phone;
+    d.waUrl = `https://wa.me/${waPhone}?text=${encodeURIComponent(buildWhatsAppMsg(d))}`;
+    const w = window.open('', '_blank');
+    if (!w) return showMsg('אפשרי חסם חלונות קופצים — אפשרי בהגדרות הדפדפן', 'error');
+    w.document.write(buildReceiptHTML(d));
+    w.document.close();
+  }
+
   // Initial load
   pinCheck();
   document.getElementById('main-nav').style.display = 'none';
   loadHome();
+  loadReceiptSettings();
   lucide.createIcons();
 </script>
 </body>
