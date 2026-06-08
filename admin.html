@@ -261,6 +261,37 @@
   #receipt-overlay { display:none; position:fixed; inset:0; background:#EEE7DD; z-index:9999; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:1rem; }
   #receipt-overlay-actions { display:flex; justify-content:center; gap:0.75rem; flex-wrap:wrap; margin-bottom:1rem; }
   #receipt-page { background:white; width:min(148mm,100%); margin:0 auto; box-shadow:0 8px 40px rgba(0,0,0,.15); }
+  .r-top{background:#4D2115;padding:4mm 6mm;display:flex;align-items:center;justify-content:space-between}
+  .r-brand-name{font-size:.85rem;font-weight:700;color:#EEE7DD;letter-spacing:1px}
+  .r-brand-sub{font-size:.6rem;color:#C2C9A8;margin-top:1px}
+  .r-num{font-size:.8rem;font-weight:700;color:#EEE7DD;text-align:left}
+  .r-num-label{font-size:.58rem;color:#C2C9A8;text-transform:uppercase;letter-spacing:.8px;margin-bottom:1px}
+  .r-body{padding:6mm 6mm 7mm}
+  .r-biz-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6mm}
+  .r-biz-name{font-size:1.2rem;font-weight:900;color:#4D2115}
+  .r-biz-details{font-size:.7rem;color:#7A8570;margin-top:3px;line-height:1.7}
+  .r-date-block{text-align:left}
+  .r-date-label{font-size:.6rem;color:#7A8570;text-transform:uppercase;letter-spacing:.8px}
+  .r-date-val{font-size:.82rem;font-weight:600;color:#4D2115;margin-top:2px}
+  .r-section-label{font-size:.62rem;font-weight:700;color:#78855F;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:3mm}
+  .r-card{background:#F9F7F4;border-radius:8px;padding:4mm 5mm;margin-bottom:4mm}
+  .r-client-name{font-size:1rem;font-weight:700;color:#4D2115}
+  .r-client-phone{font-size:.78rem;color:#7A8570;margin-top:1.5px}
+  .r-detail-row{display:flex;justify-content:space-between;align-items:baseline;padding:1.5mm 0}
+  .r-detail-row+.r-detail-row{border-top:1px solid #EEE7DD}
+  .r-detail-key{font-size:.76rem;color:#7A8570}
+  .r-detail-val{font-size:.8rem;font-weight:600;color:#4D2115}
+  .r-total-card{background:#E8EAE0;border:1.5px solid #C2C9A8;border-radius:8px;padding:4mm 5mm;display:flex;justify-content:space-between;align-items:center;margin-bottom:4mm}
+  .r-total-label{font-size:.82rem;font-weight:700;color:#4D2115}
+  .r-total-amount{font-size:1.5rem;font-weight:900;color:#78855F}
+  .r-pay-row{display:flex;align-items:center;gap:7px;margin-bottom:6mm}
+  .r-pay-icon{width:30px;height:30px;background:#4D2115;border-radius:7px;display:flex;align-items:center;justify-content:center;color:white;font-size:.65rem;font-weight:700;flex-shrink:0}
+  .r-pay-text{font-size:.8rem;color:#4D2115;font-weight:600}
+  .r-pay-sub{font-size:.68rem;color:#7A8570}
+  .r-thanks{text-align:center;margin-bottom:2mm}
+  .r-thanks-text{font-size:.88rem;font-weight:700;color:#78855F}
+  .r-thanks-sub{font-size:.68rem;color:#9ab5aa;margin-top:1.5mm}
+  .r-footer{background:#E8EAE0;padding:5mm 6mm;text-align:center;font-size:.65rem;color:#7A8570}
   @media print {
     body > *:not(#receipt-overlay) { display:none !important; }
     #receipt-overlay { display:block !important; position:static !important; background:none !important; padding:0 !important; }
@@ -1963,40 +1994,7 @@ td { padding: 2.5mm 3mm; color: #4D2115; border-bottom: 1px solid #e2efe8; }
   function buildReceiptInnerHTML(d) {
     const fmt = iso => iso ? iso.split('-').reverse().join('/') : '—';
     const receiptNum = String(d.subId || 0).padStart(4, '0');
-    return `<style>
-.r-top{background:#4D2115;padding:4mm 6mm;display:flex;align-items:center;justify-content:space-between}
-.r-brand-name{font-size:.85rem;font-weight:700;color:#EEE7DD;letter-spacing:1px}
-.r-brand-sub{font-size:.6rem;color:#C2C9A8;margin-top:1px}
-.r-num{font-size:.8rem;font-weight:700;color:#EEE7DD;text-align:left}
-.r-num-label{font-size:.58rem;color:#C2C9A8;text-transform:uppercase;letter-spacing:.8px;margin-bottom:1px}
-.r-body{padding:6mm 6mm 7mm;font-family:'Heebo',sans-serif}
-.r-biz-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6mm}
-.r-biz-name{font-size:1.2rem;font-weight:900;color:#4D2115}
-.r-biz-details{font-size:.7rem;color:#7A8570;margin-top:3px;line-height:1.7}
-.r-date-block{text-align:left}
-.r-date-label{font-size:.6rem;color:#7A8570;text-transform:uppercase;letter-spacing:.8px}
-.r-date-val{font-size:.82rem;font-weight:600;color:#4D2115;margin-top:2px}
-.r-section-label{font-size:.62rem;font-weight:700;color:#78855F;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:3mm}
-.r-card{background:#F9F7F4;border-radius:8px;padding:4mm 5mm;margin-bottom:4mm}
-.r-client-name{font-size:1rem;font-weight:700;color:#4D2115}
-.r-client-phone{font-size:.78rem;color:#7A8570;margin-top:1.5px}
-.r-detail-row{display:flex;justify-content:space-between;align-items:baseline;padding:1.5mm 0}
-.r-detail-row+.r-detail-row{border-top:1px solid #EEE7DD}
-.r-detail-key{font-size:.76rem;color:#7A8570}
-.r-detail-val{font-size:.8rem;font-weight:600;color:#4D2115}
-.r-total-card{background:#E8EAE0;border:1.5px solid #C2C9A8;border-radius:8px;padding:4mm 5mm;display:flex;justify-content:space-between;align-items:center;margin-bottom:4mm}
-.r-total-label{font-size:.82rem;font-weight:700;color:#4D2115}
-.r-total-amount{font-size:1.5rem;font-weight:900;color:#78855F}
-.r-pay-row{display:flex;align-items:center;gap:7px;margin-bottom:6mm}
-.r-pay-icon{width:30px;height:30px;background:#4D2115;border-radius:7px;display:flex;align-items:center;justify-content:center;color:white;font-size:.65rem;font-weight:700;flex-shrink:0}
-.r-pay-text{font-size:.8rem;color:#4D2115;font-weight:600}
-.r-pay-sub{font-size:.68rem;color:#7A8570}
-.r-thanks{text-align:center;margin-bottom:2mm}
-.r-thanks-text{font-size:.88rem;font-weight:700;color:#78855F}
-.r-thanks-sub{font-size:.68rem;color:#9ab5aa;margin-top:1.5mm}
-.r-footer{background:#E8EAE0;padding:5mm 6mm;text-align:center;font-size:.65rem;color:#7A8570}
-</style>
-<div class="r-top">
+    return `<div class="r-top">
   <div><div class="r-brand-name">Olive</div><div class="r-brand-sub">פחות ניהול. יותר ממה שאוהבים.</div></div>
   <div><div class="r-num-label">קבלה</div><div class="r-num">#${receiptNum}</div></div>
 </div>
@@ -2049,7 +2047,7 @@ td { padding: 2.5mm 3mm; color: #4D2115; border-bottom: 1px solid #e2efe8; }
   function previewReceipt() {
     const settings = getReceiptSettings();
     showReceiptOverlay(buildReceiptInnerHTML({
-      businessName:    CONFIG.businessName,
+      businessName:    document.title.split(' —')[0].trim(),
       businessType:    settings.businessType || 'עוסק פטור',
       businessId:      settings.businessId || 'XXXXXXXXX',
       businessAddress: settings.businessAddress || 'כתובת העסק',
@@ -2070,7 +2068,7 @@ td { padding: 2.5mm 3mm; color: #4D2115; border-bottom: 1px solid #e2efe8; }
     if (!s || !client) return showMsg('שגיאה: נתונים חסרים', 'error');
     const settings = getReceiptSettings();
     const d = {
-      businessName:    CONFIG.businessName,
+      businessName:    document.title.split(' —')[0].trim(),
       businessType:    settings.businessType || '',
       businessId:      settings.businessId || '',
       businessAddress: settings.businessAddress || '',
