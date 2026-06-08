@@ -674,7 +674,7 @@
           <div style="grid-column:1/-1">
             <label>תבנית הודעה ל-WhatsApp</label>
             <textarea id="receipt-msg-template" rows="3" style="width:100%;padding:0.6rem;border:1px solid #C2C9A8;border-radius:8px;font-family:inherit;font-size:0.9rem;resize:vertical">שלום {שם}, מצורפת קבלה על תשלום מנוי {סוג מנוי}. תודה רבה! 🙏</textarea>
-            <div style="font-size:0.78rem;color:#7A8570;margin-top:0.3rem">תגיות: {שם}, {סוג מנוי}</div>
+            <div style="font-size:0.78rem;color:#7A8570;margin-top:0.3rem">תגיות: {שם}, {סוג מנוי}, {תאריך}</div>
           </div>
         </div>
         <div style="display:flex;gap:0.75rem;margin-top:1rem;flex-wrap:wrap">
@@ -2040,8 +2040,9 @@ td { padding: 2.5mm 3mm; color: #4D2115; border-bottom: 1px solid #e2efe8; }
 
   function buildWhatsAppMsg(d) {
     const settings = getReceiptSettings();
-    const template = settings.msgTemplate || 'שלום {שם}, מצורפת קבלה על תשלום מנוי {סוג מנוי}. תודה רבה! 🙏';
-    return template.replace('{שם}', d.clientName).replace('{סוג מנוי}', d.subTypeName);
+    const template = settings.msgTemplate || 'שלום {שם}, מצורפת קבלה על תשלום מנוי {סוג מנוי} מתאריך {תאריך}. תודה רבה! 🙏';
+    const fmtDate = iso => iso ? iso.split('-').reverse().join('/') : '';
+    return template.replace('{שם}', d.clientName).replace('{סוג מנוי}', d.subTypeName).replace('{תאריך}', fmtDate(d.startDate));
   }
 
   function previewReceipt() {
