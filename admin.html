@@ -11,6 +11,7 @@
   <meta name="theme-color" content="#78855F">
   <link rel="apple-touch-icon" href="icon-192.png">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
@@ -364,7 +365,7 @@
 <div id="receipt-overlay">
   <div id="receipt-overlay-actions">
     <button onclick="printReceiptNewWindow()" class="btn btn-primary">הדפס / שמור PDF</button>
-    <a id="receipt-wa-btn" href="#" target="_blank" class="btn" style="background:#25D366;color:white;text-decoration:none">שלח ב-WhatsApp</a>
+    <button id="receipt-wa-btn" onclick="sendReceiptWhatsApp()" class="btn" style="background:#25D366;color:white">שלח ב-WhatsApp</button>
     <button onclick="document.getElementById('receipt-overlay').style.display='none'" class="btn" style="background:#e2e8f0">סגור</button>
   </div>
   <div id="receipt-page"></div>
@@ -1174,6 +1175,7 @@
 
   let _historyClient = null;
   let _historySubsData = {};
+  let _pendingWa = null;
 
   async function openClientHistory(id, name, phone, email, joined) {
     _historyClient = { id, name, phone, email, joined };
@@ -2077,11 +2079,9 @@ body{font-family:'Heebo',sans-serif;background:white}
     w.document.close();
   }
 
-  function showReceiptOverlay(innerHtml, waUrl) {
+  function showReceiptOverlay(innerHtml, showWa) {
     document.getElementById('receipt-page').innerHTML = innerHtml;
-    const waBtn = document.getElementById('receipt-wa-btn');
-    if (waUrl) { waBtn.href = waUrl; waBtn.style.display = ''; }
-    else { waBtn.style.display = 'none'; }
+    document.getElementById('receipt-wa-btn').style.display = showWa ? '' : 'none';
     document.getElementById('receipt-overlay').style.display = 'block';
     document.getElementById('receipt-overlay').scrollTop = 0;
   }
@@ -2094,6 +2094,7 @@ body{font-family:'Heebo',sans-serif;background:white}
   }
 
   function previewReceipt() {
+    _pendingWa = null;
     const settings = getReceiptSettings();
     showReceiptOverlay(buildReceiptInnerHTML({
       businessName:    document.title.split(' —')[0].trim(),
@@ -2109,6 +2110,30 @@ body{font-family:'Heebo',sans-serif;background:white}
       classes:         8,
       subId:           42,
     }), null);
+  }
+
+  async function sendReceiptWhatsApp() {
+    if (!_pendingWa) return;
+    const btn = document.getElementById('receipt-wa-btn');
+    btn.disabled = true;
+    btn.textContent = 'מכין קבלה...';
+    try {
+      const el = document.getElementById('receipt-page');
+      const canvas = await html2canvas(el, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      const filename = `receipt_${Date.now()}.png`;
+      const { error: uploadError } = await db.storage.from('receipts').upload(filename, blob, { contentType: 'image/png', upsert: true });
+      if (uploadError) throw uploadError;
+      const { data: urlData } = db.storage.from('receipts').getPublicUrl(filename);
+      const fullMsg = _pendingWa.text + '\n\nלקבלה: ' + urlData.publicUrl;
+      window.open(`https://wa.me/${_pendingWa.phone}?text=${encodeURIComponent(fullMsg)}`, '_blank');
+    } catch (err) {
+      showMsg('שגיאה בהעלאת הקבלה — ודאי שה-bucket "receipts" קיים ב-Supabase Storage', 'error');
+      window.open(`https://wa.me/${_pendingWa.phone}?text=${encodeURIComponent(_pendingWa.text)}`, '_blank');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'שלח ב-WhatsApp';
+    }
   }
 
   function generateReceipt(subId) {
@@ -2132,8 +2157,8 @@ body{font-family:'Heebo',sans-serif;background:white}
     };
     const phone = client.phone.replace(/\D/g, '');
     const waPhone = phone.startsWith('0') ? '972' + phone.slice(1) : phone;
-    const waUrl = `https://wa.me/${waPhone}?text=${encodeURIComponent(buildWhatsAppMsg(d))}`;
-    showReceiptOverlay(buildReceiptInnerHTML(d), waUrl);
+    _pendingWa = { phone: waPhone, text: buildWhatsAppMsg(d) };
+    showReceiptOverlay(buildReceiptInnerHTML(d), true);
   }
 
   // Initial load
