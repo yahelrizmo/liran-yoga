@@ -732,11 +732,15 @@
         <i data-lucide="chevron-down" class="accordion-chevron" id="chev-acc-receipts-report" style="width:18px;height:18px;stroke:#7A6860"></i>
       </div>
       <div class="accordion-body" id="acc-receipts-report">
-        <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;margin-bottom:1.5rem">
-          <label style="font-weight:700;font-size:0.9rem">תקופה:</label>
-          <input type="month" id="receipts-report-month" style="width:auto;flex:1;min-width:150px">
+        <div style="display:flex;gap:0.5rem;margin-bottom:0.75rem">
+          <button class="alert-filter active" id="rr-tab-month" onclick="setReportPeriod('month',this)">חודשי</button>
+          <button class="alert-filter" id="rr-tab-year" onclick="setReportPeriod('year',this)">שנתי</button>
+          <button class="alert-filter" id="rr-tab-all" onclick="setReportPeriod('all',this)">הכל</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;margin-bottom:1.5rem" id="rr-picker-row">
+          <input type="month" id="receipts-report-month" style="flex:1;min-width:150px">
+          <select id="receipts-report-year" style="display:none;flex:1;min-width:150px;padding:0.6rem 0.8rem;border:1px solid #C2C9A8;border-radius:8px;font-size:0.95rem"></select>
           <button class="btn btn-primary" onclick="loadReceiptsReport()">טען</button>
-          <button class="btn" style="background:#e2e8f0" onclick="loadReceiptsReport(true)">כל הקבלות</button>
         </div>
         <div id="receipts-report-content" style="display:none">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem">
@@ -752,16 +756,20 @@
       </div>
     </div>
 
-    <!-- לשונית 2: סיכום חודשי -->
+    <!-- סיכום -->
     <div class="accordion">
       <div class="accordion-header" onclick="toggleAccordion('acc-summary')">
-        <div class="accordion-header-title"><i data-lucide="bar-chart-2"></i> סיכום חודשי</div>
+        <div class="accordion-header-title"><i data-lucide="bar-chart-2"></i> סיכום</div>
         <i data-lucide="chevron-down" class="accordion-chevron" id="chev-acc-summary" style="width:18px;height:18px;stroke:#7A6860"></i>
       </div>
       <div class="accordion-body" id="acc-summary">
+        <div style="display:flex;gap:0.5rem;margin-bottom:0.75rem">
+          <button class="alert-filter active" id="sum-tab-month" onclick="setSummaryPeriod('month',this)">חודשי</button>
+          <button class="alert-filter" id="sum-tab-year" onclick="setSummaryPeriod('year',this)">שנתי</button>
+        </div>
         <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;margin-bottom:1.5rem">
-          <label style="font-weight:700;font-size:0.9rem">חודש:</label>
-          <input type="month" id="summary-month" style="width:auto;flex:1;min-width:150px">
+          <input type="month" id="summary-month" style="flex:1;min-width:150px">
+          <select id="summary-year" style="display:none;flex:1;min-width:150px;padding:0.6rem 0.8rem;border:1px solid #C2C9A8;border-radius:8px;font-size:0.95rem"></select>
           <button class="btn btn-primary" onclick="loadSummary()">טען נתונים</button>
         </div>
         <div id="summary-content" style="display:none">
@@ -1834,11 +1842,21 @@
   let summaryData = null;
 
   async function loadSummary() {
-    const monthVal = document.getElementById('summary-month').value;
-    if (!monthVal) return showMsg('נא לבחור חודש', 'error');
-    const [year, month] = monthVal.split('-').map(Number);
-    const firstDay = `${year}-${String(month).padStart(2,'0')}-01`;
-    const lastDay = new Date(year, month, 0).toISOString().split('T')[0];
+    let firstDay, lastDay, summaryLabel;
+    if (_summaryPeriod === 'year') {
+      const year = parseInt(document.getElementById('summary-year').value);
+      if (!year) return showMsg('נא לבחור שנה', 'error');
+      firstDay = `${year}-01-01`;
+      lastDay  = `${year}-12-31`;
+      summaryLabel = 'שנת ' + year;
+    } else {
+      const monthVal = document.getElementById('summary-month').value;
+      if (!monthVal) return showMsg('נא לבחור חודש', 'error');
+      const [year, month] = monthVal.split('-').map(Number);
+      firstDay = `${year}-${String(month).padStart(2,'0')}-01`;
+      lastDay  = new Date(year, month, 0).toISOString().split('T')[0];
+      summaryLabel = null;
+    }
 
     const [subsRes, clientsRes, classesRes] = await Promise.all([
       db.from('subscriptions').select('*, subscription_types(name, price)').gte('start_date', firstDay).lte('start_date', lastDay),
@@ -1861,15 +1879,15 @@
       byType[name].total += price;
     });
 
-    summaryData = { year, month, revenue, subs, clients, classes, completedClasses, byType };
+    summaryData = { year, month: (_summaryPeriod === 'year' ? null : (firstDay.split('-')[1]|0)), revenue, subs, clients, classes, completedClasses, byType, label: summaryLabel };
     renderSummary();
   }
 
   const _heMonths = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
 
   function renderSummary() {
-    const { year, month, revenue, subs, clients, completedClasses, classes, byType } = summaryData;
-    const monthName = _heMonths[month - 1] + ' ' + year;
+    const { year, month, revenue, subs, clients, completedClasses, classes, byType, label } = summaryData;
+    const monthName = label || (_heMonths[month - 1] + ' ' + year);
     document.getElementById('summary-month-label').textContent = monthName;
     document.getElementById('sum-revenue').textContent = '₪' + revenue.toLocaleString('he-IL');
     document.getElementById('sum-subs').textContent = subs.length;
@@ -1905,8 +1923,8 @@
 
   function downloadSummaryPDF() {
     if (!summaryData) return;
-    const { year, month, revenue, subs, clients, completedClasses, classes, byType } = summaryData;
-    const monthName = _heMonths[month - 1] + ' ' + year;
+    const { year, month, revenue, subs, clients, completedClasses, classes, byType, label } = summaryData;
+    const monthName = label || (_heMonths[month - 1] + ' ' + year);
     const today = new Date().toLocaleDateString('he-IL');
 
     const tableRows = Object.entries(byType).map(([name, d]) => `
@@ -2000,6 +2018,13 @@ td { padding: 2.5mm 3mm; color: #4D2115; border-bottom: 1px solid #e2efe8; }
       document.getElementById('summary-month').value = monthVal;
     if (!document.getElementById('receipts-report-month').value)
       document.getElementById('receipts-report-month').value = monthVal;
+    const curYear = now.getFullYear();
+    const yearOpts = Array.from({length: curYear - 2023}, (_,i) => curYear - i)
+      .map(y => `<option value="${y}">${y}</option>`).join('');
+    ['receipts-report-year','summary-year'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el.options.length) el.innerHTML = yearOpts;
+    });
     const { data } = await db.from('subscription_types').select('*').order('price');
     document.getElementById('sub-types-table').innerHTML = data?.map(t => `<tr>
       <td><strong>${t.name}</strong></td>
@@ -2295,16 +2320,44 @@ body{font-family:'Heebo',sans-serif;background:white}
     }
   }
 
-  async function loadReceiptsReport(all = false) {
-    const monthVal = document.getElementById('receipts-report-month').value;
+  let _reportPeriod = 'month';
+  let _summaryPeriod = 'month';
+
+  function setReportPeriod(type, btn) {
+    _reportPeriod = type;
+    document.querySelectorAll('#rr-tab-month,#rr-tab-year,#rr-tab-all').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('receipts-report-month').style.display = type === 'month' ? '' : 'none';
+    document.getElementById('receipts-report-year').style.display  = type === 'year'  ? '' : 'none';
+    document.getElementById('rr-picker-row').style.display = type === 'all' ? 'none' : '';
+    if (type === 'all') loadReceiptsReport();
+  }
+
+  function setSummaryPeriod(type, btn) {
+    _summaryPeriod = type;
+    document.querySelectorAll('#sum-tab-month,#sum-tab-year').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('summary-month').style.display = type === 'month' ? '' : 'none';
+    document.getElementById('summary-year').style.display  = type === 'year'  ? '' : 'none';
+    document.getElementById('summary-content').style.display = 'none';
+  }
+
+  async function loadReceiptsReport() {
     let query = db.from('receipts').select('*').order('issued_at', { ascending: false }).order('id', { ascending: false });
     let label = 'כל הקבלות';
-    if (!all && monthVal) {
+    if (_reportPeriod === 'month') {
+      const monthVal = document.getElementById('receipts-report-month').value;
+      if (!monthVal) return showMsg('נא לבחור חודש', 'error');
       const [year, month] = monthVal.split('-').map(Number);
       const firstDay = `${year}-${String(month).padStart(2,'0')}-01`;
       const lastDay = new Date(year, month, 0).toISOString().split('T')[0];
       query = query.gte('issued_at', firstDay).lte('issued_at', lastDay);
       label = _heMonths[month - 1] + ' ' + year;
+    } else if (_reportPeriod === 'year') {
+      const year = document.getElementById('receipts-report-year').value;
+      if (!year) return showMsg('נא לבחור שנה', 'error');
+      query = query.gte('issued_at', `${year}-01-01`).lte('issued_at', `${year}-12-31`);
+      label = 'שנת ' + year;
     }
     const { data, error } = await query;
     if (error) return showMsg('שגיאה בטעינת קבלות: ' + error.message, 'error');
