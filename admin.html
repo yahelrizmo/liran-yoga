@@ -1195,11 +1195,11 @@
 
     document.getElementById('history-subs').innerHTML = subs.length
       ? `<table><thead><tr><th>סוג מנוי</th><th>התחלה</th><th>סיום</th><th>שנותרו</th><th>סטטוס</th><th></th></tr></thead><tbody>${
-        subs.map(s => {
+        subs.map((s, i) => {
           const expired = s.expiry_date < todayStr();
           const status = !s.is_active ? 'ממתין לאישור' : expired ? 'פג תוקף' : s.classes_remaining <= 0 ? 'נוצל' : 'פעיל';
           const cls = status === 'פעיל' ? 'badge-green' : status === 'ממתין לאישור' ? 'badge-orange' : 'badge-red';
-          const isActive = status === 'פעיל';
+          const isEditable = i === 0;
           return `<tr>
             <td>${s.subscription_types?.name||'—'}</td>
             <td>${fmtDate(s.start_date)}</td>
@@ -1207,7 +1207,7 @@
             <td>${s.classes_remaining}</td>
             <td><span class="badge ${cls}">${status}</span></td>
             <td style="white-space:nowrap">
-              ${isActive ? `<button class="btn btn-sm" style="background:#d4e0c4;margin-left:0.25rem" onclick="openEditSubModal(${s.id},${s.classes_remaining},'${s.expiry_date}')">עריכת מנוי</button>` : ''}
+              ${isEditable ? `<button class="btn btn-sm" style="background:#d4e0c4;margin-left:0.25rem" onclick="openEditSubModal(${s.id},${s.classes_remaining},'${s.expiry_date}')">עריכת מנוי</button>` : ''}
               <button class="btn btn-sm" style="background:#e2e8f0;margin-left:0.25rem" onclick="generateReceipt(${s.id})">הפק קבלה</button>
             </td>
           </tr>`;
