@@ -2000,7 +2000,7 @@ td { padding: 2.5mm 3mm; color: #4D2115; border-bottom: 1px solid #e2efe8; }
     const fmt = iso => iso ? iso.split('-').reverse().join('/') : '—';
     const receiptNum = String(d.subId || 0).padStart(4, '0');
     return `<div class="r-top">
-  <div><div class="r-brand-name">Olive</div><div class="r-brand-sub">פחות ניהול. יותר ממה שאוהבים.</div></div>
+  <div style="display:flex;align-items:center;gap:3mm"><img src="icon-192.png" style="width:24px;height:24px;border-radius:5px;flex-shrink:0"><div><div class="r-brand-name">Olive</div><div class="r-brand-sub">פחות ניהול. יותר ממה שאוהבים.</div></div></div>
   <div><div class="r-num-label">קבלה</div><div class="r-num">#${receiptNum}</div></div>
 </div>
 <div class="r-body">
