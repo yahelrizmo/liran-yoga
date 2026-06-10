@@ -370,7 +370,7 @@
 <div class="modal-backdrop hidden" id="payment-method-modal" onclick="closePaymentMethodModal(event)">
   <div class="modal" style="max-width:340px" onclick="event.stopPropagation()">
     <h3 style="margin-bottom:1.25rem">שיטת תשלום</h3>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin-bottom:1.5rem">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.6rem;margin-bottom:1.5rem">
       <button class="pay-method-btn active" onclick="selectPayMethod(this,'Bit','שולם באמצעות Bit')">
         <span style="font-size:1.2rem">💳</span><span>Bit</span>
       </button>
@@ -382,6 +382,9 @@
       </button>
       <button class="pay-method-btn" onclick="selectPayMethod(this,'צ׳ק','שולם בצ׳ק')">
         <span style="font-size:1.2rem">📝</span><span>צ׳ק</span>
+      </button>
+      <button class="pay-method-btn" onclick="selectPayMethod(this,'PayBox','שולם באמצעות PayBox')">
+        <span style="font-size:1.2rem">📲</span><span>PayBox</span>
       </button>
     </div>
     <div class="modal-actions">
