@@ -675,6 +675,11 @@
             <label>כתובת עסקית</label>
             <input type="text" id="receipt-business-address" placeholder="רחוב, עיר">
           </div>
+          <div>
+            <label>מספר קבלה ראשונה</label>
+            <input type="number" id="receipt-start-num" min="1" placeholder="1">
+            <div style="font-size:0.78rem;color:#7A8570;margin-top:0.3rem">הקבלות ימוספרו החל מהמספר הזה</div>
+          </div>
           <div style="grid-column:1/-1">
             <label>תבנית הודעה ל-WhatsApp</label>
             <textarea id="receipt-msg-template" rows="3" style="width:100%;padding:0.6rem;border:1px solid #C2C9A8;border-radius:8px;font-family:inherit;font-size:0.9rem;resize:vertical">שלום {שם}, מצורפת קבלה על תשלום מנוי {סוג מנוי}. תודה רבה! 🙏</textarea>
@@ -1976,20 +1981,22 @@ td { padding: 2.5mm 3mm; color: #4D2115; border-bottom: 1px solid #e2efe8; }
   // ── RECEIPT ───────────────────────────────────────────────
   function saveReceiptSettings() {
     localStorage.setItem('receiptSettings', JSON.stringify({
-      businessType: document.getElementById('receipt-business-type').value,
-      businessId:   document.getElementById('receipt-business-id').value,
+      businessType:    document.getElementById('receipt-business-type').value,
+      businessId:      document.getElementById('receipt-business-id').value,
       businessAddress: document.getElementById('receipt-business-address').value,
-      msgTemplate:  document.getElementById('receipt-msg-template').value,
+      msgTemplate:     document.getElementById('receipt-msg-template').value,
+      receiptStartNum: parseInt(document.getElementById('receipt-start-num').value) || 1,
     }));
     showMsg('הגדרות קבלה נשמרו');
   }
 
   function loadReceiptSettings() {
     const s = JSON.parse(localStorage.getItem('receiptSettings') || '{}');
-    if (s.businessType) document.getElementById('receipt-business-type').value = s.businessType;
-    if (s.businessId)   document.getElementById('receipt-business-id').value   = s.businessId;
+    if (s.businessType)    document.getElementById('receipt-business-type').value    = s.businessType;
+    if (s.businessId)      document.getElementById('receipt-business-id').value      = s.businessId;
     if (s.businessAddress) document.getElementById('receipt-business-address').value = s.businessAddress;
-    if (s.msgTemplate)  document.getElementById('receipt-msg-template').value  = s.msgTemplate;
+    if (s.msgTemplate)     document.getElementById('receipt-msg-template').value     = s.msgTemplate;
+    if (s.receiptStartNum) document.getElementById('receipt-start-num').value        = s.receiptStartNum;
   }
 
   function getReceiptSettings() {
@@ -1998,7 +2005,8 @@ td { padding: 2.5mm 3mm; color: #4D2115; border-bottom: 1px solid #e2efe8; }
 
   function buildReceiptInnerHTML(d) {
     const fmt = iso => iso ? iso.split('-').reverse().join('/') : '—';
-    const receiptNum = String(d.subId || 0).padStart(4, '0');
+    const startNum = parseInt(getReceiptSettings().receiptStartNum || '1');
+    const receiptNum = String(startNum + (d.subId || 0) - 1).padStart(4, '0');
     return `<div class="r-top">
   <div style="display:flex;align-items:center;gap:3mm"><img src="icon-192.png" style="width:24px;height:24px;border-radius:5px;flex-shrink:0"><div><div class="r-brand-name">Olive</div><div class="r-brand-sub">פחות ניהול. יותר ממה שאוהבים.</div></div></div>
   <div><div class="r-num-label">קבלה</div><div class="r-num">#${receiptNum}</div></div>
