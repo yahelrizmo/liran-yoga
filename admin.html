@@ -12,6 +12,7 @@
   <link rel="apple-touch-icon" href="icon-192.png">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
@@ -2120,10 +2121,16 @@ body{font-family:'Heebo',sans-serif;background:white}
     const waWin = window.open('', '_blank');
     try {
       const el = document.getElementById('receipt-page');
-      const canvas = await html2canvas(el, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
-      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-      const filename = `receipt_${Date.now()}.png`;
-      const { error: uploadError } = await db.storage.from('receipts').upload(filename, blob, { contentType: 'image/png', upsert: true });
+      const canvas = await html2canvas(el, { scale: 3, backgroundColor: '#ffffff', useCORS: true });
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a5' });
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+      const blob = pdf.output('blob');
+      const filename = `receipt_${Date.now()}.pdf`;
+      const { error: uploadError } = await db.storage.from('receipts').upload(filename, blob, { contentType: 'application/pdf', upsert: true });
       if (uploadError) throw uploadError;
       const { data: urlData } = db.storage.from('receipts').getPublicUrl(filename);
       const fullMsg = _pendingWa.text + '\n\nלקבלה: ' + urlData.publicUrl;
