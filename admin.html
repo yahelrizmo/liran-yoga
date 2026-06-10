@@ -2117,6 +2117,7 @@ body{font-family:'Heebo',sans-serif;background:white}
     const btn = document.getElementById('receipt-wa-btn');
     btn.disabled = true;
     btn.textContent = 'מכין קבלה...';
+    const waWin = window.open('', '_blank');
     try {
       const el = document.getElementById('receipt-page');
       const canvas = await html2canvas(el, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
@@ -2126,10 +2127,10 @@ body{font-family:'Heebo',sans-serif;background:white}
       if (uploadError) throw uploadError;
       const { data: urlData } = db.storage.from('receipts').getPublicUrl(filename);
       const fullMsg = _pendingWa.text + '\n\nלקבלה: ' + urlData.publicUrl;
-      window.open(`https://wa.me/${_pendingWa.phone}?text=${encodeURIComponent(fullMsg)}`, '_blank');
+      waWin.location.href = `https://wa.me/${_pendingWa.phone}?text=${encodeURIComponent(fullMsg)}`;
     } catch (err) {
-      showMsg('שגיאה בהעלאת הקבלה — ודאי שה-bucket "receipts" קיים ב-Supabase Storage', 'error');
-      window.open(`https://wa.me/${_pendingWa.phone}?text=${encodeURIComponent(_pendingWa.text)}`, '_blank');
+      console.error(err);
+      waWin.location.href = `https://wa.me/${_pendingWa.phone}?text=${encodeURIComponent(_pendingWa.text)}`;
     } finally {
       btn.disabled = false;
       btn.textContent = 'שלח ב-WhatsApp';
