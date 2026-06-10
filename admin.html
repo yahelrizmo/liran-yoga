@@ -1987,6 +1987,7 @@ td { padding: 2.5mm 3mm; color: #4D2115; border-bottom: 1px solid #e2efe8; }
       msgTemplate:     document.getElementById('receipt-msg-template').value,
       receiptStartNum: parseInt(document.getElementById('receipt-start-num').value) || 1,
     }));
+    localStorage.setItem('receiptNextNum', String(parseInt(document.getElementById('receipt-start-num').value) || 1));
     showMsg('הגדרות קבלה נשמרו');
   }
 
@@ -2003,10 +2004,23 @@ td { padding: 2.5mm 3mm; color: #4D2115; border-bottom: 1px solid #e2efe8; }
     return JSON.parse(localStorage.getItem('receiptSettings') || '{}');
   }
 
+  function getOrCreateReceiptNum(subId) {
+    const startNum = parseInt(getReceiptSettings().receiptStartNum || '1');
+    const mapKey = 'receiptNumMap_' + (getReceiptSettings().receiptStartNum || '1');
+    const counterKey = 'receiptNextNum';
+    const map = JSON.parse(localStorage.getItem(mapKey) || '{}');
+    const next = parseInt(localStorage.getItem(counterKey) || String(startNum));
+    if (!map[subId]) {
+      map[subId] = next;
+      localStorage.setItem(mapKey, JSON.stringify(map));
+      localStorage.setItem(counterKey, String(next + 1));
+    }
+    return String(map[subId]).padStart(4, '0');
+  }
+
   function buildReceiptInnerHTML(d) {
     const fmt = iso => iso ? iso.split('-').reverse().join('/') : '—';
-    const startNum = parseInt(getReceiptSettings().receiptStartNum || '1');
-    const receiptNum = String(startNum + (d.subId || 0) - 1).padStart(4, '0');
+    const receiptNum = getOrCreateReceiptNum(d.subId);
     return `<div class="r-top">
   <div style="display:flex;align-items:center;gap:3mm"><img src="icon-192.png" style="width:24px;height:24px;border-radius:5px;flex-shrink:0"><div><div class="r-brand-name">Olive</div><div class="r-brand-sub">פחות ניהול. יותר ממה שאוהבים.</div></div></div>
   <div><div class="r-num-label">קבלה</div><div class="r-num">#${receiptNum}</div></div>
