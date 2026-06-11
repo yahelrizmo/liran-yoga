@@ -55,6 +55,8 @@
     .btn-main:disabled { background: #7ab09a; cursor: not-allowed; }
     .btn-green { background: #78855F; color: white; }
     .btn-green:hover { background: #606A4C; }
+    .copy-field-btn { background: #E8EAE0; color: #4D2115; border: none; border-radius: 6px; padding: 0.25rem 0.65rem; font-family: 'Heebo', sans-serif; font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+    .copy-field-btn:hover { background: #D4D9BF; }
 
     .health-box { margin-top: 1.2rem; background: #EEE7DD; border-radius: 12px; padding: 1rem 1.1rem; border: 2px solid #ede8e0; margin-bottom: 0; }
     .health-label { display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer; font-size: 0.88rem; color: #4D2115; font-weight: 400; }
@@ -149,13 +151,12 @@
         <button onclick="window.location.href='https://links.payboxapp.com/Vrw4qWEvQ2b'" class="btn btn-main" style="margin-top:0.75rem">פתחו את Paybox לתשלום</button>
         <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #ede8e0">
           <div style="font-size:0.82rem;color:#7A6860;margin-bottom:0.6rem">העברה בנקאית — פרטי חשבון:</div>
-          <div style="background:#EEE7DD;border-radius:10px;padding:0.75rem 1rem;font-size:0.88rem;color:#4D2115;line-height:1.9;text-align:right">
-            <div><strong>בנק מרכנתיל</strong> (17)</div>
-            <div>סניף בית שמש (725)</div>
-            <div>חשבון <strong>82391574</strong></div>
-            <div>ע"ש עובד לירן</div>
+          <div style="background:#EEE7DD;border-radius:10px;padding:0.75rem 1rem;font-size:0.88rem;color:#4D2115">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:0.35rem 0;border-bottom:1px solid #D4CFC7"><span>בנק מרכנתיל</span><button class="copy-field-btn" onclick="copyField(this,'17')">17</button></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:0.35rem 0;border-bottom:1px solid #D4CFC7"><span>סניף</span><button class="copy-field-btn" onclick="copyField(this,'725')">725</button></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:0.35rem 0;border-bottom:1px solid #D4CFC7"><span>מספר חשבון</span><button class="copy-field-btn" onclick="copyField(this,'82391574')">82391574</button></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:0.35rem 0"><span>ע"ש</span><button class="copy-field-btn" onclick="copyField(this,'עובד לירן')">עובד לירן</button></div>
           </div>
-          <button id="copy-bank-btn" onclick="copyBankDetails()" class="btn btn-main" style="margin-top:0.6rem;background:#E8EAE0;color:#4D2115">העתק פרטים</button>
         </div>
         <div class="pay-note">לאחר ביצוע התשלום — לחצו על הכפתור למטה.</div>
       </div>
@@ -348,14 +349,13 @@
     document.getElementById('payment-section').classList.add('show');
   }
 
-  function copyBankDetails() {
-    const text = 'בנק מרכנתיל (17)\nסניף בית שמש (725)\nחשבון 82391574\nע"ש עובד לירן';
-    navigator.clipboard.writeText(text).then(() => {
-      const btn = document.getElementById('copy-bank-btn');
-      btn.textContent = '✓ הועתק';
+  function copyField(btn, value) {
+    navigator.clipboard.writeText(value).then(() => {
+      const orig = btn.textContent;
+      btn.textContent = '✓';
       btn.style.background = '#78855F';
       btn.style.color = 'white';
-      setTimeout(() => { btn.textContent = 'העתק פרטים'; btn.style.background = '#E8EAE0'; btn.style.color = '#4D2115'; }, 2500);
+      setTimeout(() => { btn.textContent = orig; btn.style.background = ''; btn.style.color = ''; }, 2000);
     });
   }
 
