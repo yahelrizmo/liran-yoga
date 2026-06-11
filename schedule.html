@@ -168,7 +168,10 @@
       if (subs?.length) { client = m; chosenSubs = subs; break; }
     }
 
-    if (!chosenSubs?.length) return showMsg('אין לך מנוי פעיל. פנו ללירן לחידוש.');
+    if (!chosenSubs?.length) {
+      document.getElementById('msg-area').innerHTML = `<div class="msg msg-error">אין מנוי פעיל. <a href="https://liran-yoga.vercel.app/register.html" style="color:#c53030;font-weight:700;text-decoration:underline">לחצי כאן לרכישת מנוי</a></div>`;
+      return;
+    }
 
     currentClient = client;
     activeSub = chosenSubs[0];
