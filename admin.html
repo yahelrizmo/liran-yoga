@@ -304,13 +304,20 @@
   .r-thanks-text{font-size:.88rem;font-weight:700;color:#78855F}
   .r-thanks-sub{font-size:.68rem;color:#9ab5aa;margin-top:1.5mm}
   .r-footer{background:#E8EAE0;padding:5mm 6mm;text-align:center;font-size:.65rem;color:#7A8570}
-  @page { margin: 0; }
+  @page { margin: 10mm; }
   @media print {
     html, body { width:100% !important; margin:0 !important; padding:0 !important; }
-    body > *:not(#receipt-overlay) { display:none !important; }
-    #receipt-overlay { display:block !important; position:fixed !important; inset:0 !important; background:white !important; padding:0 !important; overflow:visible !important; }
-    #receipt-overlay-actions { display:none !important; }
-    #receipt-page { width:100% !important; max-width:none !important; box-shadow:none !important; margin:0 !important; }
+    /* receipt print */
+    body:not(.print-report) > *:not(#receipt-overlay) { display:none !important; }
+    body:not(.print-report) #receipt-overlay { display:block !important; position:fixed !important; inset:0 !important; background:white !important; padding:0 !important; overflow:visible !important; }
+    body:not(.print-report) #receipt-overlay-actions { display:none !important; }
+    body:not(.print-report) #receipt-page { width:100% !important; max-width:none !important; box-shadow:none !important; margin:0 !important; }
+    /* report print */
+    body.print-report > *:not(#print-report) { display:none !important; }
+    body.print-report #print-report { display:block !important; direction:rtl; font-family:Heebo,Arial,sans-serif; color:#4D2115; }
+    body.print-report #print-report table { width:100%; border-collapse:collapse; }
+    body.print-report #print-report th, body.print-report #print-report td { padding:7px 10px; border-bottom:1px solid #C2C9A8; font-size:11pt; text-align:right; }
+    body.print-report #print-report th { background:#E8EAE0 !important; color:#78855F; font-size:10pt; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
   }
   </style>
 </head>
@@ -2494,57 +2501,36 @@ body{font-family:'Heebo',sans-serif;background:white}
     </tr>`).join('');
   }
 
-  async function exportReceiptsReportPDF() {
+  function exportReceiptsReportPDF() {
     if (!_lastReceiptsReportData?.length) return;
-    const btn = document.getElementById('export-report-btn');
-    btn.disabled = true;
-    btn.textContent = 'מכין...';
     const total = _lastReceiptsReportData.reduce((s, r) => s + (r.amount || 0), 0);
-    const tdStyle = 'padding:8px 10px;border-bottom:1px solid #D4D9BF;font-size:12px;color:#4D2115;text-align:right;white-space:nowrap';
-    const el = document.createElement('div');
-    el.style.cssText = 'position:fixed;top:-9999px;left:0;width:780px;background:white;padding:32px;font-family:Heebo,Arial,sans-serif;direction:rtl;color:#4D2115;box-sizing:border-box';
-    el.innerHTML = `
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid #78855F">
-        <div><div style="font-size:20px;font-weight:900;color:#78855F">Olive</div><div style="font-size:10px;color:#7A8570">פחות ניהול. יותר ממה שאוהבים.</div></div>
-        <div style="text-align:left"><div style="font-size:16px;font-weight:700">דוח קבלות</div><div style="font-size:13px;color:#7A8570">${_lastReceiptsReportLabel}</div></div>
+    document.getElementById('print-report').innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #78855F">
+        <div><div style="font-size:18pt;font-weight:900;color:#78855F">Olive</div><div style="font-size:9pt;color:#7A8570">פחות ניהול. יותר ממה שאוהבים.</div></div>
+        <div style="text-align:left"><div style="font-size:14pt;font-weight:700;color:#4D2115">דוח קבלות</div><div style="font-size:11pt;color:#7A8570">${_lastReceiptsReportLabel}</div></div>
       </div>
-      <table style="width:100%;border-collapse:collapse">
-        <thead><tr style="background:#E8EAE0">
-          <th style="padding:8px 10px;text-align:right;font-size:12px;color:#78855F;border-bottom:2px solid #C2C9A8">קבלה #</th>
-          <th style="padding:8px 10px;text-align:right;font-size:12px;color:#78855F;border-bottom:2px solid #C2C9A8">תאריך</th>
-          <th style="padding:8px 10px;text-align:right;font-size:12px;color:#78855F;border-bottom:2px solid #C2C9A8">לקוח</th>
-          <th style="padding:8px 10px;text-align:right;font-size:12px;color:#78855F;border-bottom:2px solid #C2C9A8">טלפון</th>
-          <th style="padding:8px 10px;text-align:right;font-size:12px;color:#78855F;border-bottom:2px solid #C2C9A8">סוג מנוי</th>
-          <th style="padding:8px 10px;text-align:left;font-size:12px;color:#78855F;border-bottom:2px solid #C2C9A8">סכום</th>
+      <table>
+        <thead><tr>
+          <th>קבלה #</th><th>תאריך</th><th>לקוח</th><th>טלפון</th><th>סוג מנוי</th><th style="text-align:left">סכום</th>
         </tr></thead>
         <tbody>${_lastReceiptsReportData.map(r => `<tr>
-          <td style="${tdStyle}"><strong>#${r.receipt_num}</strong></td>
-          <td style="${tdStyle}">${fmtDate(r.issued_at)}</td>
-          <td style="${tdStyle}">${r.client_name}</td>
-          <td style="${tdStyle}">${r.client_phone}</td>
-          <td style="${tdStyle}">${r.subscription_type_name}</td>
-          <td style="${tdStyle};text-align:left;font-weight:700;color:#78855F">₪${(r.amount||0).toLocaleString('he-IL')}</td>
+          <td><strong>#${r.receipt_num}</strong></td>
+          <td>${fmtDate(r.issued_at)}</td>
+          <td>${r.client_name}</td>
+          <td>${r.client_phone}</td>
+          <td>${r.subscription_type_name}</td>
+          <td style="text-align:left;font-weight:700;color:#78855F">₪${(r.amount||0).toLocaleString('he-IL')}</td>
         </tr>`).join('')}</tbody>
       </table>
-      <div style="margin-top:16px;padding-top:12px;border-top:2px solid #78855F;display:flex;justify-content:space-between;align-items:center">
-        <div style="font-size:12px;color:#7A8570">הופק על ידי Olive</div>
-        <div style="font-size:15px;font-weight:900;color:#78855F">סה"כ: ₪${total.toLocaleString('he-IL')}</div>
+      <div style="margin-top:14px;padding-top:10px;border-top:2px solid #78855F;display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:9pt;color:#7A8570">הופק על ידי Olive</div>
+        <div style="font-size:13pt;font-weight:900;color:#78855F">סה"כ: ₪${total.toLocaleString('he-IL')}</div>
       </div>`;
-    document.body.appendChild(el);
-    try {
-      const canvas = await html2canvas(el, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
-      const imgData = canvas.toDataURL('image/jpeg', 0.93);
-      const { jsPDF } = window.jspdf;
-      const pdfW = 210;
-      const pdfH = (canvas.height * pdfW) / canvas.width;
-      const pdf = new jsPDF({ unit: 'mm', format: [pdfW, pdfH] });
-      pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, pdfH);
-      pdf.save(`דוח-קבלות-${_lastReceiptsReportLabel}.pdf`);
-    } finally {
-      document.body.removeChild(el);
-      btn.disabled = false;
-      btn.textContent = 'ייצא לPDF';
-    }
+    document.body.classList.add('print-report');
+    window.addEventListener('afterprint', () => {
+      document.body.classList.remove('print-report');
+    }, { once: true });
+    window.print();
   }
 
   // Initial load
@@ -2554,5 +2540,6 @@ body{font-family:'Heebo',sans-serif;background:white}
   loadReceiptSettings();
   lucide.createIcons();
 </script>
+<div id="print-report" style="display:none"></div>
 </body>
 </html>
