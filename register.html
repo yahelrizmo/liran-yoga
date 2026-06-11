@@ -147,16 +147,6 @@
         <h3>תשלום</h3>
         <div class="pay-amount">₪<span id="pay-amount"></span></div>
         <button onclick="window.location.href='https://links.payboxapp.com/Vrw4qWEvQ2b'" class="btn btn-main" style="margin-top:0.75rem">פתחו את Paybox לתשלום</button>
-        <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #ede8e0">
-          <a href="https://www.bitpay.co.il/app/me/AA88B37B-CCD9-809C-A819-CA949304346C4DA8" target="_blank" class="btn btn-main" style="display:block;text-decoration:none;background:#E8EAE0;color:#4D2115">פתחו את Bit לתשלום</a>
-        </div>
-        <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #ede8e0;font-size:0.82rem;color:#7A6860">
-          אין Bit או Paybox? העבירו למספר:
-          <div style="display:flex;align-items:center;justify-content:center;gap:0.75rem;margin-top:0.4rem;flex-wrap:wrap">
-            <span style="font-size:1.2rem;font-weight:700;color:#4D2115">053-246-2667</span>
-            <button id="copy-bit-btn" onclick="copyBitPhone()" class="btn btn-main" style="width:auto;padding:0.4rem 0.9rem;font-size:0.82rem;margin-top:0">העתק</button>
-          </div>
-        </div>
         <div class="pay-note">לאחר ביצוע התשלום — לחצו על הכפתור למטה.</div>
       </div>
       <button class="btn btn-green" onclick="confirmSent()">שלחתי את התשלום ✓</button>
@@ -346,15 +336,6 @@
     document.getElementById('step-register').style.display = 'none';
     document.getElementById('pay-amount').textContent = selectedPlan.price;
     document.getElementById('payment-section').classList.add('show');
-  }
-
-  function copyBitPhone() {
-    navigator.clipboard.writeText('0532462667').then(() => {
-      const btn = document.getElementById('copy-bit-btn');
-      btn.textContent = '✓ הועתק';
-      btn.style.background = '#78855F';
-      setTimeout(() => { btn.textContent = 'העתק'; btn.style.background = ''; }, 2500);
-    });
   }
 
   async function confirmSent() {

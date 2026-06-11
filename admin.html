@@ -1334,18 +1334,27 @@
     const { data: t } = await db.from('subscription_types').select('*').eq('id', typeId).single();
     const expiry = new Date(startDate);
     expiry.setDate(expiry.getDate() + t.validity_days);
-    const clientName = document.getElementById('sub-client').selectedOptions[0]?.text.split(' — ')[0] || '';
-    const { error } = await db.from('subscriptions').insert({
+    const clientOpt = document.getElementById('sub-client').selectedOptions[0];
+    const clientName = clientOpt?.text.split(' — ')[0] || '';
+    const clientPhone = clientOpt?.text.split(' — ')[1] || '';
+    const { data: newSubs, error } = await db.from('subscriptions').insert({
       client_id: +clientId, subscription_type_id: typeId,
       classes_remaining: t.classes_count, start_date: startDate,
       expiry_date: expiry.toISOString().split('T')[0]
-    });
+    }).select('*');
     if (error) return showMsg('שגיאה: ' + error.message, 'error');
     await loadClients();
     document.getElementById('clients-search').value = clientName;
     switchClientsTab('active', document.getElementById('tab-active-clients'));
     filterClientsTable();
-    showMsg('✓ מנוי שויך — מצאי "הפעל" בשורה של הלקוחה ולחצי עליו');
+    const newSub = newSubs?.[0];
+    if (newSub) {
+      _historyClient = { id: +clientId, name: clientName, phone: clientPhone };
+      _historySubsData[newSub.id] = { ...newSub, subscription_types: { name: t.name, price: t.price, classes_count: t.classes_count } };
+      generateReceipt(newSub.id);
+    } else {
+      showMsg('✓ מנוי שויך — מצאי "הפעל" בשורה של הלקוחה ולחצי עליו');
+    }
   }
 
   function loadSubscriptions() { loadClients(); }
@@ -2305,7 +2314,7 @@ body{font-family:'Heebo',sans-serif;background:white}
 
   async function saveReceiptToDb(d, receiptNum) {
     try {
-      await db.from('receipts').upsert({
+      await db.from('receipts').insert({
         receipt_num:            receiptNum,
         client_id:              d.clientId || null,
         subscription_id:        d.subId || null,
@@ -2314,7 +2323,7 @@ body{font-family:'Heebo',sans-serif;background:white}
         subscription_type_name: d.subTypeName,
         amount:                 d.price,
         issued_at:              d.startDate || todayStr(),
-      }, { onConflict: 'subscription_id', ignoreDuplicates: true });
+      });
     } catch (e) {
       console.error('שמירת קבלה נכשלה:', e);
     }
