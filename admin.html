@@ -652,7 +652,13 @@
       <div class="accordion-body" id="acc-reg-class">
         <div class="form-grid">
           <div><label>שיעור *</label><select id="reg-class"></select></div>
-          <div><label>לקוח *</label><select id="reg-client" onchange="loadClientSubs()"></select></div>
+          <div><label>לקוח *</label>
+            <div class="client-search-wrap">
+              <input type="text" id="reg-client-search" placeholder="חיפוש לפי שם או טלפון..." autocomplete="off" oninput="filterRegClientDropdown()" onfocus="openRegClientDropdown()" onblur="closeRegClientDropdown()">
+              <div class="client-dropdown" id="reg-client-dropdown"></div>
+              <input type="hidden" id="reg-client" value="">
+            </div>
+          </div>
           <div><label>מנוי לשימוש *</label><select id="reg-subscription"></select></div>
         </div>
         <button class="btn btn-primary" style="margin-top:1rem" onclick="addRegistration()">רשום לשיעור</button>
@@ -846,7 +852,7 @@
     if (name === 'home') loadHome();
     if (name === 'alerts') loadAlerts();
     if (name === 'clients') { loadClients(); loadClientsSelect('sub-client'); loadSubTypes(); }
-    if (name === 'classes') { loadClasses(); loadClassesSelect(); loadClientsSelect('reg-client', loadClientSubs); loadRegistrations(); }
+    if (name === 'classes') { loadClasses(); loadClassesSelect(); loadRegClientSelect(loadClientSubs); loadRegistrations(); }
     if (name === 'settings') loadSettings();
   }
 
@@ -1370,6 +1376,50 @@
     document.getElementById('sub-client').value = id;
     document.getElementById('sub-client-search').value = `${name} — ${phone}`;
     document.getElementById('sub-client-dropdown').classList.remove('open');
+  }
+
+  function _renderRegClientDropdown(clients) {
+    document.getElementById('reg-client-dropdown').innerHTML = clients.length
+      ? clients.map(c =>
+          `<div class="dd-item" onmousedown="selectRegClientFromDropdown(${c.id},'${c.full_name.replace(/'/g,"\\'")}','${c.phone}')">${c.full_name} — ${c.phone}</div>`
+        ).join('')
+      : '<div class="dd-item" style="color:#7A8570;cursor:default">אין תוצאות</div>';
+  }
+
+  async function loadRegClientSelect(callback) {
+    if (!_allClientsForSelect.length) {
+      const { data } = await db.from('clients').select('*').order('full_name');
+      _allClientsForSelect = data || [];
+    }
+    _renderRegClientDropdown(_allClientsForSelect);
+    if (callback) callback();
+  }
+
+  function filterRegClientDropdown() {
+    const q = document.getElementById('reg-client-search').value.toLowerCase();
+    document.getElementById('reg-client').value = '';
+    document.getElementById('reg-subscription').innerHTML = '<option value="">בחר לקוח קודם</option>';
+    const filtered = q
+      ? _allClientsForSelect.filter(c => c.full_name.toLowerCase().includes(q) || c.phone.includes(q))
+      : _allClientsForSelect;
+    _renderRegClientDropdown(filtered);
+    document.getElementById('reg-client-dropdown').classList.add('open');
+  }
+
+  function openRegClientDropdown() {
+    filterRegClientDropdown();
+    document.getElementById('reg-client-dropdown').classList.add('open');
+  }
+
+  function closeRegClientDropdown() {
+    setTimeout(() => document.getElementById('reg-client-dropdown').classList.remove('open'), 150);
+  }
+
+  function selectRegClientFromDropdown(id, name, phone) {
+    document.getElementById('reg-client').value = id;
+    document.getElementById('reg-client-search').value = `${name} — ${phone}`;
+    document.getElementById('reg-client-dropdown').classList.remove('open');
+    loadClientSubs();
   }
 
   async function addSubscription() {
