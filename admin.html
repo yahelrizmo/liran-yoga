@@ -763,7 +763,10 @@
         <div id="receipts-report-content" style="display:none">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem">
             <div style="font-size:1rem;font-weight:700;color:#4D2115" id="receipts-report-label"></div>
-            <div style="font-size:1.1rem;font-weight:900;color:#78855F" id="receipts-report-total"></div>
+            <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap">
+              <div style="font-size:1.1rem;font-weight:900;color:#78855F" id="receipts-report-total"></div>
+              <button id="export-report-btn" class="btn btn-sm" style="background:#E8EAE0;color:#4D2115" onclick="exportReceiptsReportPDF()">ייצא לPDF</button>
+            </div>
           </div>
           <table>
             <thead><tr><th>קבלה #</th><th>תאריך</th><th>לקוח</th><th>טלפון</th><th>סוג מנוי</th><th>סכום</th></tr></thead>
@@ -2429,6 +2432,8 @@ body{font-family:'Heebo',sans-serif;background:white}
 
   let _reportPeriod = 'month';
   let _summaryPeriod = 'month';
+  let _lastReceiptsReportData = null;
+  let _lastReceiptsReportLabel = '';
 
   function setReportPeriod(type, btn) {
     _reportPeriod = type;
@@ -2470,11 +2475,13 @@ body{font-family:'Heebo',sans-serif;background:white}
     if (error) return showMsg('שגיאה בטעינת קבלות: ' + error.message, 'error');
 
     document.getElementById('receipts-report-label').textContent = label;
+    _lastReceiptsReportLabel = label;
     const hasData = data?.length > 0;
     document.getElementById('receipts-report-content').style.display = hasData ? 'block' : 'none';
     document.getElementById('receipts-report-empty').style.display = hasData ? 'none' : 'block';
-    if (!hasData) return;
+    if (!hasData) { _lastReceiptsReportData = null; return; }
 
+    _lastReceiptsReportData = data;
     const total = data.reduce((s, r) => s + (r.amount || 0), 0);
     document.getElementById('receipts-report-total').textContent = `סה"כ: ₪${total.toLocaleString('he-IL')}`;
     document.getElementById('receipts-report-table').innerHTML = data.map(r => `<tr>
@@ -2485,6 +2492,59 @@ body{font-family:'Heebo',sans-serif;background:white}
       <td>${r.subscription_type_name}</td>
       <td style="font-weight:700;color:#78855F">₪${(r.amount||0).toLocaleString('he-IL')}</td>
     </tr>`).join('');
+  }
+
+  async function exportReceiptsReportPDF() {
+    if (!_lastReceiptsReportData?.length) return;
+    const btn = document.getElementById('export-report-btn');
+    btn.disabled = true;
+    btn.textContent = 'מכין...';
+    const total = _lastReceiptsReportData.reduce((s, r) => s + (r.amount || 0), 0);
+    const tdStyle = 'padding:8px 10px;border-bottom:1px solid #D4D9BF;font-size:12px;color:#4D2115;text-align:right';
+    const el = document.createElement('div');
+    el.style.cssText = 'position:fixed;top:-9999px;right:-9999px;width:680px;background:white;padding:32px;font-family:Heebo,Arial,sans-serif;direction:rtl;color:#4D2115';
+    el.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid #78855F">
+        <div><div style="font-size:20px;font-weight:900;color:#78855F">Olive</div><div style="font-size:10px;color:#7A8570">פחות ניהול. יותר ממה שאוהבים.</div></div>
+        <div style="text-align:left"><div style="font-size:16px;font-weight:700">דוח קבלות</div><div style="font-size:13px;color:#7A8570">${_lastReceiptsReportLabel}</div></div>
+      </div>
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr style="background:#E8EAE0">
+          <th style="padding:8px 10px;text-align:right;font-size:12px;color:#78855F;border-bottom:2px solid #C2C9A8">קבלה #</th>
+          <th style="padding:8px 10px;text-align:right;font-size:12px;color:#78855F;border-bottom:2px solid #C2C9A8">תאריך</th>
+          <th style="padding:8px 10px;text-align:right;font-size:12px;color:#78855F;border-bottom:2px solid #C2C9A8">לקוח</th>
+          <th style="padding:8px 10px;text-align:right;font-size:12px;color:#78855F;border-bottom:2px solid #C2C9A8">טלפון</th>
+          <th style="padding:8px 10px;text-align:right;font-size:12px;color:#78855F;border-bottom:2px solid #C2C9A8">סוג מנוי</th>
+          <th style="padding:8px 10px;text-align:left;font-size:12px;color:#78855F;border-bottom:2px solid #C2C9A8">סכום</th>
+        </tr></thead>
+        <tbody>${_lastReceiptsReportData.map(r => `<tr>
+          <td style="${tdStyle}"><strong>#${r.receipt_num}</strong></td>
+          <td style="${tdStyle}">${fmtDate(r.issued_at)}</td>
+          <td style="${tdStyle}">${r.client_name}</td>
+          <td style="${tdStyle}">${r.client_phone}</td>
+          <td style="${tdStyle}">${r.subscription_type_name}</td>
+          <td style="${tdStyle};text-align:left;font-weight:700;color:#78855F">₪${(r.amount||0).toLocaleString('he-IL')}</td>
+        </tr>`).join('')}</tbody>
+      </table>
+      <div style="margin-top:16px;padding-top:12px;border-top:2px solid #78855F;display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:12px;color:#7A8570">הופק על ידי Olive</div>
+        <div style="font-size:15px;font-weight:900;color:#78855F">סה"כ: ₪${total.toLocaleString('he-IL')}</div>
+      </div>`;
+    document.body.appendChild(el);
+    try {
+      const canvas = await html2canvas(el, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
+      const imgData = canvas.toDataURL('image/jpeg', 0.93);
+      const { jsPDF } = window.jspdf;
+      const pdfW = 210;
+      const pdfH = (canvas.height * pdfW) / canvas.width;
+      const pdf = new jsPDF({ unit: 'mm', format: [pdfW, pdfH] });
+      pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, pdfH);
+      pdf.save(`דוח-קבלות-${_lastReceiptsReportLabel}.pdf`);
+    } finally {
+      document.body.removeChild(el);
+      btn.disabled = false;
+      btn.textContent = 'ייצא לPDF';
+    }
   }
 
   // Initial load
