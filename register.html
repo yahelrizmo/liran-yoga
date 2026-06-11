@@ -147,6 +147,16 @@
         <h3>תשלום</h3>
         <div class="pay-amount">₪<span id="pay-amount"></span></div>
         <button onclick="window.location.href='https://links.payboxapp.com/Vrw4qWEvQ2b'" class="btn btn-main" style="margin-top:0.75rem">פתחו את Paybox לתשלום</button>
+        <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #ede8e0">
+          <div style="font-size:0.82rem;color:#7A6860;margin-bottom:0.6rem">העברה בנקאית — פרטי חשבון:</div>
+          <div style="background:#EEE7DD;border-radius:10px;padding:0.75rem 1rem;font-size:0.88rem;color:#4D2115;line-height:1.9;text-align:right">
+            <div><strong>בנק מרכנתיל</strong> (17)</div>
+            <div>סניף בית שמש (725)</div>
+            <div>חשבון <strong>82391574</strong></div>
+            <div>ע"ש עובד לירן</div>
+          </div>
+          <button id="copy-bank-btn" onclick="copyBankDetails()" class="btn btn-main" style="margin-top:0.6rem;background:#E8EAE0;color:#4D2115">העתק פרטים</button>
+        </div>
         <div class="pay-note">לאחר ביצוע התשלום — לחצו על הכפתור למטה.</div>
       </div>
       <button class="btn btn-green" onclick="confirmSent()">שלחתי את התשלום ✓</button>
@@ -336,6 +346,17 @@
     document.getElementById('step-register').style.display = 'none';
     document.getElementById('pay-amount').textContent = selectedPlan.price;
     document.getElementById('payment-section').classList.add('show');
+  }
+
+  function copyBankDetails() {
+    const text = 'בנק מרכנתיל (17)\nסניף בית שמש (725)\nחשבון 82391574\nע"ש עובד לירן';
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('copy-bank-btn');
+      btn.textContent = '✓ הועתק';
+      btn.style.background = '#78855F';
+      btn.style.color = 'white';
+      setTimeout(() => { btn.textContent = 'העתק פרטים'; btn.style.background = '#E8EAE0'; btn.style.color = '#4D2115'; }, 2500);
+    });
   }
 
   async function confirmSent() {
