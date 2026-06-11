@@ -76,6 +76,12 @@
     input:focus, select:focus { outline: none; border-color: #78855F; }
     input[type="date"], input[type="time"] { -webkit-appearance: none; appearance: none; width: 100%; min-height: 2.75rem; }
     .form-grid > div { min-width: 0; overflow: hidden; }
+    .client-search-wrap { position: relative; }
+    .client-dropdown { position: absolute; top: 100%; right: 0; left: 0; background: white; border: 1px solid #78855F; border-top: none; border-radius: 0 0 8px 8px; max-height: 220px; overflow-y: auto; z-index: 200; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .client-dropdown.open { display: block; }
+    .client-dropdown .dd-item { padding: 0.55rem 0.8rem; cursor: pointer; font-size: 0.88rem; border-bottom: 1px solid #E8EAE0; }
+    .client-dropdown .dd-item:last-child { border-bottom: none; }
+    .client-dropdown .dd-item:hover { background: #E8EAE0; }
     a { color: #78855F; text-decoration: none; }
     a:hover { color: #606A4C; text-decoration: underline; }
 
@@ -556,7 +562,13 @@
       </div>
       <div class="accordion-body" id="acc-add-sub">
         <div class="form-grid">
-          <div><label>לקוח *</label><select id="sub-client"></select></div>
+          <div><label>לקוח *</label>
+            <div class="client-search-wrap">
+              <input type="text" id="sub-client-search" placeholder="חיפוש לפי שם או טלפון..." autocomplete="off" oninput="filterClientDropdown()" onfocus="openClientDropdown()" onblur="closeClientDropdown()">
+              <div class="client-dropdown" id="sub-client-dropdown"></div>
+              <input type="hidden" id="sub-client" value="">
+            </div>
+          </div>
           <div><label>סוג מנוי *</label><select id="sub-type" onchange="updateSubInfo()"></select></div>
           <div><label>תאריך התחלה</label><input type="date" id="sub-start"></div>
         </div>
@@ -1318,12 +1330,46 @@
     document.getElementById('sub-info').textContent = `${opt.dataset.classes} תרגולים | תוקף: ${opt.dataset.days} ימים`;
   }
 
+  let _allClientsForSelect = [];
+
   async function loadClientsSelect(selectId, callback) {
     const { data } = await db.from('clients').select('*').order('full_name');
-    document.getElementById(selectId).innerHTML = data?.map(c =>
-      `<option value="${c.id}">${c.full_name} — ${c.phone}</option>`
-    ).join('') || '<option>אין לקוחות</option>';
+    _allClientsForSelect = data || [];
+    _renderClientDropdown(_allClientsForSelect);
     if (callback) callback();
+  }
+
+  function _renderClientDropdown(clients) {
+    document.getElementById('sub-client-dropdown').innerHTML = clients.length
+      ? clients.map(c =>
+          `<div class="dd-item" onmousedown="selectClientFromDropdown(${c.id},'${c.full_name.replace(/'/g,"\\'")}','${c.phone}')">${c.full_name} — ${c.phone}</div>`
+        ).join('')
+      : '<div class="dd-item" style="color:#7A8570;cursor:default">אין תוצאות</div>';
+  }
+
+  function filterClientDropdown() {
+    const q = document.getElementById('sub-client-search').value.toLowerCase();
+    document.getElementById('sub-client').value = '';
+    const filtered = q
+      ? _allClientsForSelect.filter(c => c.full_name.toLowerCase().includes(q) || c.phone.includes(q))
+      : _allClientsForSelect;
+    _renderClientDropdown(filtered);
+    document.getElementById('sub-client-dropdown').classList.add('open');
+  }
+
+  function openClientDropdown() {
+    filterClientDropdown();
+    document.getElementById('sub-client-dropdown').classList.add('open');
+  }
+
+  function closeClientDropdown() {
+    setTimeout(() => document.getElementById('sub-client-dropdown').classList.remove('open'), 150);
+  }
+
+  function selectClientFromDropdown(id, name, phone) {
+    document.getElementById('sub-client').value = id;
+    document.getElementById('sub-client-search').value = `${name} — ${phone}`;
+    document.getElementById('sub-client-dropdown').classList.remove('open');
   }
 
   async function addSubscription() {
@@ -1334,15 +1380,17 @@
     const { data: t } = await db.from('subscription_types').select('*').eq('id', typeId).single();
     const expiry = new Date(startDate);
     expiry.setDate(expiry.getDate() + t.validity_days);
-    const clientOpt = document.getElementById('sub-client').selectedOptions[0];
-    const clientName = clientOpt?.text.split(' — ')[0] || '';
-    const clientPhone = clientOpt?.text.split(' — ')[1] || '';
+    const searchText = document.getElementById('sub-client-search').value;
+    const clientName = searchText.split(' — ')[0] || '';
+    const clientPhone = searchText.split(' — ')[1] || '';
     const { data: newSubs, error } = await db.from('subscriptions').insert({
       client_id: +clientId, subscription_type_id: typeId,
       classes_remaining: t.classes_count, start_date: startDate,
       expiry_date: expiry.toISOString().split('T')[0]
     }).select('*');
     if (error) return showMsg('שגיאה: ' + error.message, 'error');
+    document.getElementById('sub-client-search').value = '';
+    document.getElementById('sub-client').value = '';
     await loadClients();
     document.getElementById('clients-search').value = clientName;
     switchClientsTab('active', document.getElementById('tab-active-clients'));
