@@ -164,6 +164,7 @@
       const { data: subs } = await db.from('subscriptions')
         .select('*, subscription_types(name)')
         .eq('client_id', m.id).eq('is_active', true)
+        .gt('classes_remaining', 0)
         .gte('expiry_date', today).order('expiry_date').limit(1);
       if (subs?.length) { client = m; chosenSubs = subs; break; }
     }
@@ -293,7 +294,7 @@
     if (!freshSub) {
       btn.disabled = false;
       btn.textContent = 'הירשמו';
-      return showMsg('המנוי שלך פג תוקף. פנו ללירן לחידוש.');
+      return showMsg('המנוי שלך נוצל / פג תוקף. פנו ללירן לחידוש.');
     }
 
     const { error } = await db.from('class_registrations').insert({
