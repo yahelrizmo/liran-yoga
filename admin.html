@@ -231,8 +231,9 @@
     .forms-grid-2 .card { margin-bottom: 0; }
 
     /* ── ACCORDION ───────────────────────────────────────────── */
-    .accordion { background: white; border-radius: 12px; border: 1px solid #C2C9A8; margin-bottom: 0.75rem; overflow: hidden; }
-    .accordion-header { padding: 1rem 1.2rem; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: background 0.2s; }
+    .accordion { background: white; border-radius: 12px; border: 1px solid #C2C9A8; margin-bottom: 0.75rem; }
+    .accordion-header { padding: 1rem 1.2rem; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: background 0.2s; border-radius: 12px; overflow: hidden; }
+    .accordion-header.open { border-radius: 12px 12px 0 0; }
     .accordion-header:hover { background: #E8EAE0; }
     .accordion-header-title { font-weight: 700; font-size: 0.95rem; color: #4D2115; display: flex; align-items: center; gap: 0.5rem; }
     .accordion-header-title svg { width: 18px; height: 18px; stroke: #78855F; }
@@ -1946,10 +1947,16 @@
   function toggleAccordion(id) {
     const body = document.getElementById(id);
     const isOpen = body.classList.contains('open');
-    document.querySelectorAll('.accordion-body').forEach(b => b.classList.remove('open'));
+    document.querySelectorAll('.accordion-body').forEach(b => {
+      b.classList.remove('open');
+      const h = b.previousElementSibling;
+      if (h) h.classList.remove('open');
+    });
     document.querySelectorAll('.accordion-chevron').forEach(c => c.style.transform = '');
     if (!isOpen) {
       body.classList.add('open');
+      const header = body.previousElementSibling;
+      if (header) header.classList.add('open');
       const chev = document.getElementById('chev-' + id);
       if (chev) chev.style.transform = 'rotate(180deg)';
     }
