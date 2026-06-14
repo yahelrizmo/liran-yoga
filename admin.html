@@ -402,7 +402,7 @@
     </div>
     <div class="modal-actions">
       <button class="btn btn-primary" style="flex:1" onclick="confirmReceiptGeneration()">הפק קבלה</button>
-      <button class="btn" style="background:#e2e8f0" onclick="closePaymentMethodModal()">ביטול</button>
+      <button class="btn" style="background:#e2e8f0" onclick="cancelReceiptGeneration()">ביטול</button>
     </div>
   </div>
 </div>
@@ -2406,6 +2406,11 @@ body{font-family:'Heebo',sans-serif;background:white}
   function closePaymentMethodModal(e) {
     if (e && e.target !== document.getElementById('payment-method-modal')) return;
     document.getElementById('payment-method-modal').classList.add('hidden');
+  }
+
+  function cancelReceiptGeneration() {
+    document.getElementById('payment-method-modal').classList.add('hidden');
+    if (_pendingReceiptData) showMsg('✓ מנוי שויך בהצלחה — לא הופקה קבלה');
   }
 
   function confirmReceiptGeneration() {
