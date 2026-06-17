@@ -669,7 +669,7 @@
           </div>
           <div><label>מנוי לשימוש *</label><select id="reg-subscription"></select></div>
         </div>
-        <button class="btn btn-primary" style="margin-top:1rem" onclick="addRegistration()">רשום לשיעור</button>
+        <button class="btn btn-primary" style="margin-top:1rem" onclick="addRegistration(this)">רשום לשיעור</button>
         <p style="font-size:0.8rem;color:#7A8570;margin-top:0.75rem;padding:0.5rem 0.75rem;background:#E8EAE0;border-radius:8px;border:1px solid #C2C9A8">ניכוי תרגול ממנוי מתבצע בסיום שיעור דרך כפתור "סיים שיעור"</p>
       </div>
     </div>
@@ -1708,18 +1708,28 @@
       : '<option value="">אין מנוי פעיל</option>';
   }
 
-  async function addRegistration() {
+  async function addRegistration(btn) {
     const classId = document.getElementById('reg-class').value;
     const clientId = document.getElementById('reg-client').value;
     const subId = document.getElementById('reg-subscription').value;
     if (!classId || !clientId || !subId) return showMsg('נא למלא את כל השדות', 'error');
-    const { data: exists } = await db.from('class_registrations')
-      .select('id').eq('client_id', +clientId).eq('class_id', +classId).maybeSingle();
-    if (exists) return showMsg('הלקוח כבר רשום לשיעור זה', 'error');
-    const { error } = await db.from('class_registrations').insert({ client_id: +clientId, class_id: +classId, subscription_id: +subId });
-    if (error) return showMsg('שגיאה: ' + error.message, 'error');
-    showMsg('✓ לקוח נרשם לשיעור בהצלחה — הניכוי יתבצע בסיום השיעור');
-    loadRegistrations();
+    if (btn) btn.disabled = true;
+    try {
+      const { data: exists } = await db.from('class_registrations')
+        .select('id').eq('client_id', +clientId).eq('class_id', +classId).maybeSingle();
+      if (exists) return showMsg('הלקוח כבר רשום לשיעור זה', 'error');
+      const [{ data: cls }, { count }] = await Promise.all([
+        db.from('classes').select('max_capacity').eq('id', +classId).maybeSingle(),
+        db.from('class_registrations').select('id', { count: 'exact', head: true }).eq('class_id', +classId),
+      ]);
+      if (cls && count >= cls.max_capacity && !confirm(`השיעור מלא (${count}/${cls.max_capacity}). לרשום בכל זאת?`)) return;
+      const { error } = await db.from('class_registrations').insert({ client_id: +clientId, class_id: +classId, subscription_id: +subId });
+      if (error) return showMsg('שגיאה: ' + error.message, 'error');
+      showMsg('✓ לקוח נרשם לשיעור בהצלחה — הניכוי יתבצע בסיום השיעור');
+      loadRegistrations();
+    } finally {
+      if (btn) btn.disabled = false;
+    }
   }
 
   async function removeRegistration(id, classId) {
@@ -2428,19 +2438,19 @@ body{font-family:'Heebo',sans-serif;background:white}
   }
 
   async function saveReceiptToDb(d, receiptNum) {
-    try {
-      await db.from('receipts').insert({
-        receipt_num:            receiptNum,
-        client_id:              d.clientId || null,
-        subscription_id:        d.subId || null,
-        client_name:            d.clientName,
-        client_phone:           d.clientPhone,
-        subscription_type_name: d.subTypeName,
-        amount:                 d.price,
-        issued_at:              d.startDate || todayStr(),
-      });
-    } catch (e) {
-      console.error('שמירת קבלה נכשלה:', e);
+    const { error } = await db.from('receipts').insert({
+      receipt_num:            receiptNum,
+      client_id:              d.clientId || null,
+      subscription_id:        d.subId || null,
+      client_name:            d.clientName,
+      client_phone:           d.clientPhone,
+      subscription_type_name: d.subTypeName,
+      amount:                 d.price,
+      issued_at:              d.startDate || todayStr(),
+    });
+    if (error) {
+      console.error('שמירת קבלה נכשלה:', error);
+      showMsg('⚠ הקבלה הוצגה אך לא נשמרה במערכת — נא לדווח ולשמור צילום מסך', 'error');
     }
   }
 
