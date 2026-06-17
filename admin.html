@@ -402,7 +402,7 @@
       </button>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-primary" style="flex:1" onclick="confirmReceiptGeneration()">הפק קבלה</button>
+      <button class="btn btn-primary" style="flex:1" onclick="confirmReceiptGeneration(this)">הפק קבלה</button>
       <button class="btn" style="background:#e2e8f0" onclick="cancelReceiptGeneration()">ביטול</button>
     </div>
   </div>
@@ -2197,7 +2197,6 @@ td { padding: 2.5mm 3mm; color: #4D2115; border-bottom: 1px solid #e2efe8; }
       msgTemplate:     document.getElementById('receipt-msg-template').value,
       receiptStartNum: parseInt(document.getElementById('receipt-start-num').value) || 1,
     }));
-    localStorage.setItem('receiptNextNum', String(parseInt(document.getElementById('receipt-start-num').value) || 1));
     showMsg('הגדרות קבלה נשמרו');
   }
 
@@ -2214,23 +2213,16 @@ td { padding: 2.5mm 3mm; color: #4D2115; border-bottom: 1px solid #e2efe8; }
     return JSON.parse(localStorage.getItem('receiptSettings') || '{}');
   }
 
-  function getOrCreateReceiptNum(subId) {
+  async function getNextReceiptNum() {
     const startNum = parseInt(getReceiptSettings().receiptStartNum || '1');
-    const mapKey = 'receiptNumMap_' + (getReceiptSettings().receiptStartNum || '1');
-    const counterKey = 'receiptNextNum';
-    const map = JSON.parse(localStorage.getItem(mapKey) || '{}');
-    const next = parseInt(localStorage.getItem(counterKey) || String(startNum));
-    if (!map[subId]) {
-      map[subId] = next;
-      localStorage.setItem(mapKey, JSON.stringify(map));
-      localStorage.setItem(counterKey, String(next + 1));
-    }
-    return String(map[subId]).padStart(4, '0');
+    const { data } = await db.from('receipts').select('receipt_num').order('id', { ascending: false }).limit(1);
+    const last = data && data[0] ? parseInt(data[0].receipt_num) : (startNum - 1);
+    return String(Math.max(last + 1, startNum)).padStart(4, '0');
   }
 
   function buildReceiptInnerHTML(d) {
     const fmt = iso => iso ? iso.split('-').reverse().join('/') : '—';
-    const receiptNum = getOrCreateReceiptNum(d.subId);
+    const receiptNum = d.receiptNum;
     return `<div class="r-top">
   <div style="display:flex;align-items:center;gap:3mm"><img src="icon-192.png" style="width:24px;height:24px;border-radius:5px;flex-shrink:0"><div><div class="r-brand-name">Olive</div><div class="r-brand-sub">פחות ניהול. יותר ממה שאוהבים.</div></div></div>
   <div><div class="r-num-label">קבלה</div><div class="r-num">#${receiptNum}</div></div>
@@ -2341,7 +2333,8 @@ body{font-family:'Heebo',sans-serif;background:white}
       startDate:       new Date().toISOString().split('T')[0],
       expiryDate:      new Date(Date.now()+30*24*60*60*1000).toISOString().split('T')[0],
       classes:         8,
-      subId:           42,
+      subId:           null,
+      receiptNum:      '0000',
     }), null);
   }
 
@@ -2420,12 +2413,14 @@ body{font-family:'Heebo',sans-serif;background:white}
     if (_pendingReceiptData) showMsg('✓ מנוי שויך בהצלחה — לא הופקה קבלה');
   }
 
-  function confirmReceiptGeneration() {
-    document.getElementById('payment-method-modal').classList.add('hidden');
+  async function confirmReceiptGeneration(btn) {
     if (!_pendingReceiptData) return;
-    const d = { ..._pendingReceiptData, payMethod: _selectedPayMethod };
-    const receiptNum = getOrCreateReceiptNum(d.subId);
-    saveReceiptToDb(d, receiptNum);
+    if (btn) btn.disabled = true;
+    const receiptNum = await getNextReceiptNum();
+    const d = { ..._pendingReceiptData, payMethod: _selectedPayMethod, receiptNum };
+    await saveReceiptToDb(d, receiptNum);
+    document.getElementById('payment-method-modal').classList.add('hidden');
+    if (btn) btn.disabled = false;
     const phone = d.clientPhone.replace(/\D/g, '');
     const waPhone = phone.startsWith('0') ? '972' + phone.slice(1) : phone;
     _pendingWa = { phone: waPhone, text: buildWhatsAppMsg(d) };
