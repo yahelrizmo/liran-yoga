@@ -389,6 +389,7 @@
       <div><label>תיאור השירות *</label><input type="text" id="manual-receipt-desc" placeholder="לדוגמה: שיעור פרטי, סדנה בסטודיו X"></div>
       <div><label>סכום *</label><input type="number" id="manual-receipt-amount" min="0" placeholder="0"></div>
       <div><label>תאריך *</label><input type="date" id="manual-receipt-date"></div>
+      <div><label>אימייל (אופציונלי — לשליחה מהירה של הקבלה)</label><input type="email" id="manual-receipt-email" placeholder="name@example.com"></div>
     </div>
     <div class="modal-actions" style="margin-top:1.25rem">
       <button class="btn btn-primary" style="flex:1" onclick="proceedManualReceipt()">המשך לבחירת תשלום</button>
@@ -430,6 +431,7 @@
   <div id="receipt-overlay-actions">
     <button onclick="printReceiptNewWindow()" class="btn btn-primary">הדפס / שמור PDF</button>
     <button id="receipt-wa-btn" onclick="sendReceiptWhatsApp()" class="btn" style="background:#25D366;color:white">שלח ב-WhatsApp</button>
+    <button id="receipt-email-btn" onclick="sendReceiptEmail()" class="btn" style="display:none;background:#4D2115;color:white">שלח באימייל</button>
     <button onclick="document.getElementById('receipt-overlay').style.display='none'" class="btn" style="background:#e2e8f0">סגור</button>
   </div>
   <div id="receipt-page"></div>
@@ -733,6 +735,10 @@
       </div>
       <div class="accordion-body" id="acc-receipt-settings">
         <div class="form-grid">
+          <div style="grid-column:1/-1">
+            <label>שם עסק לתצוגה על הקבלה</label>
+            <input type="text" id="receipt-business-name" placeholder="לירן עובד">
+          </div>
           <div>
             <label>סוג עוסק</label>
             <select id="receipt-business-type">
@@ -806,7 +812,7 @@
             </div>
           </div>
           <table>
-            <thead><tr><th>קבלה #</th><th>תאריך</th><th>לקוח</th><th>טלפון</th><th>פירוט</th><th>סכום</th></tr></thead>
+            <thead><tr><th>קבלה #</th><th>תאריך</th><th>לקוח</th><th>טלפון</th><th>פירוט</th><th>סכום</th><th>ייצוא</th></tr></thead>
             <tbody id="receipts-report-table"></tbody>
           </table>
         </div>
@@ -2230,6 +2236,7 @@ td { padding: 2.5mm 3mm; color: #4D2115; border-bottom: 1px solid #e2efe8; }
   // ── RECEIPT ───────────────────────────────────────────────
   function saveReceiptSettings() {
     localStorage.setItem('receiptSettings', JSON.stringify({
+      businessName:    document.getElementById('receipt-business-name').value,
       businessType:    document.getElementById('receipt-business-type').value,
       businessId:      document.getElementById('receipt-business-id').value,
       businessAddress: document.getElementById('receipt-business-address').value,
@@ -2241,6 +2248,7 @@ td { padding: 2.5mm 3mm; color: #4D2115; border-bottom: 1px solid #e2efe8; }
 
   function loadReceiptSettings() {
     const s = JSON.parse(localStorage.getItem('receiptSettings') || '{}');
+    if (s.businessName)    document.getElementById('receipt-business-name').value    = s.businessName;
     if (s.businessType)    document.getElementById('receipt-business-type').value    = s.businessType;
     if (s.businessId)      document.getElementById('receipt-business-id').value      = s.businessId;
     if (s.businessAddress) document.getElementById('receipt-business-address').value = s.businessAddress;
@@ -2250,6 +2258,10 @@ td { padding: 2.5mm 3mm; color: #4D2115; border-bottom: 1px solid #e2efe8; }
 
   function getReceiptSettings() {
     return JSON.parse(localStorage.getItem('receiptSettings') || '{}');
+  }
+
+  function getReceiptBusinessName(settings) {
+    return (settings || getReceiptSettings()).businessName || document.title.split(' —')[0].trim();
   }
 
   async function getNextReceiptNum() {
@@ -2296,8 +2308,9 @@ td { padding: 2.5mm 3mm; color: #4D2115; border-bottom: 1px solid #e2efe8; }
   <div style="height:4mm"></div>
   <div class="r-total-card"><div class="r-total-label">סה״כ שולם</div><div class="r-total-amount">₪${d.price}</div></div>
   <div class="r-pay-row">
-    <div class="r-pay-icon">${d.payMethod?.label || 'Bit'}</div>
-    <div><div class="r-pay-text">${d.payMethod?.text || 'שולם באמצעות Bit'}</div><div class="r-pay-sub">תשלום התקבל ואושר ✓</div></div>
+    ${d.payMethod ? `<div class="r-pay-icon">${d.payMethod.label}</div>
+    <div><div class="r-pay-text">${d.payMethod.text}</div><div class="r-pay-sub">תשלום התקבל ואושר ✓</div></div>` : `
+    <div><div class="r-pay-text">התשלום התקבל ואושר ✓</div></div>`}
   </div>
   <div class="r-thanks"><div class="r-thanks-text">תודה רבה על הרכישה!</div><div class="r-thanks-sub">קבלה זו מהווה אישור תשלום</div></div>
 </div>
@@ -2350,9 +2363,10 @@ body{font-family:'Heebo',sans-serif;background:white}
     w.document.close();
   }
 
-  function showReceiptOverlay(innerHtml, showWa) {
+  function showReceiptOverlay(innerHtml, showWa, showEmail) {
     document.getElementById('receipt-page').innerHTML = innerHtml;
     document.getElementById('receipt-wa-btn').style.display = showWa ? '' : 'none';
+    document.getElementById('receipt-email-btn').style.display = showEmail ? '' : 'none';
     document.getElementById('receipt-overlay').style.display = 'block';
     document.getElementById('receipt-overlay').scrollTop = 0;
   }
@@ -2366,9 +2380,10 @@ body{font-family:'Heebo',sans-serif;background:white}
 
   function previewReceipt() {
     _pendingWa = null;
+    _pendingEmail = null;
     const settings = getReceiptSettings();
     showReceiptOverlay(buildReceiptInnerHTML({
-      businessName:    document.title.split(' —')[0].trim(),
+      businessName:    getReceiptBusinessName(settings),
       businessType:    settings.businessType || 'עוסק פטור',
       businessId:      settings.businessId || 'XXXXXXXXX',
       businessAddress: settings.businessAddress || 'כתובת העסק',
@@ -2384,6 +2399,23 @@ body{font-family:'Heebo',sans-serif;background:white}
     }), null);
   }
 
+  async function uploadReceiptPdf() {
+    const el = document.getElementById('receipt-page');
+    const canvas = await html2canvas(el, { scale: 3, backgroundColor: '#ffffff', useCORS: true });
+    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+    const { jsPDF } = window.jspdf;
+    const pdfWidth = 148;
+    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [pdfWidth, pdfHeight] });
+    pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+    const blob = pdf.output('blob');
+    const filename = `receipt_${Date.now()}.pdf`;
+    const { error: uploadError } = await db.storage.from('receipts').upload(filename, blob, { contentType: 'application/pdf', upsert: true });
+    if (uploadError) throw uploadError;
+    const { data: urlData } = db.storage.from('receipts').getPublicUrl(filename);
+    return urlData.publicUrl;
+  }
+
   async function sendReceiptWhatsApp() {
     if (!_pendingWa) return;
     const btn = document.getElementById('receipt-wa-btn');
@@ -2391,20 +2423,8 @@ body{font-family:'Heebo',sans-serif;background:white}
     btn.textContent = 'מכין קבלה...';
     const waWin = window.open('', '_blank');
     try {
-      const el = document.getElementById('receipt-page');
-      const canvas = await html2canvas(el, { scale: 3, backgroundColor: '#ffffff', useCORS: true });
-      const imgData = canvas.toDataURL('image/jpeg', 0.95);
-      const { jsPDF } = window.jspdf;
-      const pdfWidth = 148;
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [pdfWidth, pdfHeight] });
-      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-      const blob = pdf.output('blob');
-      const filename = `receipt_${Date.now()}.pdf`;
-      const { error: uploadError } = await db.storage.from('receipts').upload(filename, blob, { contentType: 'application/pdf', upsert: true });
-      if (uploadError) throw uploadError;
-      const { data: urlData } = db.storage.from('receipts').getPublicUrl(filename);
-      const fullMsg = _pendingWa.text + '\n\nלקבלה: ' + urlData.publicUrl;
+      const pdfUrl = await uploadReceiptPdf();
+      const fullMsg = _pendingWa.text + '\n\nלקבלה: ' + pdfUrl;
       waWin.location.href = `https://wa.me/${_pendingWa.phone}?text=${encodeURIComponent(fullMsg)}`;
     } catch (err) {
       console.error(err);
@@ -2415,7 +2435,27 @@ body{font-family:'Heebo',sans-serif;background:white}
     }
   }
 
+  async function sendReceiptEmail() {
+    if (!_pendingEmail) return;
+    const btn = document.getElementById('receipt-email-btn');
+    btn.disabled = true;
+    btn.textContent = 'מכין קבלה...';
+    try {
+      const pdfUrl = await uploadReceiptPdf();
+      const subject = `קבלה #${_pendingEmail.receiptNum}`;
+      const body = _pendingEmail.text + '\n\nלקבלה: ' + pdfUrl;
+      window.location.href = `mailto:${_pendingEmail.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    } catch (err) {
+      console.error(err);
+      showMsg('שגיאה בהכנת הקבלה לשליחה', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'שלח באימייל';
+    }
+  }
+
   let _pendingReceiptData = null;
+  let _pendingEmail = null;
   let _selectedPayMethod = { label: 'Bit', text: 'שולם באמצעות Bit' };
 
   function generateReceipt(subId) {
@@ -2424,7 +2464,7 @@ body{font-family:'Heebo',sans-serif;background:white}
     if (!s || !client) return showMsg('שגיאה: נתונים חסרים', 'error');
     const settings = getReceiptSettings();
     _pendingReceiptData = {
-      businessName:    document.title.split(' —')[0].trim(),
+      businessName:    getReceiptBusinessName(settings),
       businessType:    settings.businessType || '',
       businessId:      settings.businessId || '',
       businessAddress: settings.businessAddress || '',
@@ -2448,6 +2488,7 @@ body{font-family:'Heebo',sans-serif;background:white}
     document.getElementById('manual-receipt-desc').value = '';
     document.getElementById('manual-receipt-amount').value = '';
     document.getElementById('manual-receipt-date').value = todayStr();
+    document.getElementById('manual-receipt-email').value = '';
     document.getElementById('manual-receipt-modal').classList.remove('hidden');
   }
 
@@ -2461,17 +2502,19 @@ body{font-family:'Heebo',sans-serif;background:white}
     const desc   = document.getElementById('manual-receipt-desc').value.trim();
     const amount = parseFloat(document.getElementById('manual-receipt-amount').value);
     const date   = document.getElementById('manual-receipt-date').value;
+    const email  = document.getElementById('manual-receipt-email').value.trim();
     if (!name || !desc || !amount || !date) return showMsg('נא למלא את כל השדות', 'error');
     const settings = getReceiptSettings();
     _pendingReceiptData = {
       isManual:        true,
-      businessName:    document.title.split(' —')[0].trim(),
+      businessName:    getReceiptBusinessName(settings),
       businessType:    settings.businessType || '',
       businessId:      settings.businessId || '',
       businessAddress: settings.businessAddress || '',
       clientId:        null,
       clientName:      name,
       clientPhone:     '',
+      clientEmail:     email || null,
       subTypeName:     desc,
       price:           amount,
       startDate:       date,
@@ -2516,7 +2559,12 @@ body{font-family:'Heebo',sans-serif;background:white}
     } else {
       _pendingWa = null;
     }
-    showReceiptOverlay(buildReceiptInnerHTML(d), !!phone);
+    if (d.clientEmail) {
+      _pendingEmail = { email: d.clientEmail, text: buildWhatsAppMsg(d), receiptNum: d.receiptNum };
+    } else {
+      _pendingEmail = null;
+    }
+    showReceiptOverlay(buildReceiptInnerHTML(d), !!phone, !!d.clientEmail);
   }
 
   async function saveReceiptToDb(d, receiptNum) {
@@ -2618,7 +2666,44 @@ body{font-family:'Heebo',sans-serif;background:white}
       <td>${r.client_phone || '—'}</td>
       <td>${r.subscription_type_name}</td>
       <td style="font-weight:700;color:#78855F">₪${(r.amount||0).toLocaleString('he-IL')}</td>
+      <td><button class="btn btn-sm" style="background:#E8EAE0;color:#4D2115" onclick="reprintReceipt(${r.id})">ייצוא</button></td>
     </tr>`).join('');
+  }
+
+  async function reprintReceipt(id) {
+    const r = (_lastReceiptsReportData || []).find(row => row.id === id);
+    if (!r) return showMsg('קבלה לא נמצאה', 'error');
+    const settings = getReceiptSettings();
+    const isManual = !r.subscription_id;
+    let expiryDate = null, classes = null;
+    if (!isManual) {
+      const { data: sub } = await db.from('subscriptions').select('*, subscription_types(classes_count)').eq('id', r.subscription_id).single();
+      if (sub) { expiryDate = sub.expiry_date; classes = sub.subscription_types?.classes_count || sub.classes_remaining; }
+    }
+    const d = {
+      isManual,
+      businessName:    getReceiptBusinessName(settings),
+      businessType:    settings.businessType || '',
+      businessId:      settings.businessId || '',
+      businessAddress: settings.businessAddress || '',
+      clientName:      r.client_name,
+      clientPhone:     r.client_phone || '',
+      subTypeName:     r.subscription_type_name,
+      price:           r.amount,
+      startDate:       r.issued_at,
+      expiryDate,
+      classes,
+      receiptNum:      r.receipt_num,
+    };
+    const phone = (d.clientPhone || '').replace(/\D/g, '');
+    if (phone) {
+      const waPhone = phone.startsWith('0') ? '972' + phone.slice(1) : phone;
+      _pendingWa = { phone: waPhone, text: buildWhatsAppMsg(d) };
+    } else {
+      _pendingWa = null;
+    }
+    _pendingEmail = null;
+    showReceiptOverlay(buildReceiptInnerHTML(d), !!phone, false);
   }
 
   function exportReceiptsReportPDF() {
