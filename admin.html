@@ -792,9 +792,13 @@
             <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap">
               <label style="font-size:0.85rem;color:#7A6860;display:flex;align-items:center;gap:0.4rem">מיין לפי:
                 <select id="receipts-report-sort" onchange="renderReceiptsReportTable()" style="padding:0.4rem 0.6rem;border:1px solid #C2C9A8;border-radius:8px;font-size:0.85rem">
-                  <option value="date_desc">כרונולוגי (חדש→ישן)</option>
-                  <option value="name">לפי שם</option>
-                  <option value="num">לפי מספר קבלה</option>
+                  <option value="date">תאריך</option>
+                  <option value="name">שם</option>
+                  <option value="num">מספר קבלה</option>
+                </select>
+                <select id="receipts-report-dir" onchange="renderReceiptsReportTable()" style="padding:0.4rem 0.6rem;border:1px solid #C2C9A8;border-radius:8px;font-size:0.85rem">
+                  <option value="desc" selected>מהסוף להתחלה</option>
+                  <option value="asc">מההתחלה לסוף</option>
                 </select>
               </label>
               <div style="font-size:1.1rem;font-weight:900;color:#78855F" id="receipts-report-total"></div>
@@ -2591,14 +2595,16 @@ body{font-family:'Heebo',sans-serif;background:white}
 
   function sortReceiptsData(data) {
     const sortBy = document.getElementById('receipts-report-sort').value;
+    const dir = document.getElementById('receipts-report-dir').value;
     const arr = [...data];
     if (sortBy === 'name') {
       arr.sort((a, b) => (a.client_name || '').localeCompare(b.client_name || '', 'he'));
     } else if (sortBy === 'num') {
       arr.sort((a, b) => (a.receipt_num || 0) - (b.receipt_num || 0));
     } else {
-      arr.sort((a, b) => (b.issued_at || '').localeCompare(a.issued_at || '') || (b.id || 0) - (a.id || 0));
+      arr.sort((a, b) => (a.issued_at || '').localeCompare(b.issued_at || '') || (a.id || 0) - (b.id || 0));
     }
+    if (dir === 'desc') arr.reverse();
     return arr;
   }
 
