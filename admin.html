@@ -528,7 +528,7 @@
     <div class="stats" id="home-stats">
       <div class="stat"><div class="stat-number" id="hs-clients">—</div><div class="stat-label">לקוחות</div></div>
       <div class="stat"><div class="stat-number" id="hs-active">—</div><div class="stat-label">מנויים פעילים</div></div>
-      <div class="stat"><div class="stat-number" id="hs-pending">—</div><div class="stat-label">ממתינים לאישור</div></div>
+      <div class="stat"><div class="stat-number" id="hs-pending">—</div><div class="stat-label">ממתינות לקבלה</div></div>
     </div>
     <div class="home-nav" style="grid-template-columns:repeat(2,1fr)">
       <div class="home-card" id="alerts-home-card" onclick="navTo('alerts')"><span id="alerts-home-badge" class="hc-badge" style="display:none"></span><div class="hc-icon"><i data-lucide="bell"></i></div><div class="hc-label">התראות</div></div>
@@ -548,7 +548,7 @@
       <input type="text" class="search-input" id="alerts-search" placeholder="חיפוש לפי שם לקוח..." oninput="filterAlerts(null, null)">
       <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1rem">
         <button class="alert-filter active" onclick="filterAlerts('all', this)">הכל</button>
-        <button class="alert-filter" onclick="filterAlerts('urgent', this)">הרשמות חדשות</button>
+        <button class="alert-filter" onclick="filterAlerts('urgent', this)">טרם הופקה קבלה</button>
         <button class="alert-filter" onclick="filterAlerts('expiring', this)">פקיעת מנוי</button>
         <button class="alert-filter" onclick="filterAlerts('last', this)">שיעור אחרון</button>
         <button class="alert-filter" onclick="filterAlerts('duplicate', this)">לקוחות כפולים</button>
@@ -992,15 +992,18 @@
 
   async function loadHome() {
     document.getElementById('home-date').textContent = new Date().toLocaleDateString('he-IL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-    const [{ count: clients }, { count: active }, { count: pending }] = await Promise.all([
+    const [{ count: clients }, { count: active }, { data: allSubIds }, { data: receiptedRows }] = await Promise.all([
       db.from('clients').select('*', { count: 'exact', head: true }),
       db.from('subscriptions').select('*', { count: 'exact', head: true }).eq('is_active', true),
-      db.from('subscriptions').select('*', { count: 'exact', head: true }).eq('is_active', false),
+      db.from('subscriptions').select('id'),
+      db.from('receipts').select('subscription_id').not('subscription_id', 'is', null),
     ]);
+    const receiptedIds = new Set((receiptedRows || []).map(r => r.subscription_id));
+    const pending = (allSubIds || []).filter(s => !receiptedIds.has(s.id)).length;
     document.getElementById('hs-clients').textContent = clients ?? '—';
     document.getElementById('hs-active').textContent = active ?? '—';
-    document.getElementById('hs-pending').textContent = pending ?? '—';
-    updateAlertsBadge(pending ?? 0);
+    document.getElementById('hs-pending').textContent = pending;
+    updateAlertsBadge(pending);
     lucide.createIcons();
   }
 
@@ -1028,8 +1031,9 @@
     const in7 = new Date(); in7.setDate(in7.getDate() + 7);
     const in7str = in7.toISOString().split('T')[0];
 
-    const [pendingSubs, expiring, lastClass, allClientsRes] = await Promise.all([
-      db.from('subscriptions').select('*, clients(full_name, phone), subscription_types(name)').eq('is_active', false).order('start_date', { ascending: false }),
+    const [allSubs, receiptedRows, expiring, lastClass, allClientsRes] = await Promise.all([
+      db.from('subscriptions').select('*, clients(full_name, phone, email, created_at), subscription_types(name)').order('start_date', { ascending: false }),
+      db.from('receipts').select('subscription_id').not('subscription_id', 'is', null),
       db.from('subscriptions').select('*, clients(full_name, phone), subscription_types(name)').eq('is_active', true).gte('expiry_date', today).lte('expiry_date', in7str),
       db.from('subscriptions').select('*, clients(full_name, phone), subscription_types(name)').eq('is_active', true).eq('classes_remaining', 1).gte('expiry_date', today),
       db.from('clients').select('id, full_name, phone, created_at').order('created_at'),
@@ -1037,11 +1041,20 @@
 
     pendingMergeClients = [];
 
-    pendingSubs.data?.forEach(s => allAlerts.push({
-      type: 'urgent', icon: 'user-plus', category: 'urgent',
-      title: 'הרשמה חדשה — ממתינה לאישור תשלום',
+    const receiptedIds = new Set((receiptedRows.data || []).map(r => r.subscription_id));
+    const needsReceipt = (allSubs.data || []).filter(s => !receiptedIds.has(s.id));
+
+    needsReceipt.forEach(s => allAlerts.push({
+      type: 'urgent', icon: 'receipt', category: 'urgent',
+      title: 'הרשמה חדשה — טרם הופקה קבלה',
       body: `${s.clients?.full_name} נרשמ/ה למנוי "${s.subscription_types?.name}"`,
-      phone: s.clients?.phone
+      phone: s.clients?.phone,
+      needsReceipt: true,
+      clientId: s.client_id,
+      clientName: s.clients?.full_name,
+      clientPhone: s.clients?.phone,
+      clientEmail: s.clients?.email || '',
+      clientJoined: fmtDate(s.clients?.created_at)
     }));
 
     expiring.data?.forEach(s => allAlerts.push({
@@ -1205,7 +1218,9 @@
           <button class="btn-alert btn-alert-copy" onclick="copyAlertPhone('${a.phone}', this)"><i data-lucide="copy" style="width:13px;height:13px;vertical-align:middle"></i> ${a.phone}</button>
           ${a.isDuplicate
             ? `<button class="btn-alert" style="background:#78855F;color:white" onclick="initiateClientMerge(${a.mergeIdx})"><i data-lucide="git-merge" style="width:13px;height:13px;vertical-align:middle"></i> מזג לקוחות</button>`
-            : `<a class="btn-alert btn-alert-wa" href="https://wa.me/972${a.phone?.replace(/^0/, '').replace(/-/g, '')}" target="_blank"><i data-lucide="message-circle" style="width:13px;height:13px;vertical-align:middle"></i> WhatsApp</a>`
+            : a.needsReceipt
+              ? `<button class="btn-alert" style="background:#78855F;color:white" onclick="openClientHistory(${a.clientId},'${(a.clientName||'').replace(/'/g,"\\'")}','${a.clientPhone||''}','${(a.clientEmail||'').replace(/'/g,"\\'")}','${a.clientJoined||''}')"><i data-lucide="receipt" style="width:13px;height:13px;vertical-align:middle"></i> הפק קבלה</button>`
+              : `<a class="btn-alert btn-alert-wa" href="https://wa.me/972${a.phone?.replace(/^0/, '').replace(/-/g, '')}" target="_blank"><i data-lucide="message-circle" style="width:13px;height:13px;vertical-align:middle"></i> WhatsApp</a>`
           }
         </div>
       </div>`).join('');
@@ -1421,7 +1436,6 @@
           const expired = s.expiry_date < todayStr();
           const status = !s.is_active ? 'ממתין לאישור' : expired ? 'פג תוקף' : s.classes_remaining <= 0 ? 'נוצל' : 'פעיל';
           const cls = status === 'פעיל' ? 'badge-green' : status === 'ממתין לאישור' ? 'badge-orange' : 'badge-red';
-          const isEditable = i === 0;
           return `<tr>
             <td>${s.subscription_types?.name||'—'}</td>
             <td>${fmtDate(s.start_date)}</td>
@@ -1429,8 +1443,9 @@
             <td>${s.classes_remaining}</td>
             <td><span class="badge ${cls}">${status}</span></td>
             <td style="white-space:nowrap">
-              ${isEditable ? `<button class="btn btn-sm" style="background:#d4e0c4;margin-left:0.25rem" onclick="openEditSubModal(${s.id},${s.classes_remaining},'${s.expiry_date}')">עריכת מנוי</button>` : ''}
               <button class="btn btn-sm" style="background:#e2e8f0;margin-left:0.25rem" onclick="generateReceipt(${s.id})">הפק קבלה</button>
+              <button class="btn btn-sm" style="background:#d4e0c4;margin-left:0.25rem" onclick="openEditSubModal(${s.id},${s.classes_remaining},'${s.expiry_date}')">עריכה</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteSubscription(${s.id})">מחק</button>
             </td>
           </tr>`;
         }).join('')
@@ -1562,10 +1577,12 @@
     const searchText = document.getElementById('sub-client-search').value;
     const clientName = searchText.split(' — ')[0] || '';
     const clientPhone = searchText.split(' — ')[1] || '';
+    await db.from('subscriptions').update({ is_active: false }).eq('client_id', +clientId).eq('is_active', true);
     const { data: newSubs, error } = await db.from('subscriptions').insert({
       client_id: +clientId, subscription_type_id: typeId,
       classes_remaining: t.classes_count, start_date: startDate,
-      expiry_date: expiry.toISOString().split('T')[0]
+      expiry_date: expiry.toISOString().split('T')[0],
+      is_active: true
     }).select('*');
     if (error) return showMsg('שגיאה: ' + error.message, 'error');
     document.getElementById('sub-client-search').value = '';
@@ -1580,7 +1597,7 @@
       _historySubsData[newSub.id] = { ...newSub, subscription_types: { name: t.name, price: t.price, classes_count: t.classes_count } };
       generateReceipt(newSub.id);
     } else {
-      showMsg('✓ מנוי שויך — מצאי "הפעל" בשורה של הלקוחה ולחצי עליו');
+      showMsg('✓ מנוי שויך בהצלחה');
     }
   }
 
@@ -1597,9 +1614,14 @@
   }
 
   async function deleteSubscription(id) {
-    if (!confirm('להסיר מנוי זה? הפעולה לא ניתנת לביטול.')) return;
-    await db.from('subscriptions').delete().eq('id', id);
+    if (!confirm('למחוק מנוי זה? הפעולה לא ניתנת לביטול.')) return;
+    const { error } = await db.from('subscriptions').delete().eq('id', id);
+    if (error) return showMsg('שגיאה במחיקה: ' + error.message, 'error');
+    showMsg('✓ המנוי נמחק');
     loadSubscriptions();
+    if (_historyClient && !document.getElementById('history-modal').classList.contains('hidden')) {
+      openClientHistory(_historyClient.id, _historyClient.name, _historyClient.phone, _historyClient.email, _historyClient.joined);
+    }
   }
 
   async function adjustClasses(id, current, delta) {

@@ -324,13 +324,14 @@
     const start = new Date();
     const expiry = new Date(start);
     expiry.setDate(expiry.getDate() + selectedPlan.days);
+    await db.from('subscriptions').update({ is_active: false }).eq('client_id', pendingClientId).eq('is_active', true);
     await db.from('subscriptions').insert({
       client_id: pendingClientId,
       subscription_type_id: selectedPlan.id,
       classes_remaining: selectedPlan.classes,
       start_date: start.toISOString().split('T')[0],
       expiry_date: expiry.toISOString().split('T')[0],
-      is_active: false
+      is_active: true
     });
     const name = document.getElementById('reg-name').value.trim();
     const phone = document.getElementById('reg-phone').value.trim();
