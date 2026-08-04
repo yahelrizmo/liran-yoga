@@ -78,13 +78,6 @@
     .pay-amount { font-size: 3rem; font-weight: 700; color: #78855F; margin: 0.5rem 0; }
     .pay-note { font-size: 0.83rem; color: #7A6860; line-height: 1.7; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #ede8e0; }
 
-    /* success */
-    .success-section { display: none; text-align: center; padding: 1rem 0; }
-    .success-section.show { display: block; }
-    .success-icon { font-size: 3.5rem; margin-bottom: 0.75rem; }
-    .success-section h2 { font-size: 1.5rem; font-weight: 700; color: #78855F; margin-bottom: 0.5rem; }
-    .success-section p { color: #7A6860; line-height: 1.8; font-size: 0.95rem; }
-
     .msg { padding: 0.7rem 1rem; border-radius: 8px; margin-bottom: 0.75rem; font-weight: 600; font-size: 0.88rem; }
     .msg-error { background: #fed7d7; color: #c53030; }
     .hidden { display: none; }
@@ -96,7 +89,7 @@
 
 <div class="page">
   <div class="logo">
-    <h1>לירן יוגה</h1>
+    <h1 id="biz-name">לירן יוגה</h1>
     <p>הצטרפו לתרגול — בחרו את המנוי המתאים לכם</p>
   </div>
 
@@ -123,7 +116,7 @@
         <div class="form-group health-box">
           <label class="health-label">
             <input type="checkbox" id="health-check-new">
-            <span>אני מצהיר/ה כי אני בריא/ה ואין לי מניעה רפואית לעסוק בפעילות גופנית. אני מודע/ת לכך שהתרגול נעשה על אחריותי המלאה.<br><span style="color:#7A6860;font-size:0.82rem">לא בטוח/ה? תמיד אפשר <a href="https://wa.me/972532462667" target="_blank" style="color:#78855F;font-weight:600;text-decoration:underline">להתייעץ עם לירן</a> לפני ההרשמה.</span></span>
+            <span id="health-text-new"></span>
           </label>
         </div>
         <button class="btn btn-main" id="submit-new-btn" onclick="submitNew()">המשך לתשלום</button>
@@ -148,26 +141,19 @@
       <div class="pay-box">
         <h3>תשלום</h3>
         <div class="pay-amount">₪<span id="pay-amount"></span></div>
-        <button onclick="window.location.href='https://links.payboxapp.com/Vrw4qWEvQ2b'" class="btn btn-main" style="margin-top:0.75rem">פתחו את Paybox לתשלום</button>
+        <button onclick="openPaybox()" class="btn btn-main" style="margin-top:0.75rem">פתחו את Paybox לתשלום</button>
         <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #ede8e0">
           <div style="font-size:0.82rem;color:#7A6860;margin-bottom:0.6rem">העברה בנקאית — פרטי חשבון:</div>
           <div style="background:#EEE7DD;border-radius:10px;padding:0.75rem 1rem;font-size:0.88rem;color:#4D2115">
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:0.35rem 0;border-bottom:1px solid #D4CFC7"><span>בנק מרכנתיל</span><button class="copy-field-btn" onclick="copyField(this,'17')">17</button></div>
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:0.35rem 0;border-bottom:1px solid #D4CFC7"><span>סניף</span><button class="copy-field-btn" onclick="copyField(this,'725')">725</button></div>
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:0.35rem 0;border-bottom:1px solid #D4CFC7"><span>מספר חשבון</span><button class="copy-field-btn" onclick="copyField(this,'82391574')">82391574</button></div>
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:0.35rem 0"><span>ע"ש</span><button class="copy-field-btn" onclick="copyField(this,'עובד לירן')">עובד לירן</button></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:0.35rem 0;border-bottom:1px solid #D4CFC7"><span id="bank-name-label">בנק מרכנתיל</span><button class="copy-field-btn" id="bank-code-btn" onclick="copyBank(this,'code')">17</button></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:0.35rem 0;border-bottom:1px solid #D4CFC7"><span>סניף</span><button class="copy-field-btn" id="bank-branch-btn" onclick="copyBank(this,'branch')">725</button></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:0.35rem 0;border-bottom:1px solid #D4CFC7"><span>מספר חשבון</span><button class="copy-field-btn" id="bank-account-btn" onclick="copyBank(this,'account')">82391574</button></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:0.35rem 0"><span>ע"ש</span><button class="copy-field-btn" id="bank-holder-btn" onclick="copyBank(this,'holder')">עובד לירן</button></div>
           </div>
         </div>
         <div class="pay-note">לאחר ביצוע התשלום — לחצו על הכפתור למטה.</div>
       </div>
       <button class="btn btn-green" onclick="confirmSent()">שלחתי את התשלום ✓</button>
-    </div>
-
-    <!-- SUCCESS -->
-    <div class="success-section" id="success-section">
-      <div class="success-icon">🌿</div>
-      <h2>תודה, <span id="success-name"></span>!</h2>
-      <p>ההרשמה התקבלה.<br>נתראה על המזרן.</p>
     </div>
   </div>
 </div>
@@ -183,6 +169,38 @@
   let pendingClientId = null;
   let pendingClientName = '';
   let currentMode = 'new';
+  let bank = { name: 'בנק מרכנתיל', code: '17', branch: '725', account: '82391574', holder: 'עובד לירן' };
+  let waNumber = '972532462667';
+  let payboxLink = 'https://links.payboxapp.com/Vrw4qWEvQ2b';
+  let healthText = 'אני מצהיר/ה כי אני בריא/ה ואין לי מניעה רפואית לעסוק בפעילות גופנית. אני מודע/ת לכך שהתרגול נעשה על אחריותי המלאה.';
+
+  function healthHTML() {
+    return `${healthText}<br><span style="color:#7A6860;font-size:0.82rem">לא בטוח/ה? תמיד אפשר <a href="https://wa.me/${waNumber}" target="_blank" style="color:#78855F;font-weight:600;text-decoration:underline">להתייעץ עם לירן</a> לפני ההרשמה.</span>`;
+  }
+
+  function openPaybox() {
+    window.location.href = payboxLink;
+  }
+
+  function copyBank(btn, field) {
+    copyField(btn, bank[field]);
+  }
+
+  async function loadSiteSettings() {
+    const { data } = await db.from('site_settings').select('key, value');
+    const map = Object.fromEntries((data || []).map(r => [r.key, r.value]));
+    if (map.business_name) document.getElementById('biz-name').textContent = map.business_name;
+    if (map.health_declaration_text) healthText = map.health_declaration_text;
+    if (map.whatsapp_number) waNumber = map.whatsapp_number;
+    if (map.paybox_link) payboxLink = map.paybox_link;
+    if (map.bank_name) { bank.name = map.bank_name; document.getElementById('bank-name-label').textContent = bank.name; }
+    if (map.bank_code) { bank.code = map.bank_code; document.getElementById('bank-code-btn').textContent = bank.code; }
+    if (map.bank_branch) { bank.branch = map.bank_branch; document.getElementById('bank-branch-btn').textContent = bank.branch; }
+    if (map.bank_account) { bank.account = map.bank_account; document.getElementById('bank-account-btn').textContent = bank.account; }
+    if (map.bank_holder) { bank.holder = map.bank_holder; document.getElementById('bank-holder-btn').textContent = bank.holder; }
+    document.getElementById('health-text-new').innerHTML = healthHTML();
+  }
+  loadSiteSettings();
 
   function setMode(mode) {
     currentMode = mode;
@@ -246,7 +264,7 @@
         const sub = activeSubs[0];
         document.getElementById('msg-area').innerHTML = `
           <div class="block-box">
-            <strong>שלום ${existing.full_name} 👋</strong>
+            <strong>שלום ${existing.full_name}</strong>
             <p>מספר הטלפון הזה רשום עם מנוי פעיל:<br>
             <strong style="color:#78855F">${sub.subscription_types?.name}</strong> · נותרו ${sub.classes_remaining} שיעורים<br><br>
             לא ניתן לרכוש מנוי חדש כל עוד יש מנוי פעיל.<br>
@@ -300,19 +318,19 @@
       const expiry = new Date(sub.expiry_date).toLocaleDateString('he-IL');
       resultEl.innerHTML = `
         <div class="block-box">
-          <strong>שלום ${client.full_name} 👋</strong>
+          <strong>שלום ${client.full_name}</strong>
           <p>יש לך מנוי פעיל:<br>
           <strong style="color:#78855F">${sub.subscription_types?.name}</strong><br>
           נותרו ${sub.classes_remaining} תרגולים · תוקף עד ${expiry}</p>
           <p style="margin-top:0.75rem;font-size:0.82rem">לא ניתן לחדש מנוי כל עוד יש מנוי פעיל.<br>
-          לשאלות — <a href="https://wa.me/972532462667" target="_blank" style="color:#78855F;font-weight:600;text-decoration:underline">פנה/י ללירן</a></p>
+          לשאלות — <a href="https://wa.me/${waNumber}" target="_blank" style="color:#78855F;font-weight:600;text-decoration:underline">פנה/י ללירן</a></p>
         </div>`;
     } else {
       pendingClientId = client.id;
       pendingClientName = client.full_name;
       resultEl.innerHTML = `
         <div class="found-box">
-          <div class="found-name">שלום ${client.full_name} 👋</div>
+          <div class="found-name">שלום ${client.full_name}</div>
           <div class="found-sub">לא נמצא מנוי פעיל — בחר/י מנוי לחידוש</div>
         </div>
         <div class="step-title">בחרו סוג מנוי</div>
@@ -320,7 +338,7 @@
         <div class="form-group health-box">
           <label class="health-label">
             <input type="checkbox" id="health-check-existing">
-            <span>אני מצהיר/ה כי אני בריא/ה ואין לי מניעה רפואית לעסוק בפעילות גופנית. אני מודע/ת לכך שהתרגול נעשה על אחריותי המלאה.<br><span style="color:#7A6860;font-size:0.82rem">לא בטוח/ה? תמיד אפשר <a href="https://wa.me/972532462667" target="_blank" style="color:#78855F;font-weight:600;text-decoration:underline">להתייעץ עם לירן</a> לפני ההרשמה.</span></span>
+            <span>${healthHTML()}</span>
           </label>
         </div>
         <button class="btn btn-main" onclick="submitExisting()">המשך לתשלום</button>`;
@@ -383,12 +401,21 @@
       })
     });
 
-    document.getElementById('payment-section').classList.remove('show');
-    document.getElementById('success-name').textContent = pendingClientName;
-    document.getElementById('success-section').classList.add('show');
+    const phone = currentMode === 'new'
+      ? document.getElementById('reg-phone').value.trim()
+      : document.getElementById('existing-phone').value.trim();
+    window.location.href = `thank-you.html?name=${encodeURIComponent(pendingClientName)}&phone=${encodeURIComponent(phone)}`;
   }
 
   loadPlans();
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlPhone = urlParams.get('phone');
+  if (urlPhone && urlParams.get('mode') === 'existing') {
+    setMode('existing');
+    document.getElementById('existing-phone').value = urlPhone;
+    findExistingClient();
+  }
 </script>
 </body>
 </html>

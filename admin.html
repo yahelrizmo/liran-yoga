@@ -404,19 +404,19 @@
     <h3 style="margin-bottom:1.25rem">שיטת תשלום</h3>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.6rem;margin-bottom:1.5rem">
       <button class="pay-method-btn active" onclick="selectPayMethod(this,'Bit','שולם באמצעות Bit')">
-        <span style="font-size:1.2rem">💳</span><span>Bit</span>
+        <i data-lucide="credit-card" style="width:1.2rem;height:1.2rem"></i><span>Bit</span>
       </button>
       <button class="pay-method-btn" onclick="selectPayMethod(this,'מזומן','שולם במזומן')">
-        <span style="font-size:1.2rem">💵</span><span>מזומן</span>
+        <i data-lucide="banknote" style="width:1.2rem;height:1.2rem"></i><span>מזומן</span>
       </button>
       <button class="pay-method-btn" onclick="selectPayMethod(this,'העברה בנקאית','שולם בהעברה בנקאית')">
-        <span style="font-size:1.2rem">🏦</span><span>העברה בנקאית</span>
+        <i data-lucide="landmark" style="width:1.2rem;height:1.2rem"></i><span>העברה בנקאית</span>
       </button>
       <button class="pay-method-btn" onclick="selectPayMethod(this,'צ׳ק','שולם בצ׳ק')">
-        <span style="font-size:1.2rem">📝</span><span>צ׳ק</span>
+        <i data-lucide="file-text" style="width:1.2rem;height:1.2rem"></i><span>צ׳ק</span>
       </button>
       <button class="pay-method-btn" onclick="selectPayMethod(this,'PayBox','שולם באמצעות PayBox')">
-        <span style="font-size:1.2rem">📲</span><span>PayBox</span>
+        <i data-lucide="smartphone" style="width:1.2rem;height:1.2rem"></i><span>PayBox</span>
       </button>
     </div>
     <div class="modal-actions">
@@ -536,8 +536,7 @@
       <div class="home-card" onclick="navTo('classes')" style="grid-column:span 2;max-width:160px;margin:0 auto;width:100%"><div class="hc-icon"><i data-lucide="calendar"></i></div><div class="hc-label">שיעורים</div></div>
     </div>
     <div class="home-links">
-      <button class="btn-copy-link" id="home-copy-reg" onclick="copyLink('home-copy-reg','https://liran-yoga.vercel.app/register.html')" style="justify-content:center;width:100%"><i data-lucide="copy"></i> העתק קישור הרשמה למנוי</button>
-      <button class="btn-copy-link" id="home-copy-sch" onclick="copyLink('home-copy-sch','https://liran-yoga.vercel.app/schedule.html')" style="justify-content:center;width:100%"><i data-lucide="copy"></i> העתק קישור לשיעורים השבוע</button>
+      <button class="btn-copy-link" id="home-copy-start" onclick="copyLink('home-copy-start','https://liran-yoga.vercel.app/start.html')" style="justify-content:center;width:100%"><i data-lucide="copy"></i> העתק קישור להרשמה</button>
     </div>
     <button class="btn-backup" id="backup-btn" onclick="exportBackup()"><i data-lucide="download"></i> הורדת גיבוי של כל המידע</button>
   </div>
@@ -633,13 +632,8 @@
   <div id="section-classes" class="section">
     <div class="link-row">
       <i data-lucide="link"></i>
-      <span>קישור לשיעורים השבוע</span>
-      <button class="btn-copy-link" id="copy-schedule-btn" onclick="copyLink('copy-schedule-btn','https://liran-yoga.vercel.app/schedule.html')"><i data-lucide="copy"></i> העתק</button>
-    </div>
-    <div class="link-row">
-      <i data-lucide="link"></i>
-      <span>קישור להרשמה למנוי</span>
-      <button class="btn-copy-link" id="copy-register-btn" onclick="copyLink('copy-register-btn','https://liran-yoga.vercel.app/register.html')"><i data-lucide="copy"></i> העתק</button>
+      <span>קישור להרשמה</span>
+      <button class="btn-copy-link" id="copy-start-btn" onclick="copyLink('copy-start-btn','https://liran-yoga.vercel.app/start.html')"><i data-lucide="copy"></i> העתק</button>
     </div>
 
     <!-- יצירת שיעור חדש -->
@@ -727,6 +721,95 @@
       </div>
     </div>
 
+    <!-- הגדרות הקישור ללקוחות -->
+    <div class="accordion">
+      <div class="accordion-header" onclick="toggleAccordion('acc-text-settings')">
+        <div class="accordion-header-title"><i data-lucide="message-square"></i> הגדרות הקישור ללקוחות</div>
+        <i data-lucide="chevron-down" class="accordion-chevron" id="chev-acc-text-settings" style="width:18px;height:18px;stroke:#7A6860"></i>
+      </div>
+      <div class="accordion-body" id="acc-text-settings">
+
+        <h2 style="margin-bottom:1rem">כללי</h2>
+        <div class="form-grid">
+          <div style="grid-column:1/-1">
+            <label>שם העסק (מוצג בראש כל עמוד)</label>
+            <input type="text" id="text-business-name" placeholder="לירן יוגה">
+          </div>
+          <div style="grid-column:1/-1">
+            <label>כותרת בעמוד הכניסה (מתחת לשם)</label>
+            <input type="text" id="text-home-subtitle" placeholder="שמחים לראות אותך">
+          </div>
+          <div style="grid-column:1/-1">
+            <label>הודעת ברכה אחרי זיהוי לקוחה</label>
+            <input type="text" id="text-welcome-message" placeholder="שלום {שם}, כיף לראות אותך כאן!">
+            <div style="font-size:0.78rem;color:#7A8570;margin-top:0.3rem">תגית: {שם} — יוחלף בשם הלקוחה</div>
+          </div>
+          <div style="grid-column:1/-1">
+            <label>הודעת תודה בעמודי ההרשמה</label>
+            <input type="text" id="text-thankyou-message" placeholder="מחכה לראות אותך על המזרן! לירן">
+          </div>
+        </div>
+
+        <h2 style="margin:1.5rem 0 1rem">עמוד השיעורים</h2>
+        <div class="form-grid">
+          <div style="grid-column:1/-1">
+            <label>הודעת מידע מתחת לרשימת השיעורים</label>
+            <textarea id="text-schedule-info" rows="2" style="width:100%;padding:0.6rem;border:1px solid #C2C9A8;border-radius:8px;font-family:inherit;font-size:0.9rem;resize:vertical"></textarea>
+            <div style="font-size:0.78rem;color:#7A8570;margin-top:0.3rem">ירידת שורה בטקסט תוצג כירידת שורה בעמוד</div>
+          </div>
+          <div style="grid-column:1/-1">
+            <label>הודעה כשאין שיעורים זמינים</label>
+            <textarea id="text-no-classes" rows="2" style="width:100%;padding:0.6rem;border:1px solid #C2C9A8;border-radius:8px;font-family:inherit;font-size:0.9rem;resize:vertical"></textarea>
+          </div>
+        </div>
+
+        <h2 style="margin:1.5rem 0 1rem">הרשמה ותשלום</h2>
+        <div class="form-grid">
+          <div style="grid-column:1/-1">
+            <label>טקסט הצהרת בריאות</label>
+            <textarea id="text-health-declaration" rows="2" style="width:100%;padding:0.6rem;border:1px solid #C2C9A8;border-radius:8px;font-family:inherit;font-size:0.9rem;resize:vertical"></textarea>
+          </div>
+          <div>
+            <label>מספר וואטסאפ ליצירת קשר</label>
+            <input type="text" id="text-whatsapp-number" placeholder="972532462667">
+            <div style="font-size:0.78rem;color:#7A8570;margin-top:0.3rem">בפורמט בינלאומי, ללא + או 0 מוביל</div>
+          </div>
+          <div>
+            <label>מספר Bit לתשלום (הרשמה ראשונית)</label>
+            <input type="text" id="text-bit-phone" placeholder="053-246-2667">
+          </div>
+          <div style="grid-column:1/-1">
+            <label>קישור Paybox (חידוש מנוי / מנוי קיים)</label>
+            <input type="text" id="text-paybox-link" placeholder="https://links.payboxapp.com/...">
+          </div>
+          <div>
+            <label>שם הבנק (העברה בנקאית)</label>
+            <input type="text" id="text-bank-name" placeholder="בנק מרכנתיל">
+          </div>
+          <div>
+            <label>מספר בנק</label>
+            <input type="text" id="text-bank-code" placeholder="17">
+          </div>
+          <div>
+            <label>סניף</label>
+            <input type="text" id="text-bank-branch" placeholder="725">
+          </div>
+          <div>
+            <label>מספר חשבון</label>
+            <input type="text" id="text-bank-account" placeholder="82391574">
+          </div>
+          <div style="grid-column:1/-1">
+            <label>ע"ש (בעל החשבון)</label>
+            <input type="text" id="text-bank-holder" placeholder="עובד לירן">
+          </div>
+        </div>
+
+        <div style="display:flex;gap:0.75rem;margin-top:1.25rem;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="saveTextSettings()">שמור הגדרות</button>
+        </div>
+      </div>
+    </div>
+
     <!-- הגדרות קבלה -->
     <div class="accordion">
       <div class="accordion-header" onclick="toggleAccordion('acc-receipt-settings')">
@@ -763,7 +846,7 @@
           </div>
           <div style="grid-column:1/-1">
             <label>תבנית הודעה ל-WhatsApp</label>
-            <textarea id="receipt-msg-template" rows="3" style="width:100%;padding:0.6rem;border:1px solid #C2C9A8;border-radius:8px;font-family:inherit;font-size:0.9rem;resize:vertical">שלום {שם}, מצורפת קבלה על תשלום מנוי {סוג מנוי}. תודה רבה! 🙏</textarea>
+            <textarea id="receipt-msg-template" rows="3" style="width:100%;padding:0.6rem;border:1px solid #C2C9A8;border-radius:8px;font-family:inherit;font-size:0.9rem;resize:vertical">שלום {שם}, מצורפת קבלה על תשלום מנוי {סוג מנוי}. תודה רבה!</textarea>
             <div style="font-size:0.78rem;color:#7A8570;margin-top:0.3rem">תגיות: {שם}, {סוג מנוי}, {תאריך}</div>
           </div>
         </div>
@@ -1050,7 +1133,7 @@
         ${renderClient(c1, subs1, active1, regs1.count)}
         ${renderClient(c2, subs2, active2, regs2.count)}
       </div>
-      ${(active1 && active2) ? '<div style="background:#fed7d7;border-radius:8px;padding:0.6rem 0.9rem;font-size:0.83rem;color:#c53030;margin-bottom:0.75rem">⚠️ שני הלקוחות עם מנוי פעיל — המנוי של הלקוח שנמחק יושבת אוטומטית</div>' : ''}
+      ${(active1 && active2) ? '<div style="background:#fed7d7;border-radius:8px;padding:0.6rem 0.9rem;font-size:0.83rem;color:#c53030;margin-bottom:0.75rem">שני הלקוחות עם מנוי פעיל — המנוי של הלקוח שנמחק יושבת אוטומטית</div>' : ''}
       <p style="font-size:0.82rem;color:#7A8570">כל ההיסטוריה תועבר ללקוח הנשמר. הלקוח השני יימחק לצמיתות.</p>`;
     document.getElementById('merge-keep-a-btn').textContent = `שמרי את ${c1.full_name}`;
     document.getElementById('merge-keep-a-btn').onclick = () => executeMerge(c1.id, c2.id);
@@ -1794,7 +1877,7 @@
             <div class="class-group-meta">${fmtDateWithDay(c.class_date)} · ${c.class_time?.slice(0,5)}</div>
             <div style="display:flex;gap:0.4rem;margin-top:0.5rem;flex-wrap:wrap" onclick="event.stopPropagation()">
               ${c.completed ? '' : `<button class="btn btn-sm" style="background:#78855F;color:white" onclick="endClass(${c.id})">סיים שיעור</button>`}
-              ${c.completed ? '' : `<button class="btn btn-sm" style="background:#C2C9A8;color:#4D2115" onclick="reserveSpot(${c.id})">🔒 שריין מקום</button>`}
+              ${c.completed ? '' : `<button class="btn btn-sm" style="background:#C2C9A8;color:#4D2115" onclick="reserveSpot(${c.id})">שריין מקום</button>`}
               <button class="btn btn-sm" style="background:#e2e8f0;color:#4D2115" onclick="openEditClassModal(${JSON.stringify(c).replace(/"/g,'&quot;')})">עריכה</button>
               <button class="btn btn-sm" style="background:#e8f0fe;color:#1a56db;display:inline-flex;align-items:center;gap:0.3rem" onclick="downloadICS(${JSON.stringify(c).replace(/"/g,'&quot;')})"><i data-lucide="calendar" style="width:13px;height:13px"></i> אפל</button>
               <button class="btn btn-sm" style="background:#e8f0fe;color:#1a56db;display:inline-flex;align-items:center;gap:0.3rem" onclick="openGoogleCal(${JSON.stringify(c).replace(/"/g,'&quot;')})"><i data-lucide="calendar" style="width:13px;height:13px"></i> גוגל</button>
@@ -1874,7 +1957,7 @@
             <td><button class="btn btn-danger btn-sm" onclick="removeRegistration(${r.id}, ${classId})">הסר</button></td>
           </tr>`
             : `<tr style="background:#f0f4e8">
-            <td><strong style="color:#78855F">🔒 מקום שמור</strong></td>
+            <td><strong style="color:#78855F">מקום שמור</strong></td>
             <td>—</td>
             <td style="color:#7A8570">ללא מנוי</td>
             <td><button class="btn btn-sm" style="background:#e2e8f0;color:#4D2115" onclick="removeRegistration(${r.id}, ${classId})">בטל שריון</button></td>
@@ -2206,6 +2289,43 @@ td { padding: 2.5mm 3mm; color: #4D2115; border-bottom: 1px solid #e2efe8; }
         <button class="btn btn-danger btn-sm" onclick="deleteSubType(${t.id})">מחק</button>
       </div></td>
     </tr>`).join('') || '<tr><td colspan="6" class="empty">אין סוגי מנויים</td></tr>';
+    loadTextSettings();
+  }
+
+  // ── SITE SETTINGS (site_settings table — read by the customer-facing link pages) ──
+  const SITE_SETTINGS_FIELDS = {
+    business_name: 'text-business-name',
+    home_subtitle: 'text-home-subtitle',
+    welcome_message: 'text-welcome-message',
+    thank_you_message: 'text-thankyou-message',
+    schedule_info_message: 'text-schedule-info',
+    no_classes_message: 'text-no-classes',
+    health_declaration_text: 'text-health-declaration',
+    whatsapp_number: 'text-whatsapp-number',
+    bit_phone: 'text-bit-phone',
+    paybox_link: 'text-paybox-link',
+    bank_name: 'text-bank-name',
+    bank_code: 'text-bank-code',
+    bank_branch: 'text-bank-branch',
+    bank_account: 'text-bank-account',
+    bank_holder: 'text-bank-holder'
+  };
+
+  async function loadTextSettings() {
+    const { data } = await db.from('site_settings').select('key, value');
+    const map = Object.fromEntries((data || []).map(r => [r.key, r.value]));
+    Object.entries(SITE_SETTINGS_FIELDS).forEach(([key, id]) => {
+      document.getElementById(id).value = map[key] || '';
+    });
+  }
+
+  async function saveTextSettings() {
+    const rows = Object.entries(SITE_SETTINGS_FIELDS)
+      .map(([key, id]) => ({ key, value: document.getElementById(id).value.trim() }))
+      .filter(r => r.value);
+    const { error } = await db.from('site_settings').upsert(rows);
+    if (error) return showMsg('שגיאה: ' + error.message, 'error');
+    showMsg('הגדרות הקישור נשמרו');
   }
 
   async function addSubType() {
@@ -2373,7 +2493,7 @@ body{font-family:'Heebo',sans-serif;background:white}
 
   function buildWhatsAppMsg(d) {
     const settings = getReceiptSettings();
-    const template = settings.msgTemplate || 'שלום {שם}, מצורפת קבלה על תשלום מנוי {סוג מנוי} מתאריך {תאריך}. תודה רבה! 🙏';
+    const template = settings.msgTemplate || 'שלום {שם}, מצורפת קבלה על תשלום מנוי {סוג מנוי} מתאריך {תאריך}. תודה רבה!';
     const fmtDate = iso => iso ? iso.split('-').reverse().join('/') : '';
     return template.replace('{שם}', d.clientName).replace('{סוג מנוי}', d.subTypeName).replace('{תאריך}', fmtDate(d.startDate));
   }

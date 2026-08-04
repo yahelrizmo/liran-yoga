@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>לירן יוגה — כניסה</title>
+  <meta property="og:title" content="לירן יוגה">
+  <meta property="og:description" content="כניסה להרשמה למנוי ולשיעורים">
+  <meta property="og:image" content="https://liran-yoga.vercel.app/og-image.jpg">
+  <meta property="og:url" content="https://liran-yoga.vercel.app/start.html">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { height: 100%; }
+    body { font-family: 'Heebo', sans-serif; color: #4D2115; min-height: 100%; position: relative; }
+
+    .bg { position: absolute; top: 0; left: 0; right: 0; z-index: 0; height: 100%; min-height: 100vh; }
+    .bg img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+    .bg::after { content: ''; position: absolute; inset: 0; background: rgba(10,20,10,0.52); }
+
+    .page { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 3rem 1.2rem 4rem; }
+
+    .logo { text-align: center; color: white; margin-bottom: 1.5rem; }
+    .logo h1 { font-size: 2.6rem; font-weight: 700; letter-spacing: 2px; text-shadow: 0 2px 14px rgba(0,0,0,0.6); }
+    .logo p { font-size: 1rem; font-weight: 300; opacity: 0.88; margin-top: 0.4rem; text-shadow: 0 1px 8px rgba(0,0,0,0.5); }
+
+    .new-client-link { display: inline-block; margin-bottom: 1.8rem; padding: 0.6rem 1.2rem; border-radius: 10px; background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.55); color: white; font-weight: 700; font-size: 0.9rem; text-decoration: none; text-align: center; transition: background 0.2s; }
+    .new-client-link:hover { background: rgba(255,255,255,0.28); }
+
+    .card { background: rgba(238,231,221,0.96); backdrop-filter: blur(8px); border-radius: 20px; padding: 2rem 1.8rem; width: 100%; max-width: 540px; box-shadow: 0 8px 40px rgba(0,0,0,0.25); }
+
+    .card-title { font-size: 1rem; font-weight: 700; color: #78855F; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #ede8e0; }
+
+    input { width: 100%; padding: 0.8rem 1rem; border: 2px solid #ede8e0; border-radius: 10px; font-size: 1rem; font-family: 'Heebo', sans-serif; background: white; transition: border-color 0.2s; margin-bottom: 0.75rem; }
+    input:focus { outline: none; border-color: #78855F; }
+
+    .btn { width: 100%; padding: 0.9rem; border: none; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; font-family: 'Heebo', sans-serif; transition: background 0.2s; }
+    .btn-main { background: #78855F; color: white; }
+    .btn-main:hover { background: #606A4C; }
+    .btn-main:disabled { background: #a0c4b0; cursor: not-allowed; }
+
+    .msg { padding: 0.7rem 1rem; border-radius: 8px; margin-bottom: 0.75rem; font-weight: 600; font-size: 0.88rem; }
+    .msg-error { background: #fed7d7; color: #c53030; }
+
+    .welcome-box { text-align: center; padding: 1.5rem 0; }
+    .welcome-box .icon { margin-bottom: 0.6rem; }
+    .welcome-box .icon svg { width: 2.4rem; height: 2.4rem; stroke: #78855F; }
+    .welcome-box p { font-size: 1.1rem; font-weight: 700; color: #78855F; line-height: 1.6; }
+
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+
+<div class="bg"><img src="liran.jpg" alt=""></div>
+
+<div class="page">
+  <div class="logo">
+    <h1 id="biz-name">לירן יוגה</h1>
+    <p id="home-subtitle">שמחים לראות אותך</p>
+  </div>
+
+  <a href="index.html" class="new-client-link">לקוחה חדשה? הרשמה ראשונית ←</a>
+
+  <div class="card">
+    <div id="msg-area"></div>
+
+    <div id="step-phone">
+      <div class="card-title">מה מספר הטלפון שלך?</div>
+      <input type="tel" id="phone-input" placeholder="05X-XXXXXXX" inputmode="numeric">
+      <button class="btn btn-main" id="login-btn" onclick="login()">כניסה</button>
+    </div>
+
+    <div id="step-welcome" class="welcome-box hidden">
+      <div class="icon"><i data-lucide="leaf"></i></div>
+      <p id="welcome-text"></p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const { createClient } = supabase;
+  const db = createClient(
+    'https://eznhndwhredmyokwrddd.supabase.co',
+    'sb_publishable_gljYa-F3UBsaPkFrbmwXpA_8aBCO36T'
+  );
+
+  function showMsg(text, type = 'error') {
+    document.getElementById('msg-area').innerHTML = `<div class="msg msg-${type}">${text}</div>`;
+    setTimeout(() => document.getElementById('msg-area').innerHTML = '', 5000);
+  }
+
+  async function getSetting(key, fallback) {
+    const { data } = await db.from('site_settings').select('value').eq('key', key).maybeSingle();
+    return data?.value || fallback;
+  }
+
+  async function login() {
+    const phone = document.getElementById('phone-input').value.trim();
+    if (!phone) return showMsg('נא להכניס מספר טלפון');
+
+    const btn = document.getElementById('login-btn');
+    btn.disabled = true; btn.textContent = 'בודקת...';
+
+    const normalized = phone.replace(/[-\s]/g, '');
+    const { data: allClients } = await db.from('clients').select('*');
+    const matches = (allClients || []).filter(c => c.phone === phone || c.phone?.replace(/[-\s]/g, '') === normalized);
+
+    btn.disabled = false; btn.textContent = 'כניסה';
+
+    if (!matches.length) {
+      return showMsg('מספר הטלפון לא נמצא במערכת. לקוחה חדשה? השתמשי בכפתור למעלה.');
+    }
+
+    const today = new Date().toISOString().split('T')[0];
+    let client = null, hasActiveSub = false;
+    for (const m of matches) {
+      const { data: subs } = await db.from('subscriptions')
+        .select('id')
+        .eq('client_id', m.id).eq('is_active', true)
+        .gt('classes_remaining', 0)
+        .gte('expiry_date', today).limit(1);
+      if (subs?.length) { client = m; hasActiveSub = true; break; }
+    }
+    if (!client) client = matches[0];
+
+    const template = await getSetting('welcome_message', 'שלום {שם}, כיף לראות אותך כאן!');
+    document.getElementById('welcome-text').textContent = template.replace('{שם}', client.full_name);
+
+    document.getElementById('step-phone').classList.add('hidden');
+    document.getElementById('step-welcome').classList.remove('hidden');
+
+    setTimeout(() => {
+      window.location.href = hasActiveSub
+        ? `schedule.html?phone=${encodeURIComponent(phone)}`
+        : `register.html?phone=${encodeURIComponent(phone)}&mode=existing`;
+    }, 1400);
+  }
+
+  (async () => {
+    const { data } = await db.from('site_settings').select('key, value');
+    const map = Object.fromEntries((data || []).map(r => [r.key, r.value]));
+    document.getElementById('biz-name').textContent = map.business_name || 'לירן יוגה';
+    document.getElementById('home-subtitle').textContent = map.home_subtitle || 'שמחים לראות אותך';
+    lucide.createIcons();
+  })();
+</script>
+</body>
+</html>

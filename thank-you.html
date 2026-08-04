@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>לירן יוגה — תודה</title>
+  <meta property="og:title" content="לירן יוגה — תודה">
+  <meta property="og:image" content="https://liran-yoga.vercel.app/og-image.jpg">
+  <meta property="og:type" content="website">
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { height: 100%; }
+    body { font-family: 'Heebo', sans-serif; color: #4D2115; min-height: 100%; position: relative; }
+
+    .bg { position: absolute; top: 0; left: 0; right: 0; z-index: 0; height: 100%; min-height: 100vh; }
+    .bg img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+    .bg::after { content: ''; position: absolute; inset: 0; background: rgba(10,20,10,0.52); }
+
+    .page { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 1.2rem 4rem; }
+
+    .card { background: rgba(238,231,221,0.96); backdrop-filter: blur(8px); border-radius: 20px; padding: 2.5rem 1.8rem; width: 100%; max-width: 540px; box-shadow: 0 8px 40px rgba(0,0,0,0.25); text-align: center; }
+
+    .icon { margin-bottom: 0.75rem; }
+    .icon svg { width: 3rem; height: 3rem; stroke: #78855F; }
+    h2 { font-size: 1.5rem; font-weight: 700; color: #78855F; margin-bottom: 0.5rem; }
+    p { color: #7A6860; line-height: 1.8; font-size: 0.98rem; margin-bottom: 1.5rem; }
+
+    .btn { display: inline-block; width: 100%; padding: 0.9rem; border: none; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; font-family: 'Heebo', sans-serif; transition: background 0.2s; background: #78855F; color: white; text-decoration: none; }
+    .btn:hover { background: #606A4C; }
+  </style>
+</head>
+<body>
+
+<div class="bg"><img src="liran.jpg" alt=""></div>
+
+<div class="page">
+  <div class="card">
+    <div class="icon"><i data-lucide="leaf"></i></div>
+    <h2>תודה, <span id="name-slot"></span>!</h2>
+    <p id="thank-you-text">ההרשמה התקבלה.</p>
+    <a class="btn" id="schedule-link" href="schedule.html">הרשמה לשיעור</a>
+  </div>
+</div>
+
+<script>
+  const { createClient } = supabase;
+  const db = createClient(
+    'https://eznhndwhredmyokwrddd.supabase.co',
+    'sb_publishable_gljYa-F3UBsaPkFrbmwXpA_8aBCO36T'
+  );
+
+  const params = new URLSearchParams(window.location.search);
+  const name = params.get('name') || '';
+  const phone = params.get('phone') || '';
+
+  document.getElementById('name-slot').textContent = name;
+  document.getElementById('schedule-link').href = phone
+    ? `schedule.html?phone=${encodeURIComponent(phone)}`
+    : 'schedule.html';
+
+  (async () => {
+    const { data } = await db.from('site_settings').select('value').eq('key', 'thank_you_message').maybeSingle();
+    document.getElementById('thank-you-text').textContent = data?.value || 'מחכה לראות אותך על המזרן! לירן';
+    lucide.createIcons();
+  })();
+</script>
+</body>
+</html>

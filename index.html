@@ -169,13 +169,6 @@
       border-top: 1px solid #ede8e0;
     }
 
-    /* הצלחה */
-    .success-section { display: none; text-align: center; padding: 1rem 0; }
-    .success-section.show { display: block; }
-    .success-icon { font-size: 3.5rem; margin-bottom: 0.75rem; }
-    .success-section h2 { font-size: 1.5rem; font-weight: 700; color: #6b4f2a; margin-bottom: 0.5rem; }
-    .success-section p { color: #8a7a6a; line-height: 1.8; font-size: 0.95rem; }
-
     .msg { padding: 0.7rem 1rem; border-radius: 8px; margin-bottom: 0.75rem; font-weight: 600; font-size: 0.88rem; }
     .msg-error { background: #fed7d7; color: #c53030; }
   </style>
@@ -188,7 +181,7 @@
 
 <div class="page">
   <div class="logo">
-    <h1>לירן יוגה</h1>
+    <h1 id="biz-name">לירן יוגה</h1>
     <p>הצטרפו לתרגול — בחרו את המנוי המתאים לכם</p>
   </div>
 
@@ -222,7 +215,7 @@
         <h3>תשלום דרך Bit</h3>
         <div class="bit-amount">₪<span id="pay-amount"></span></div>
         <div class="bit-label">העבירו למספר</div>
-        <div class="bit-phone">053-246-2667</div>
+        <div class="bit-phone" id="bit-phone-display">053-246-2667</div>
         <div style="display:flex;gap:0.75rem;margin-top:1rem;flex-wrap:wrap;justify-content:center">
           <button class="btn btn-main" id="copy-btn" onclick="copyPhone()" style="flex:1;min-width:130px">העתק מספר</button>
           <a href="https://bitpay.co.il" target="_blank" class="btn btn-main" style="flex:1;min-width:130px;text-decoration:none;text-align:center;background:#0f4c9e">פתח Bit</a>
@@ -232,13 +225,6 @@
         </div>
       </div>
       <button class="btn btn-green" onclick="confirmSent()">שלחתי את התשלום ✓</button>
-    </div>
-
-    <!-- הצלחה -->
-    <div class="success-section" id="success-section">
-      <div class="success-icon">🌿</div>
-      <h2>תודה, <span id="success-name"></span>!</h2>
-      <p>ההרשמה התקבלה.<br>נתראה על המזרן.</p>
     </div>
   </div>
 </div>
@@ -252,6 +238,20 @@
 
   let selectedPlan = null;
   let pendingClientId = null;
+  let bitPhoneDisplay = '053-246-2667';
+  let bitPhoneRaw = '0532462667';
+
+  async function loadSiteSettings() {
+    const { data } = await db.from('site_settings').select('key, value');
+    const map = Object.fromEntries((data || []).map(r => [r.key, r.value]));
+    if (map.business_name) document.getElementById('biz-name').textContent = map.business_name;
+    if (map.bit_phone) {
+      bitPhoneDisplay = map.bit_phone;
+      bitPhoneRaw = map.bit_phone.replace(/[-\s]/g, '');
+      document.getElementById('bit-phone-display').textContent = bitPhoneDisplay;
+    }
+  }
+  loadSiteSettings();
 
   async function loadPlans() {
     const { data } = await db.from('subscription_types').select('*').eq('is_active', true);
@@ -309,12 +309,12 @@
   function setBitLink() {}
 
   function copyPhone() {
-    navigator.clipboard.writeText('0532462667').then(() => {
+    navigator.clipboard.writeText(bitPhoneRaw).then(() => {
       const btn = document.getElementById('copy-btn');
       btn.textContent = '✓ המספר הועתק!';
       btn.style.background = '#3a7d54';
       setTimeout(() => {
-        btn.textContent = '📋 העתיקו מספר לתשלום';
+        btn.textContent = 'העתק מספר';
         btn.style.background = '';
       }, 3000);
     });
@@ -332,9 +332,9 @@
       expiry_date: expiry.toISOString().split('T')[0],
       is_active: false
     });
-    document.getElementById('payment-section').classList.remove('show');
-    document.getElementById('success-name').textContent = document.getElementById('reg-name').value.trim();
-    document.getElementById('success-section').classList.add('show');
+    const name = document.getElementById('reg-name').value.trim();
+    const phone = document.getElementById('reg-phone').value.trim();
+    window.location.href = `thank-you.html?name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}`;
   }
 
   loadPlans();

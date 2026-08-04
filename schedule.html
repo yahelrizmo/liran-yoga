@@ -74,7 +74,7 @@
 
 <div class="page">
   <div class="logo">
-    <h1>לירן יוגה</h1>
+    <h1 id="biz-name">לירן יוגה</h1>
     <p id="week-label">שיעורים השבוע</p>
   </div>
 
@@ -91,7 +91,7 @@
     <!-- שלב 2: שיעורים -->
     <div id="step-classes" class="hidden">
       <div id="sub-badge" class="subscription-badge"></div>
-      <div style="background:#f0f4ff;border:1px solid #c7d4f0;border-radius:10px;padding:0.65rem 1rem;margin-bottom:1rem;font-size:0.8rem;color:#4a5568;line-height:1.6">
+      <div id="schedule-info-box" style="background:#f0f4ff;border:1px solid #c7d4f0;border-radius:10px;padding:0.65rem 1rem;margin-bottom:1rem;font-size:0.8rem;color:#4a5568;line-height:1.6">
         הרשמה פתוחה כל עוד יש מקום · ביטול הרשמה אפשרי עד 24 שעות לפני השיעור<br>אם יש לך צורך שאביא לך מזרן — בתיאום מראש בלבד
       </div>
       <div class="card-title">שיעורים זמינים</div>
@@ -109,6 +109,16 @@
 
   let currentClient = null;
   let activeSub = null;
+  let noClassesMsg = 'אין שיעורים זמינים כרגע.<br>עקבו אחרי הקבוצה לעדכונים.';
+
+  async function loadSiteSettings() {
+    const { data } = await db.from('site_settings').select('key, value');
+    const map = Object.fromEntries((data || []).map(r => [r.key, r.value]));
+    if (map.business_name) document.getElementById('biz-name').textContent = map.business_name;
+    if (map.schedule_info_message) document.getElementById('schedule-info-box').innerHTML = map.schedule_info_message.replace(/\n/g, '<br>');
+    if (map.no_classes_message) noClassesMsg = map.no_classes_message.replace(/\n/g, '<br>');
+  }
+  loadSiteSettings();
 
   const days = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
   function fmtDay(d) {
@@ -122,6 +132,12 @@
   weekEnd.setDate(now.getDate() + 14);
   document.getElementById('week-label').textContent =
     `שיעורים ${now.toLocaleDateString('he-IL')} — ${weekEnd.toLocaleDateString('he-IL')}`;
+
+  const urlPhone = new URLSearchParams(window.location.search).get('phone');
+  if (urlPhone) {
+    document.getElementById('phone-input').value = urlPhone;
+    findClient();
+  }
 
   function showMsg(text, type = 'error') {
     document.getElementById('msg-area').innerHTML = `<div class="msg msg-${type}">${text}</div>`;
@@ -214,7 +230,7 @@
 
     if (!classes?.length) {
       document.getElementById('classes-list').innerHTML =
-        '<div class="no-classes">אין שיעורים זמינים כרגע.<br>עקבו אחרי הקבוצה לעדכונים.</div>';
+        `<div class="no-classes">${noClassesMsg}</div>`;
       return;
     }
 
@@ -269,7 +285,7 @@
 
     const futureHTML = futureClasses.length
       ? futureClasses.map(c => renderCard(c, false)).join('')
-      : '<div class="no-classes">אין שיעורים זמינים כרגע.<br>עקבו אחרי הקבוצה לעדכונים.</div>';
+      : `<div class="no-classes">${noClassesMsg}</div>`;
 
     const pastHTML = pastClasses.length
       ? `<div style="font-size:0.8rem;color:#7A6860;margin:1rem 0 0.4rem;text-align:center">שיעורים שעברו</div>${pastClasses.map(c => renderCard(c, true)).join('')}`
