@@ -612,7 +612,10 @@
           <button class="alert-filter" id="tab-past-clients" onclick="switchClientsTab('past', this)">לקוחות עבר</button>
         </div>
       </div>
-      <input type="text" class="search-input" id="clients-search" placeholder="חיפוש לפי שם או טלפון..." oninput="filterClientsTable()">
+      <div style="position:relative;margin-bottom:1rem">
+        <input type="text" class="search-input" id="clients-search" placeholder="חיפוש לפי שם או טלפון..." oninput="filterClientsTable()" style="margin-bottom:0;padding-left:2.2rem">
+        <button type="button" id="clients-search-clear" onclick="clearClientsSearch()" style="display:none;position:absolute;left:0.5rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#7A8570;padding:0.2rem;line-height:0" aria-label="נקה חיפוש"><i data-lucide="x" style="width:16px;height:16px"></i></button>
+      </div>
       <div id="clients-active-view">
         <table>
           <thead><tr><th>שם</th><th>טלפון</th><th>מנוי</th><th>נותרו</th><th>תוקף</th><th>סטטוס</th><th></th></tr></thead>
@@ -1329,10 +1332,16 @@
 
   function filterClientsTable() {
     const q = (document.getElementById('clients-search')?.value || '').trim().toLowerCase();
+    document.getElementById('clients-search-clear').style.display = q ? '' : 'none';
     const tableId = clientsView === 'active' ? 'clients-table' : 'past-clients-table';
     document.querySelectorAll('#' + tableId + ' tr').forEach(tr => {
       tr.style.display = !q || tr.textContent.toLowerCase().includes(q) ? '' : 'none';
     });
+  }
+
+  function clearClientsSearch() {
+    document.getElementById('clients-search').value = '';
+    filterClientsTable();
   }
 
   async function addClient() {
