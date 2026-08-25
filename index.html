@@ -138,7 +138,7 @@
     .payment-section { display: none; }
     .payment-section.show { display: block; }
 
-    .bit-box {
+    .pay-box {
       background: white;
       border-radius: 14px;
       border: 2px solid #ede8e0;
@@ -146,21 +146,9 @@
       text-align: center;
       margin-bottom: 1rem;
     }
-    .bit-box h3 { color: #6b4f2a; font-size: 1.1rem; margin-bottom: 0.3rem; }
-    .bit-amount { font-size: 3rem; font-weight: 700; color: #c47e2b; margin: 0.5rem 0; }
-    .bit-phone {
-      font-size: 1.6rem;
-      font-weight: 700;
-      letter-spacing: 1px;
-      color: #2d2a24;
-      background: #fdf6ee;
-      border-radius: 10px;
-      padding: 0.6rem 1.2rem;
-      display: inline-block;
-      margin: 0.5rem 0 0.25rem;
-    }
-    .bit-label { font-size: 0.82rem; color: #8a7a6a; }
-    .bit-note {
+    .pay-box h3 { color: #6b4f2a; font-size: 1.1rem; margin-bottom: 0.3rem; }
+    .pay-amount { font-size: 3rem; font-weight: 700; color: #c47e2b; margin: 0.5rem 0; }
+    .pay-note {
       font-size: 0.83rem;
       color: #8a7a6a;
       line-height: 1.7;
@@ -168,6 +156,8 @@
       padding-top: 1rem;
       border-top: 1px solid #ede8e0;
     }
+    .copy-field-btn { background: #fdf6ee; color: #2d2a24; border: none; border-radius: 6px; padding: 0.25rem 0.65rem; font-family: 'Heebo', sans-serif; font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+    .copy-field-btn:hover { background: #f0e5d5; }
 
     .msg { padding: 0.7rem 1rem; border-radius: 8px; margin-bottom: 0.75rem; font-weight: 600; font-size: 0.88rem; }
     .msg-error { background: #fed7d7; color: #c53030; }
@@ -209,20 +199,22 @@
       <button class="btn btn-main" id="submit-btn" onclick="submitRegistration()">המשך לתשלום</button>
     </div>
 
-    <!-- שלב 3: תשלום בBit -->
+    <!-- שלב 3: תשלום -->
     <div class="payment-section" id="payment-section">
-      <div class="bit-box">
-        <h3>תשלום דרך Bit</h3>
-        <div class="bit-amount">₪<span id="pay-amount"></span></div>
-        <div class="bit-label">העבירו למספר</div>
-        <div class="bit-phone" id="bit-phone-display">053-246-2667</div>
-        <div style="display:flex;gap:0.75rem;margin-top:1rem;flex-wrap:wrap;justify-content:center">
-          <button class="btn btn-main" id="copy-btn" onclick="copyPhone()" style="flex:1;min-width:130px">העתק מספר</button>
-          <a href="https://bitpay.co.il" target="_blank" class="btn btn-main" style="flex:1;min-width:130px;text-decoration:none;text-align:center;background:#0f4c9e">פתח Bit</a>
+      <div class="pay-box">
+        <h3>תשלום</h3>
+        <div class="pay-amount">₪<span id="pay-amount"></span></div>
+        <button onclick="openPaybox()" class="btn btn-main" style="margin-top:0.75rem">פתחו את Paybox לתשלום</button>
+        <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #ede8e0">
+          <div style="font-size:0.82rem;color:#8a7a6a;margin-bottom:0.6rem">העברה בנקאית — פרטי חשבון:</div>
+          <div style="background:#fdf6ee;border-radius:10px;padding:0.75rem 1rem;font-size:0.88rem;color:#2d2a24">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:0.35rem 0;border-bottom:1px solid #ede8e0"><span id="bank-name-label">בנק מרכנתיל</span><button class="copy-field-btn" id="bank-code-btn" onclick="copyBank(this,'code')">17</button></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:0.35rem 0;border-bottom:1px solid #ede8e0"><span>סניף</span><button class="copy-field-btn" id="bank-branch-btn" onclick="copyBank(this,'branch')">725</button></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:0.35rem 0;border-bottom:1px solid #ede8e0"><span>מספר חשבון</span><button class="copy-field-btn" id="bank-account-btn" onclick="copyBank(this,'account')">82391574</button></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:0.35rem 0"><span>ע"ש</span><button class="copy-field-btn" id="bank-holder-btn" onclick="copyBank(this,'holder')">עובד לירן</button></div>
+          </div>
         </div>
-        <div class="bit-note">
-          לאחר התשלום — לחצו על הכפתור למטה.
-        </div>
+        <div class="pay-note">לאחר ביצוע התשלום — לחצו על הכפתור למטה.</div>
       </div>
       <button class="btn btn-green" onclick="confirmSent()">שלחתי את התשלום ✓</button>
     </div>
@@ -238,18 +230,19 @@
 
   let selectedPlan = null;
   let pendingClientId = null;
-  let bitPhoneDisplay = '053-246-2667';
-  let bitPhoneRaw = '0532462667';
+  let bank = { name: 'בנק מרכנתיל', code: '17', branch: '725', account: '82391574', holder: 'עובד לירן' };
+  let payboxLink = 'https://links.payboxapp.com/Vrw4qWEvQ2b';
 
   async function loadSiteSettings() {
     const { data } = await db.from('site_settings').select('key, value');
     const map = Object.fromEntries((data || []).map(r => [r.key, r.value]));
     if (map.business_name) document.getElementById('biz-name').textContent = map.business_name;
-    if (map.bit_phone) {
-      bitPhoneDisplay = map.bit_phone;
-      bitPhoneRaw = map.bit_phone.replace(/[-\s]/g, '');
-      document.getElementById('bit-phone-display').textContent = bitPhoneDisplay;
-    }
+    if (map.paybox_link) payboxLink = map.paybox_link;
+    if (map.bank_name) { bank.name = map.bank_name; document.getElementById('bank-name-label').textContent = bank.name; }
+    if (map.bank_code) { bank.code = map.bank_code; document.getElementById('bank-code-btn').textContent = bank.code; }
+    if (map.bank_branch) { bank.branch = map.bank_branch; document.getElementById('bank-branch-btn').textContent = bank.branch; }
+    if (map.bank_account) { bank.account = map.bank_account; document.getElementById('bank-account-btn').textContent = bank.account; }
+    if (map.bank_holder) { bank.holder = map.bank_holder; document.getElementById('bank-holder-btn').textContent = bank.holder; }
   }
   loadSiteSettings();
 
@@ -302,21 +295,24 @@
 
     document.getElementById('step-register').style.display = 'none';
     document.getElementById('pay-amount').textContent = selectedPlan.price;
-    setBitLink();
     document.getElementById('payment-section').classList.add('show');
   }
 
-  function setBitLink() {}
+  function openPaybox() {
+    window.location.href = payboxLink;
+  }
 
-  function copyPhone() {
-    navigator.clipboard.writeText(bitPhoneRaw).then(() => {
-      const btn = document.getElementById('copy-btn');
-      btn.textContent = '✓ המספר הועתק!';
+  function copyBank(btn, field) {
+    copyField(btn, bank[field]);
+  }
+
+  function copyField(btn, value) {
+    navigator.clipboard.writeText(value).then(() => {
+      const orig = btn.textContent;
+      btn.textContent = '✓';
       btn.style.background = '#3a7d54';
-      setTimeout(() => {
-        btn.textContent = 'העתק מספר';
-        btn.style.background = '';
-      }, 3000);
+      btn.style.color = 'white';
+      setTimeout(() => { btn.textContent = orig; btn.style.background = ''; btn.style.color = ''; }, 2000);
     });
   }
 
