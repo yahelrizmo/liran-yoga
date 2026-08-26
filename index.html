@@ -133,6 +133,9 @@
     .btn-main:disabled { background: #c0aa8e; cursor: not-allowed; }
     .btn-green { background: #3a7d54; color: white; }
     .btn-green:hover { background: #2a5e3f; }
+    .btn-paybox { background: #c47e2b; color: white; box-shadow: 0 4px 14px rgba(196,126,43,0.4); }
+    .btn-paybox:hover { background: #a8681e; }
+    .pay-methods-note { font-size: 0.88rem; color: #8a7a6a; margin: 0.4rem 0 1rem; }
 
     /* תשלום */
     .payment-section { display: none; }
@@ -204,7 +207,8 @@
       <div class="pay-box">
         <h3>תשלום</h3>
         <div class="pay-amount">₪<span id="pay-amount"></span></div>
-        <button onclick="openPaybox()" class="btn btn-main" style="margin-top:0.75rem">פתחו את Paybox לתשלום</button>
+        <div class="pay-methods-note" id="pay-methods-note"></div>
+        <button onclick="openPaybox()" class="btn btn-paybox" style="margin-top:0.25rem">פתחו את Paybox לתשלום</button>
         <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #ede8e0">
           <div style="font-size:0.82rem;color:#8a7a6a;margin-bottom:0.6rem">העברה בנקאית — פרטי חשבון:</div>
           <div style="background:#fdf6ee;border-radius:10px;padding:0.75rem 1rem;font-size:0.88rem;color:#2d2a24">
@@ -232,6 +236,20 @@
   let pendingClientId = null;
   let bank = { name: 'בנק מרכנתיל', code: '17', branch: '725', account: '82391574', holder: 'עובד לירן' };
   let payboxLink = 'https://links.payboxapp.com/Vrw4qWEvQ2b';
+
+  // מקור אמת יחיד לשיטות התשלום המוצגות ללקוחה — עדכנו כאן (המשפט מתחת לסכום נבנה מהרשימה הזו אוטומטית)
+  const PAY_METHODS = ['פייבוקס', 'העברה בנקאית'];
+
+  function renderPayMethodsNote() {
+    const el = document.getElementById('pay-methods-note');
+    if (!el) return;
+    if (!PAY_METHODS.length) { el.textContent = ''; return; }
+    const text = PAY_METHODS.length === 1
+      ? PAY_METHODS[0]
+      : PAY_METHODS.slice(0, -1).join(', ') + ' או ' + PAY_METHODS[PAY_METHODS.length - 1];
+    el.textContent = `ניתן לשלם באמצעות ${text}`;
+  }
+  renderPayMethodsNote();
 
   async function loadSiteSettings() {
     const { data } = await db.from('site_settings').select('key, value');

@@ -55,6 +55,9 @@
     .btn-main:disabled { background: #7ab09a; cursor: not-allowed; }
     .btn-green { background: #78855F; color: white; }
     .btn-green:hover { background: #606A4C; }
+    .btn-paybox { background: #566B42; color: white; box-shadow: 0 4px 14px rgba(86,107,66,0.4); }
+    .btn-paybox:hover { background: #46562F; }
+    .pay-methods-note { font-size: 0.88rem; color: #7A6860; margin: 0.4rem 0 1rem; }
     .copy-field-btn { background: #E8EAE0; color: #4D2115; border: none; border-radius: 6px; padding: 0.25rem 0.65rem; font-family: 'Heebo', sans-serif; font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
     .copy-field-btn:hover { background: #D4D9BF; }
 
@@ -141,7 +144,8 @@
       <div class="pay-box">
         <h3>תשלום</h3>
         <div class="pay-amount">₪<span id="pay-amount"></span></div>
-        <button onclick="openPaybox()" class="btn btn-main" style="margin-top:0.75rem">פתחו את Paybox לתשלום</button>
+        <div class="pay-methods-note" id="pay-methods-note"></div>
+        <button onclick="openPaybox()" class="btn btn-paybox" style="margin-top:0.25rem">פתחו את Paybox לתשלום</button>
         <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #ede8e0">
           <div style="font-size:0.82rem;color:#7A6860;margin-bottom:0.6rem">העברה בנקאית — פרטי חשבון:</div>
           <div style="background:#EEE7DD;border-radius:10px;padding:0.75rem 1rem;font-size:0.88rem;color:#4D2115">
@@ -172,6 +176,20 @@
   let bank = { name: 'בנק מרכנתיל', code: '17', branch: '725', account: '82391574', holder: 'עובד לירן' };
   let waNumber = '972532462667';
   let payboxLink = 'https://links.payboxapp.com/Vrw4qWEvQ2b';
+
+  // מקור אמת יחיד לשיטות התשלום המוצגות ללקוחה — עדכנו כאן ("המשפט" מתחת לסכום נבנה מהרשימה הזו אוטומטית)
+  const PAY_METHODS = ['פייבוקס', 'העברה בנקאית'];
+
+  function renderPayMethodsNote() {
+    const el = document.getElementById('pay-methods-note');
+    if (!el) return;
+    if (!PAY_METHODS.length) { el.textContent = ''; return; }
+    const text = PAY_METHODS.length === 1
+      ? PAY_METHODS[0]
+      : PAY_METHODS.slice(0, -1).join(', ') + ' או ' + PAY_METHODS[PAY_METHODS.length - 1];
+    el.textContent = `ניתן לשלם באמצעות ${text}`;
+  }
+  renderPayMethodsNote();
   let healthText = 'אני מצהיר/ה כי אני בריא/ה ואין לי מניעה רפואית לעסוק בפעילות גופנית. אני מודע/ת לכך שהתרגול נעשה על אחריותי המלאה.';
 
   function healthHTML() {
