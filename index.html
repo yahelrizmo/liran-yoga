@@ -18,7 +18,7 @@
     html { height: 100%; }
     body {
       font-family: 'Heebo', sans-serif;
-      color: #2d2a24;
+      color: #4D2115;
       min-height: 100%;
       position: relative;
     }
@@ -66,7 +66,7 @@
 
     /* כרטיס הטופס */
     .card {
-      background: rgba(255, 250, 244, 0.96);
+      background: rgba(238, 231, 221, 0.96);
       backdrop-filter: blur(8px);
       border-radius: 20px;
       padding: 2rem 1.8rem;
@@ -78,7 +78,7 @@
     .step-title {
       font-size: 1rem;
       font-weight: 700;
-      color: #6b4f2a;
+      color: #78855F;
       margin-bottom: 1rem;
       padding-bottom: 0.5rem;
       border-bottom: 2px solid #ede8e0;
@@ -96,14 +96,14 @@
       background: white;
       transition: border-color 0.2s, background 0.2s;
     }
-    .plan:hover { border-color: #c47e2b; }
-    .plan.selected { border-color: #c47e2b; background: #fdf0e0; }
+    .plan:hover { border-color: #78855F; }
+    .plan.selected { border-color: #78855F; background: #E8EAE0; }
     .plan-name { font-weight: 600; font-size: 0.95rem; }
-    .plan-meta { font-size: 0.78rem; color: #8a7a6a; margin-top: 0.15rem; }
-    .plan-price { font-size: 1.35rem; font-weight: 700; color: #c47e2b; white-space: nowrap; margin-right: 0.75rem; }
+    .plan-meta { font-size: 0.78rem; color: #7A6860; margin-top: 0.15rem; }
+    .plan-price { font-size: 1.35rem; font-weight: 700; color: #78855F; white-space: nowrap; margin-right: 0.75rem; }
 
     .form-group { margin-bottom: 0.9rem; }
-    label { display: block; font-size: 0.82rem; color: #8a7a6a; margin-bottom: 0.25rem; font-weight: 600; }
+    label { display: block; font-size: 0.82rem; color: #7A6860; margin-bottom: 0.25rem; font-weight: 600; }
     input {
       width: 100%;
       padding: 0.7rem 1rem;
@@ -114,7 +114,7 @@
       background: white;
       transition: border-color 0.2s;
     }
-    input:focus { outline: none; border-color: #c47e2b; }
+    input:focus { outline: none; border-color: #78855F; }
 
     .btn {
       width: 100%;
@@ -128,14 +128,14 @@
       transition: background 0.2s;
       margin-top: 1.2rem;
     }
-    .btn-main { background: #6b4f2a; color: white; }
-    .btn-main:hover { background: #4e3720; }
-    .btn-main:disabled { background: #c0aa8e; cursor: not-allowed; }
-    .btn-green { background: #3a7d54; color: white; }
-    .btn-green:hover { background: #2a5e3f; }
-    .btn-paybox { background: #c47e2b; color: white; box-shadow: 0 4px 14px rgba(196,126,43,0.4); }
-    .btn-paybox:hover { background: #a8681e; }
-    .pay-methods-note { font-size: 0.88rem; color: #8a7a6a; margin: 0.4rem 0 1rem; }
+    .btn-main { background: #78855F; color: white; }
+    .btn-main:hover { background: #606A4C; }
+    .btn-main:disabled { background: #7ab09a; cursor: not-allowed; }
+    .btn-green { background: #78855F; color: white; }
+    .btn-green:hover { background: #606A4C; }
+    .btn-paybox { background: #4D2115; color: white; box-shadow: 0 6px 18px rgba(77,33,21,0.5); }
+    .btn-paybox:hover { background: #3A180D; box-shadow: 0 8px 22px rgba(77,33,21,0.6); }
+    .pay-methods-note { font-size: 0.88rem; color: #7A6860; margin: 0.4rem 0 1rem; }
 
     /* תשלום */
     .payment-section { display: none; }
@@ -149,18 +149,18 @@
       text-align: center;
       margin-bottom: 1rem;
     }
-    .pay-box h3 { color: #6b4f2a; font-size: 1.1rem; margin-bottom: 0.3rem; }
-    .pay-amount { font-size: 3rem; font-weight: 700; color: #c47e2b; margin: 0.5rem 0; }
+    .pay-box h3 { color: #78855F; font-size: 1.1rem; margin-bottom: 0.3rem; }
+    .pay-amount { font-size: 3rem; font-weight: 700; color: #78855F; margin: 0.5rem 0; }
     .pay-note {
       font-size: 0.83rem;
-      color: #8a7a6a;
+      color: #7A6860;
       line-height: 1.7;
       margin-top: 1rem;
       padding-top: 1rem;
       border-top: 1px solid #ede8e0;
     }
-    .copy-field-btn { background: #fdf6ee; color: #2d2a24; border: none; border-radius: 6px; padding: 0.25rem 0.65rem; font-family: 'Heebo', sans-serif; font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
-    .copy-field-btn:hover { background: #f0e5d5; }
+    .copy-field-btn { background: #E8EAE0; color: #4D2115; border: none; border-radius: 6px; padding: 0.25rem 0.65rem; font-family: 'Heebo', sans-serif; font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+    .copy-field-btn:hover { background: #D4D9BF; }
 
     .msg { padding: 0.7rem 1rem; border-radius: 8px; margin-bottom: 0.75rem; font-weight: 600; font-size: 0.88rem; }
     .msg-error { background: #fed7d7; color: #c53030; }
@@ -210,8 +210,8 @@
         <div class="pay-methods-note" id="pay-methods-note"></div>
         <button onclick="openPaybox()" class="btn btn-paybox" style="margin-top:0.25rem">פתחו את Paybox לתשלום</button>
         <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #ede8e0">
-          <div style="font-size:0.82rem;color:#8a7a6a;margin-bottom:0.6rem">העברה בנקאית — פרטי חשבון:</div>
-          <div style="background:#fdf6ee;border-radius:10px;padding:0.75rem 1rem;font-size:0.88rem;color:#2d2a24">
+          <div style="font-size:0.82rem;color:#7A6860;margin-bottom:0.6rem">העברה בנקאית — פרטי חשבון:</div>
+          <div style="background:#EEE7DD;border-radius:10px;padding:0.75rem 1rem;font-size:0.88rem;color:#4D2115">
             <div style="display:flex;justify-content:space-between;align-items:center;padding:0.35rem 0;border-bottom:1px solid #ede8e0"><span id="bank-name-label">בנק מרכנתיל</span><button class="copy-field-btn" id="bank-code-btn" onclick="copyBank(this,'code')">17</button></div>
             <div style="display:flex;justify-content:space-between;align-items:center;padding:0.35rem 0;border-bottom:1px solid #ede8e0"><span>סניף</span><button class="copy-field-btn" id="bank-branch-btn" onclick="copyBank(this,'branch')">725</button></div>
             <div style="display:flex;justify-content:space-between;align-items:center;padding:0.35rem 0;border-bottom:1px solid #ede8e0"><span>מספר חשבון</span><button class="copy-field-btn" id="bank-account-btn" onclick="copyBank(this,'account')">82391574</button></div>
@@ -328,7 +328,7 @@
     navigator.clipboard.writeText(value).then(() => {
       const orig = btn.textContent;
       btn.textContent = '✓';
-      btn.style.background = '#3a7d54';
+      btn.style.background = '#78855F';
       btn.style.color = 'white';
       setTimeout(() => { btn.textContent = orig; btn.style.background = ''; btn.style.color = ''; }, 2000);
     });
