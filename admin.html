@@ -226,6 +226,18 @@
     .class-group-body table { margin: 0; }
     .class-group-body th { background: #E8EAE0; }
 
+    /* ── CLIENT HISTORY: subscription cards ─────────────────── */
+    .hsub { border: 1px solid #C2C9A8; border-radius: 10px; margin-bottom: 0.75rem; overflow: hidden; }
+    .hsub-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; padding: 0.7rem 0.9rem; background: #F7F5EE; }
+    .hsub-title { font-weight: 700; color: #4D2115; font-size: 0.95rem; }
+    .hsub-meta { font-size: 0.8rem; color: #7A6860; flex-basis: 100%; }
+    .hsub-actions { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-right: auto; }
+    .hsub details summary { cursor: pointer; padding: 0.55rem 0.9rem; font-size: 0.85rem; font-weight: 600; color: #78855F; border-top: 1px solid #C2C9A8; user-select: none; }
+    .hsub details table { margin: 0; }
+    .hsub details th { background: #E8EAE0; }
+    .hsub-empty { padding: 0.6rem 0.9rem; font-size: 0.82rem; color: #7A6860; border-top: 1px solid #C2C9A8; }
+    .hsub-guess { font-size: 0.72rem; color: #9A8A80; }
+
     /* ── FORMS GRID ─────────────────────────────────────────── */
     .forms-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
     .forms-grid-2 .card { margin-bottom: 0; }
@@ -330,11 +342,11 @@
     <h3 id="history-client-name" style="font-size:1.15rem"></h3>
     <div id="history-client-meta" style="font-size:0.83rem;color:#7A6860;margin-bottom:1.25rem"></div>
     <div style="margin-bottom:1.5rem">
-      <div style="font-weight:700;color:#4D2115;font-size:0.9rem;margin-bottom:0.6rem;border-bottom:2px solid #C2C9A8;padding-bottom:0.3rem">מנויים</div>
+      <div style="font-weight:700;color:#4D2115;font-size:0.9rem;margin-bottom:0.6rem;border-bottom:2px solid #C2C9A8;padding-bottom:0.3rem">מנויים ושיעורים</div>
       <div id="history-subs"></div>
     </div>
-    <div>
-      <div style="font-weight:700;color:#4D2115;font-size:0.9rem;margin-bottom:0.6rem;border-bottom:2px solid #C2C9A8;padding-bottom:0.3rem">הרשמות לשיעורים</div>
+    <div id="history-regs-wrap" style="display:none">
+      <div style="font-weight:700;color:#4D2115;font-size:0.9rem;margin-bottom:0.6rem;border-bottom:2px solid #C2C9A8;padding-bottom:0.3rem">שיעורים ללא שיוך למנוי</div>
       <div id="history-regs"></div>
     </div>
     <div class="modal-actions" style="margin-top:1.5rem">
@@ -1441,34 +1453,62 @@
     _historySubsData = {};
     subs.forEach(s => _historySubsData[s.id] = s);
 
+    // Group class registrations under the subscription they used.
+    // Older registrations may lack subscription_id — fall back to the subscription whose dates cover the class.
+    const regs = (regsRes.data || []).filter(r => r.classes);
+    const regsBySub = {};
+    const unassigned = [];
+    regs.forEach(r => {
+      let sub = r.subscription_id && _historySubsData[r.subscription_id];
+      let guessed = false;
+      if (!sub) {
+        sub = subs.find(s => s.start_date <= r.classes.class_date && r.classes.class_date <= s.expiry_date);
+        guessed = !!sub;
+      }
+      if (!sub) return unassigned.push(r);
+      (regsBySub[sub.id] = regsBySub[sub.id] || []).push({ ...r, guessed });
+    });
+    const classTime = r => new Date(`${r.classes.class_date}T${r.classes.class_time || '00:00'}`);
+    const now = new Date();
+
+    const regsTable = list => `<table><thead><tr><th>שיעור</th><th>תאריך</th><th>שעה</th><th></th></tr></thead><tbody>${
+      list.sort((a, b) => classTime(b) - classTime(a)).map(r => `<tr>
+          <td>${r.classes.title||'—'}${r.guessed ? ' <span class="hsub-guess" title="שיעור ישן ללא שיוך — שויך לפי תאריך">(לפי תאריך)</span>' : ''}</td>
+          <td>${fmtDateWithDay(r.classes.class_date)}</td>
+          <td>${r.classes.class_time?.slice(0,5)||'—'}</td>
+          <td>${classTime(r) > now ? '<span class="badge badge-orange">עתידי</span>' : '<span class="badge badge-green">התקיים</span>'}</td>
+        </tr>`).join('')
+    }</tbody></table>`;
+
     document.getElementById('history-subs').innerHTML = subs.length
-      ? `<table><thead><tr><th>סוג מנוי</th><th>התחלה</th><th>סיום</th><th>שנותרו</th><th>סטטוס</th><th></th></tr></thead><tbody>${
-        subs.map((s, i) => {
+      ? subs.map(s => {
           const expired = s.expiry_date < todayStr();
           const status = !s.is_active ? 'ממתין לאישור' : expired ? 'פג תוקף' : s.classes_remaining <= 0 ? 'נוצל' : 'פעיל';
           const cls = status === 'פעיל' ? 'badge-green' : status === 'ממתין לאישור' ? 'badge-orange' : 'badge-red';
-          return `<tr>
-            <td>${s.subscription_types?.name||'—'}</td>
-            <td>${fmtDate(s.start_date)}</td>
-            <td>${fmtDate(s.expiry_date)}</td>
-            <td>${s.classes_remaining}</td>
-            <td><span class="badge ${cls}">${status}</span></td>
-            <td style="white-space:nowrap">
-              <button class="btn btn-sm" style="background:#e2e8f0;margin-left:0.25rem" onclick="generateReceipt(${s.id})">הפק קבלה</button>
-              <button class="btn btn-sm" style="background:#d4e0c4;margin-left:0.25rem" onclick="openEditSubModal(${s.id},${s.classes_remaining},'${s.expiry_date}')">עריכה</button>
-              <button class="btn btn-danger btn-sm" onclick="deleteSubscription(${s.id})">מחק</button>
-            </td>
-          </tr>`;
+          const subRegs = regsBySub[s.id] || [];
+          const upcomingCount = subRegs.filter(r => classTime(r) > now).length;
+          const pastCount = subRegs.length - upcomingCount;
+          const summary = `שיעורים במנוי זה: ${pastCount} התקיימו${upcomingCount ? ` · ${upcomingCount} עתידיים` : ''}`;
+          return `<div class="hsub">
+            <div class="hsub-head">
+              <span class="hsub-title">${s.subscription_types?.name||'—'}</span>
+              <span class="badge ${cls}">${status}</span>
+              <div class="hsub-actions">
+                <button class="btn btn-sm" style="background:#e2e8f0" onclick="generateReceipt(${s.id})">הפק קבלה</button>
+                <button class="btn btn-sm" style="background:#d4e0c4" onclick="openEditSubModal(${s.id},${s.classes_remaining},'${s.expiry_date}')">עריכה</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteSubscription(${s.id})">מחק</button>
+              </div>
+              <div class="hsub-meta">${fmtDate(s.start_date)} – ${fmtDate(s.expiry_date)} · נותרו ${s.classes_remaining}${s.subscription_types?.classes_count ? ` מתוך ${s.subscription_types.classes_count}` : ''}</div>
+            </div>
+            ${subRegs.length
+              ? `<details${status === 'פעיל' ? ' open' : ''}><summary>${summary}</summary>${regsTable(subRegs)}</details>`
+              : '<div class="hsub-empty">אין שיעורים במנוי זה</div>'}
+          </div>`;
         }).join('')
-      }</tbody></table>`
       : '<div class="empty" style="padding:0.75rem 0">אין מנויים</div>';
 
-    const regs = regsRes.data || [];
-    document.getElementById('history-regs').innerHTML = regs.length
-      ? `<table><thead><tr><th>שיעור</th><th>תאריך</th><th>שעה</th></tr></thead><tbody>${
-        regs.map(r => `<tr><td>${r.classes?.title||'—'}</td><td>${fmtDateWithDay(r.classes?.class_date)}</td><td>${r.classes?.class_time?.slice(0,5)||'—'}</td></tr>`).join('')
-      }</tbody></table>`
-      : '<div class="empty" style="padding:0.75rem 0">אין הרשמות לשיעורים</div>';
+    document.getElementById('history-regs-wrap').style.display = unassigned.length ? '' : 'none';
+    document.getElementById('history-regs').innerHTML = unassigned.length ? regsTable(unassigned) : '';
   }
 
   function closeHistoryModal(e) {
