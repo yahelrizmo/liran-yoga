@@ -1446,7 +1446,7 @@
 
     const [subsRes, regsRes] = await Promise.all([
       db.from('subscriptions').select('*, subscription_types(name, price, classes_count)').eq('client_id', id).order('start_date', { ascending: false }),
-      db.from('class_registrations').select('*, classes(title, class_date, class_time)').eq('client_id', id).order('registered_at', { ascending: false })
+      db.from('class_registrations').select('*, classes(title, class_date, class_time)').eq('client_id', id).order('created_at', { ascending: false })
     ]);
 
     const subs = subsRes.data || [];
